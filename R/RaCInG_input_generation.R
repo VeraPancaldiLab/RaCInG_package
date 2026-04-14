@@ -376,7 +376,7 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   
   ## Cell type expression profiles
   cat("\nEstimating cell type expression profiles...\n")
-  if (!is.null(cell_expr_profile)) {
+  if (is.null(cell_expr_profile)) {
     cell_expr_profile <- multideconv::estimate_expression_profiles(counts, deconv)
     cell_expr_profile = rbind(sapply(cell_expr_profile, function(x) colMeans(x))) %>% as.data.frame()
   }
