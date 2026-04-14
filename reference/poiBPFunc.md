@@ -25,4 +25,4 @@ poiBPFunc(x, M, sens)
 ## Value
 
 A numeric vector used by
-[`nleqslv::nleqslv()`](https://rdrr.io/pkg/nleqslv/man/nleqslv.html).
+[`nleqslv::nleqslv()`](https://bertcarnell.github.io/nleqslv/reference/nleqslv.html).
