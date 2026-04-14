@@ -384,11 +384,7 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   ## Verify if patients names match between files
   if(!all(rownames(deconv) %in% colnames(counts))){
     stop("Patient names in deconvolution estimates do not match those in the counts matrix.")
-  }
-  if(!all(rownames(deconv) %in% colnames(cell_expr_profile))){
-    stop("Patient names in deconvolution estimates do not match those in the cell expression profile.")
-  }
-  
+  }  
 
   ## Prior knowledge network CC
   cat("Processing cell-cell interaction network...\n")
