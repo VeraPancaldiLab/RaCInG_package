@@ -1,4 +1,4 @@
-RaCInG
+RaCInG <img src="man/figures/logo.svg" align="right" height="139" />
 ================
 
 [![R-CMD-check](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml)
@@ -9,7 +9,9 @@ reconstructs patient-specific cell-cell communication networks from bulk
 RNA-seq data and extracts network-level features using either a
 kernel-based or Monte Carlo workflow.
 
-random cell-cell interaction generator \## Installation
+This package is the R implementation of the [original RaCInG Python framework](https://github.com/SysBioOncology/RaCInG), as described in [van Santvoort et al. (2025)](https://pubmed.ncbi.nlm.nih.gov/39954673/), repackaged for seamless integration with R/Bioconductor analysis pipelines.
+
+## Installation
 
 ### Install from GitHub
 
