@@ -8,11 +8,18 @@ reconstructs patient-specific cell-cell communication networks from bulk
 RNA-seq data and extracts network-level features using either a
 kernel-based or Monte Carlo workflow.
 
-random cell-cell interaction generator \## Installation
+This package is the R implementation of the [original RaCInG Python
+framework](https://github.com/SysBioOncology/RaCInG), as described in
+[van Santvoort et
+al. (2025)](https://pubmed.ncbi.nlm.nih.gov/39954673/), repackaged for
+seamless integration with R/Bioconductor analysis pipelines.
+
+## Installation
 
 ### Install from GitHub
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("mhurtado13/racing")
 library(RaCInG)
@@ -21,6 +28,7 @@ library(RaCInG)
 ### Install from a local clone
 
 ``` r
+
 # install.packages("devtools")
 devtools::install(".")
 ```
@@ -33,6 +41,7 @@ install the optional helper packages used during deconvolution and
 prior-network construction:
 
 ``` r
+
 install.packages(c("ggplot2", "OmnipathR"))
 # Additional optional packages used by the full preprocessing workflow:
 # ADImpute, multideconv, liana
@@ -40,16 +49,17 @@ install.packages(c("ggplot2", "OmnipathR"))
 
 ## Workflow at a glance
 
-| Goal                                 | Function                                                                                                    | Output                                                  |
-|--------------------------------------|-------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| Build input matrices from raw counts | [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)             | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Run deterministic features           | [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)         | Kernel arrays + feature matrix                          |
-| Run simulation-based features        | [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | Monte Carlo summaries                                   |
-| Compare patient groups               | [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)                 | Statistics table for downstream plots                   |
+| Goal | Function | Output |
+|----|----|----|
+| Build input matrices from raw counts | [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Run deterministic features | [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
+| Run simulation-based features | [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | Monte Carlo summaries |
+| Compare patient groups | [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md) | Statistics table for downstream plots |
 
 ## Quick start
 
 ``` r
+
 library(RaCInG)
 
 # Build input matrices from raw counts

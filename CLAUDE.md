@@ -19,6 +19,7 @@ All standard R package development is done via `devtools` in an R
 session:
 
 ``` r
+
 devtools::load_all()        # Load package during development (replaces install)
 devtools::check()           # Run R CMD check (equivalent to CI)
 devtools::document()        # Regenerate NAMESPACE and man/*.Rd from roxygen2 comments
@@ -72,17 +73,17 @@ files
 
 ### Module Responsibilities
 
-| File                        | Responsibility                                                                                           |
-|-----------------------------|----------------------------------------------------------------------------------------------------------|
-| `RaCInG_input_generation.R` | Preprocessing raw counts → standardized input matrices; CSV I/O                                          |
-| `Kernel_Method.R`           | Deterministic kernel computation and feature extraction                                                  |
-| `Monte_Carlo_Method.R`      | Monte Carlo simulation orchestration                                                                     |
-| `network_generation.R`      | Random directed graph generation ([`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)) |
-| `feature_extraction.R`      | Graph motif enumeration (wedges, triangles, GSCC)                                                        |
-| `Utilities.R`               | Edge list ↔︎ adjacency matrix conversion; motif helpers                                                   |
-| `statistical_analysis.R`    | Wilcoxon tests and volcano plots                                                                         |
-| `txt_to_csv.R`              | Read/write simulation outputs                                                                            |
-| `data.R`                    | Documentation for bundled `skcm_example` dataset                                                         |
+| File | Responsibility |
+|----|----|
+| `RaCInG_input_generation.R` | Preprocessing raw counts → standardized input matrices; CSV I/O |
+| `Kernel_Method.R` | Deterministic kernel computation and feature extraction |
+| `Monte_Carlo_Method.R` | Monte Carlo simulation orchestration |
+| `network_generation.R` | Random directed graph generation ([`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)) |
+| `feature_extraction.R` | Graph motif enumeration (wedges, triangles, GSCC) |
+| `Utilities.R` | Edge list ↔︎ adjacency matrix conversion; motif helpers |
+| `statistical_analysis.R` | Wilcoxon tests and volcano plots |
+| `txt_to_csv.R` | Read/write simulation outputs |
+| `data.R` | Documentation for bundled `skcm_example` dataset |
 
 ### Key Design Decisions
 

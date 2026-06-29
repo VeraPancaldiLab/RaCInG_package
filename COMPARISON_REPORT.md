@@ -23,14 +23,14 @@ addition in detail.
 
 ### 2.1 From Script Collection to Formal R Package
 
-| Aspect            | Original (Python)                                                                         | R Package                                                                                         |
-|-------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| **Structure**     | Python scripts organized in a `Python_Code/` folder (research-oriented layout)            | Formal R package with `DESCRIPTION`, `NAMESPACE`, `man/`, `R/`, `data/`, `vignettes/`             |
-| **Installation**  | Clone repository and manage scripts locally                                               | One-command install via `remotes::install_github("mhurtado13/racing")`                            |
-| **Documentation** | Python docstrings and Jupyter notebook demos                                              | Full roxygen2 documentation + pkgdown website + vignettes                                         |
-| **Dependencies**  | Standard Python packages (`numpy`, `scipy`, `matplotlib`, etc.) managed via `pip`/`conda` | Declared in `DESCRIPTION` with `Imports:` and `Suggests:` fields; automatic dependency resolution |
-| **Testing**       | `if __name__ == "__main__"` blocks at bottom of scripts                                   | R CMD check compatible; formal check infrastructure                                               |
-| **Namespace**     | Standard Python module imports                                                            | Formal `NAMESPACE` with selective exports and imports                                             |
+| Aspect | Original (Python) | R Package |
+|----|----|----|
+| **Structure** | Python scripts organized in a `Python_Code/` folder (research-oriented layout) | Formal R package with `DESCRIPTION`, `NAMESPACE`, `man/`, `R/`, `data/`, `vignettes/` |
+| **Installation** | Clone repository and manage scripts locally | One-command install via `remotes::install_github("mhurtado13/racing")` |
+| **Documentation** | Python docstrings and Jupyter notebook demos | Full roxygen2 documentation + pkgdown website + vignettes |
+| **Dependencies** | Standard Python packages (`numpy`, `scipy`, `matplotlib`, etc.) managed via `pip`/`conda` | Declared in `DESCRIPTION` with `Imports:` and `Suggests:` fields; automatic dependency resolution |
+| **Testing** | `if __name__ == "__main__"` blocks at bottom of scripts | R CMD check compatible; formal check infrastructure |
+| **Namespace** | Standard Python module imports | Formal `NAMESPACE` with selective exports and imports |
 
 ### 2.2 Language Translation: Python → R
 
@@ -492,15 +492,15 @@ contribution analysis with Mann-Whitney tests.
 
 ### 3.9 Files in the Original with No Direct R Package Equivalent
 
-| Original File                               | Purpose                                                             | R Package Status                                                                                                                                 |
-|---------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Circos.py`                                 | Circos plot generation for visualizing cell-cell interactions       | **Not yet ported**. Planned for a future release.                                                                                                |
-| `HPC_CLI.py`                                | Command-line interface for HPC cluster submission                   | **Not yet ported**. The R package currently focuses on interactive use. Planned for a future release.                                            |
-| `R_Code/RaCInG_ccc_prior_knowledge.Rmd`     | Notebook for building prior knowledge from OmniPath/Ramilowski/CCLE | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)** as automated pipeline steps. |
-| `R_Code/RaCInG_input_tcga.Rmd`              | Notebook for processing TCGA data                                   | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**.                             |
-| `R_Code/RaCInG_input_published_cohorts.Rmd` | Notebook for processing published cohort data                       | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**.                             |
-| `R_Code/utils/run_TMEmod_deconvolution.R`   | Script to run 6 deconvolution methods                               | **Replaced** by integration with `multideconv` package.                                                                                          |
-| `Python_Code/Demo.ipynb`                    | Jupyter notebook demo                                               | **Replaced** by the R vignette (`vignettes/RaCiNG.Rmd`) and pkgdown website.                                                                     |
+| Original File | Purpose | R Package Status |
+|----|----|----|
+| `Circos.py` | Circos plot generation for visualizing cell-cell interactions | **Not yet ported**. Planned for a future release. |
+| `HPC_CLI.py` | Command-line interface for HPC cluster submission | **Not yet ported**. The R package currently focuses on interactive use. Planned for a future release. |
+| `R_Code/RaCInG_ccc_prior_knowledge.Rmd` | Notebook for building prior knowledge from OmniPath/Ramilowski/CCLE | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)** as automated pipeline steps. |
+| `R_Code/RaCInG_input_tcga.Rmd` | Notebook for processing TCGA data | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**. |
+| `R_Code/RaCInG_input_published_cohorts.Rmd` | Notebook for processing published cohort data | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**. |
+| `R_Code/utils/run_TMEmod_deconvolution.R` | Script to run 6 deconvolution methods | **Replaced** by integration with `multideconv` package. |
+| `Python_Code/Demo.ipynb` | Jupyter notebook demo | **Replaced** by the R vignette (`vignettes/RaCiNG.Rmd`) and pkgdown website. |
 
 ------------------------------------------------------------------------
 
@@ -514,6 +514,7 @@ users to immediately run RaCInG without downloading or preparing
 external data:
 
 ``` r
+
 data(skcm_example)
 result <- compute_racing_kernel(input_data = skcm_example)
 ```
@@ -578,16 +579,16 @@ providing clear error messages instead of cryptic import failures.
 
 ## 5. Features Not Included in the R Package
 
-| Feature                | Original Implementation                                                                  | Rationale                                                                                                    |
-|------------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| SLURM job generation   | `createSlurm()` in `Utilities.py`                                                        | R provides its own parallelization ecosystem (`parallel`, `future`, `batchtools`)                            |
-| Circos plots           | `Circos.py`                                                                              | Planned for a future release; meanwhile the `circlize` R package is available                                |
-| HPC CLI                | `HPC_CLI.py`                                                                             | Planned for a future release                                                                                 |
-| Bagaev metadata loader | `Find_Patient_Subtype_Bagaev()`                                                          | Designed for a specific dataset; users can implement study-specific loaders                                  |
-| Pan-cancer pipeline    | `groupPatients()`, `createPanCancerData()`, cross-cancer volcano plots                   | Study-specific analysis logic; users implement based on their study design                                   |
-| Heatmap pipeline       | `findLargeFold()`, `plot_heatmap()`, [`heatmap()`](https://rdrr.io/r/stats/heatmap.html) | Mature R packages (`ComplexHeatmap`, `pheatmap`) provide extensive heatmap support                           |
-| Correlation analysis   | `computeCorrelation()`                                                                   | Well-supported natively in R via [`cor.test()`](https://rdrr.io/r/stats/cor.test.html) and related functions |
-| Recursive Tarjan       | `Tarjan()`, `StrongConnect()`                                                            | Iterative version preferred to accommodate R’s default recursion limits for large graphs                     |
+| Feature | Original Implementation | Rationale |
+|----|----|----|
+| SLURM job generation | `createSlurm()` in `Utilities.py` | R provides its own parallelization ecosystem (`parallel`, `future`, `batchtools`) |
+| Circos plots | `Circos.py` | Planned for a future release; meanwhile the `circlize` R package is available |
+| HPC CLI | `HPC_CLI.py` | Planned for a future release |
+| Bagaev metadata loader | `Find_Patient_Subtype_Bagaev()` | Designed for a specific dataset; users can implement study-specific loaders |
+| Pan-cancer pipeline | `groupPatients()`, `createPanCancerData()`, cross-cancer volcano plots | Study-specific analysis logic; users implement based on their study design |
+| Heatmap pipeline | `findLargeFold()`, `plot_heatmap()`, [`heatmap()`](https://rdrr.io/r/stats/heatmap.html) | Mature R packages (`ComplexHeatmap`, `pheatmap`) provide extensive heatmap support |
+| Correlation analysis | `computeCorrelation()` | Well-supported natively in R via [`cor.test()`](https://rdrr.io/r/stats/cor.test.html) and related functions |
+| Recursive Tarjan | `Tarjan()`, `StrongConnect()` | Iterative version preferred to accommodate R’s default recursion limits for large graphs |
 
 ------------------------------------------------------------------------
 
@@ -685,68 +686,68 @@ simulation size).
 
 ### Functions Ported from Python (with same or similar name):
 
-| R Function                                                                                                                    | Python Origin                                                                                             | Changes                                                                         |
-|-------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md)                                               | [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md)                           | Minimal; R syntax                                                               |
-| [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md)                                   | [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md)               | Generic filename; adds sorting                                                  |
-| [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md)                                   | [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md)               | Generic filename; adds sorting                                                  |
-| [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md)                               | [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md)           | Adds M1/M2 merge logic                                                          |
-| [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md)                         | [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md)     | Returns 3D tensor; auto-normalizes                                              |
-| [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md)                     | [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md) | Uses [`data.table::fread`](https://rdrr.io/pkg/data.table/man/fread.html)       |
-| [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md)                                           | [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md)                       | Generalized file naming                                                         |
-| [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)                                                         | [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)                                     | Standalone functions instead of class                                           |
-| [`genRandomCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeDistr.md)                         | `dg.genRandomCellTypeDistr()`                                                                             | Direct port                                                                     |
-| [`genRandomLigRecDistr()`](https://mhurtado13.github.io/racing/reference/genRandomLigRecDistr.md)                             | `dg.genRandomLigRecDistr()`                                                                               | Direct port                                                                     |
-| [`genRandomCellLigands()`](https://mhurtado13.github.io/racing/reference/genRandomCellLigands.md)                             | `dg.genRandomCellLigands()`                                                                               | Direct port                                                                     |
-| [`genRandomCellReceptors()`](https://mhurtado13.github.io/racing/reference/genRandomCellReceptors.md)                         | `dg.genRandomCellReceptors()`                                                                             | Direct port                                                                     |
-| [`genRandomCellTypeList()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeList.md)                           | `informationMicroEnv.genRandomCellTypeList()`                                                             | Extracted from class                                                            |
-| [`genRandomEdgeList()`](https://mhurtado13.github.io/racing/reference/genRandomEdgeList.md)                                   | `informationMicroEnv.genRandomEdgeList()`                                                                 | Extracted from class                                                            |
-| [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md)                                                   | [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md)                               | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
-| [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md)                                   | [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md)               | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
-| [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md)                                               | [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md)                           | 1-based indexing                                                                |
-| [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md)                                                   | [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md)                               | Internal; same math                                                             |
-| [`Find_Number_Trust_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Trust_Triangles_Unique.md) | Same                                                                                                      | Dense matrix operations                                                         |
-| [`Find_Number_Triangles()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles.md)                           | Same                                                                                                      | Direct port                                                                     |
-| [`Find_Number_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles_Unique.md)             | Same                                                                                                      | Direct port                                                                     |
-| [`Find_Number_2Loops()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops.md)                                 | Same                                                                                                      | Direct port                                                                     |
-| [`Find_Number_2Loops_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops_Unique.md)                   | Same                                                                                                      | Direct port                                                                     |
-| [`Find_Number_Wedges()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges.md)                                 | Same                                                                                                      | Direct port                                                                     |
-| [`Find_Number_Wedges_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges_Unique.md)                   | Same                                                                                                      | Direct port                                                                     |
-| [`Trust_Triangles()`](https://mhurtado13.github.io/racing/reference/Trust_Triangles.md)                                       | Same                                                                                                      | Returns list instead of tuple                                                   |
-| [`Cycle_Triangles()`](https://mhurtado13.github.io/racing/reference/Cycle_Triangles.md)                                       | Same                                                                                                      | Returns list instead of tuple                                                   |
-| [`Wedges()`](https://mhurtado13.github.io/racing/reference/Wedges.md)                                                         | Same                                                                                                      | Returns list instead of tuple                                                   |
-| [`BFS()`](https://mhurtado13.github.io/racing/reference/BFS.md)                                                               | Same                                                                                                      | Internal; 1-based indexing                                                      |
-| [`TarjanIterative()`](https://mhurtado13.github.io/racing/reference/TarjanIterative.md)                                       | Same                                                                                                      | Uses R closures                                                                 |
-| [`GSCC()`](https://mhurtado13.github.io/racing/reference/GSCC.md)                                                             | Same                                                                                                      | Direct port                                                                     |
-| [`IN()`](https://mhurtado13.github.io/racing/reference/IN.md)                                                                 | Same                                                                                                      | Direct port                                                                     |
-| [`OUT()`](https://mhurtado13.github.io/racing/reference/OUT.md)                                                               | Same                                                                                                      | Direct port                                                                     |
-| [`countWedges()`](https://mhurtado13.github.io/racing/reference/countWedges.md)                                               | Same                                                                                                      | Direct port                                                                     |
-| [`countTrustTriangles()`](https://mhurtado13.github.io/racing/reference/countTrustTriangles.md)                               | Same                                                                                                      | Direct port                                                                     |
-| [`countCycleTriangles()`](https://mhurtado13.github.io/racing/reference/countCycleTriangles.md)                               | Same                                                                                                      | Direct port                                                                     |
-| [`countDirect()`](https://mhurtado13.github.io/racing/reference/countDirect.md)                                               | Same                                                                                                      | Direct port                                                                     |
-| [`countGSCC()`](https://mhurtado13.github.io/racing/reference/countGSCC.md)                                                   | Same                                                                                                      | Direct port                                                                     |
-| [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md)                                                         | Same                                                                                                      | Enhanced with output_folder, file.name, patient_idx                             |
-| [`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md)                                       | Same                                                                                                      | No file I/O; returns data.frame                                                 |
-| [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md)                                       | Same                                                                                                      | No file I/O; returns data.frame                                                 |
-| [`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md)                               | Same                                                                                                      | Legacy stub; redirects to computeGSCC()                                         |
-| [`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md)                                       | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()`                                             | Unified auto-detecting parser                                                   |
-| [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)                                   | `wilcoxon()`                                                                                              | Simplified, generic, FDR-corrected                                              |
-| [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md)                                             | `volcanoPan()` + `volcanoInd()` + `volcanoCross()`                                                        | Unified ggplot2 version                                                         |
+| R Function | Python Origin | Changes |
+|----|----|----|
+| [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md) | [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md) | Minimal; R syntax |
+| [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md) | [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md) | Generic filename; adds sorting |
+| [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md) | [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md) | Generic filename; adds sorting |
+| [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md) | [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md) | Adds M1/M2 merge logic |
+| [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md) | [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md) | Returns 3D tensor; auto-normalizes |
+| [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md) | [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md) | Uses [`data.table::fread`](https://rdrr.io/pkg/data.table/man/fread.html) |
+| [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md) | [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md) | Generalized file naming |
+| [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md) | [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md) | Standalone functions instead of class |
+| [`genRandomCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeDistr.md) | `dg.genRandomCellTypeDistr()` | Direct port |
+| [`genRandomLigRecDistr()`](https://mhurtado13.github.io/racing/reference/genRandomLigRecDistr.md) | `dg.genRandomLigRecDistr()` | Direct port |
+| [`genRandomCellLigands()`](https://mhurtado13.github.io/racing/reference/genRandomCellLigands.md) | `dg.genRandomCellLigands()` | Direct port |
+| [`genRandomCellReceptors()`](https://mhurtado13.github.io/racing/reference/genRandomCellReceptors.md) | `dg.genRandomCellReceptors()` | Direct port |
+| [`genRandomCellTypeList()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeList.md) | `informationMicroEnv.genRandomCellTypeList()` | Extracted from class |
+| [`genRandomEdgeList()`](https://mhurtado13.github.io/racing/reference/genRandomEdgeList.md) | `informationMicroEnv.genRandomEdgeList()` | Extracted from class |
+| [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md) | [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
+| [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md) | [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
+| [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md) | [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md) | 1-based indexing |
+| [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md) | [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md) | Internal; same math |
+| [`Find_Number_Trust_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Trust_Triangles_Unique.md) | Same | Dense matrix operations |
+| [`Find_Number_Triangles()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles.md) | Same | Direct port |
+| [`Find_Number_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles_Unique.md) | Same | Direct port |
+| [`Find_Number_2Loops()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops.md) | Same | Direct port |
+| [`Find_Number_2Loops_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops_Unique.md) | Same | Direct port |
+| [`Find_Number_Wedges()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges.md) | Same | Direct port |
+| [`Find_Number_Wedges_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges_Unique.md) | Same | Direct port |
+| [`Trust_Triangles()`](https://mhurtado13.github.io/racing/reference/Trust_Triangles.md) | Same | Returns list instead of tuple |
+| [`Cycle_Triangles()`](https://mhurtado13.github.io/racing/reference/Cycle_Triangles.md) | Same | Returns list instead of tuple |
+| [`Wedges()`](https://mhurtado13.github.io/racing/reference/Wedges.md) | Same | Returns list instead of tuple |
+| [`BFS()`](https://mhurtado13.github.io/racing/reference/BFS.md) | Same | Internal; 1-based indexing |
+| [`TarjanIterative()`](https://mhurtado13.github.io/racing/reference/TarjanIterative.md) | Same | Uses R closures |
+| [`GSCC()`](https://mhurtado13.github.io/racing/reference/GSCC.md) | Same | Direct port |
+| [`IN()`](https://mhurtado13.github.io/racing/reference/IN.md) | Same | Direct port |
+| [`OUT()`](https://mhurtado13.github.io/racing/reference/OUT.md) | Same | Direct port |
+| [`countWedges()`](https://mhurtado13.github.io/racing/reference/countWedges.md) | Same | Direct port |
+| [`countTrustTriangles()`](https://mhurtado13.github.io/racing/reference/countTrustTriangles.md) | Same | Direct port |
+| [`countCycleTriangles()`](https://mhurtado13.github.io/racing/reference/countCycleTriangles.md) | Same | Direct port |
+| [`countDirect()`](https://mhurtado13.github.io/racing/reference/countDirect.md) | Same | Direct port |
+| [`countGSCC()`](https://mhurtado13.github.io/racing/reference/countGSCC.md) | Same | Direct port |
+| [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md) | Same | Enhanced with output_folder, file.name, patient_idx |
+| [`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md) | Same | No file I/O; returns data.frame |
+| [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md) | Same | No file I/O; returns data.frame |
+| [`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md) | Same | Legacy stub; redirects to computeGSCC() |
+| [`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md) | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()` | Unified auto-detecting parser |
+| [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md) | `wilcoxon()` | Simplified, generic, FDR-corrected |
+| [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md) | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
 
 ### New Functions (no Python equivalent):
 
-| R Function                                                                                                     | Purpose                                               |
-|----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| [`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md)                          | Pure kernel computation from matrices                 |
-| [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)                                | Analytical GSCC from kernel (function-argument based) |
-| [`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md)                      | Kernel-based triangle feature computation             |
-| [`compute_kernel_features()`](https://mhurtado13.github.io/racing/reference/compute_kernel_features.md)        | Feature dispatcher for all kernel feature types       |
-| [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)            | End-to-end kernel workflow                            |
-| [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)    | End-to-end Monte Carlo workflow                       |
-| [`compute_results_processing()`](https://mhurtado13.github.io/racing/reference/compute_results_processing.md)  | Normalize and bundle Monte Carlo results              |
-| [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)                | Automated input preparation from raw counts           |
-| [`generateUniformLRGraph()`](https://mhurtado13.github.io/racing/reference/generateUniformLRGraph.md)          | Generate graph under uniform LR null model            |
-| [`.check_installed_packages()`](https://mhurtado13.github.io/racing/reference/dot-check_installed_packages.md) | Internal dependency checker                           |
+| R Function | Purpose |
+|----|----|
+| [`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md) | Pure kernel computation from matrices |
+| [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md) | Analytical GSCC from kernel (function-argument based) |
+| [`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md) | Kernel-based triangle feature computation |
+| [`compute_kernel_features()`](https://mhurtado13.github.io/racing/reference/compute_kernel_features.md) | Feature dispatcher for all kernel feature types |
+| [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md) | End-to-end kernel workflow |
+| [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | End-to-end Monte Carlo workflow |
+| [`compute_results_processing()`](https://mhurtado13.github.io/racing/reference/compute_results_processing.md) | Normalize and bundle Monte Carlo results |
+| [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md) | Automated input preparation from raw counts |
+| [`generateUniformLRGraph()`](https://mhurtado13.github.io/racing/reference/generateUniformLRGraph.md) | Generate graph under uniform LR null model |
+| [`.check_installed_packages()`](https://mhurtado13.github.io/racing/reference/dot-check_installed_packages.md) | Internal dependency checker |
 
 ------------------------------------------------------------------------
 

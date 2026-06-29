@@ -7,12 +7,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>RaCInG • RaCInG</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="RaCInG">
 <meta name="description" content="R Analysis of Cell Interactions and Graphs">
 <meta property="og:description" content="R Analysis of Cell Interactions and Graphs">
+<meta property="og:image" content="https://mhurtado13.github.io/racing/logo.svg">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -44,11 +45,16 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="racing">RaCInG<a class="anchor" aria-label="anchor" href="#racing"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="racing-">RaCInG <a class="anchor" aria-label="anchor" href="#racing-"></a>
+</h1>
+</div>
 <p><a href="https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></p>
 <p><strong>RaCInG</strong> (<strong>Ra</strong>ndom <strong>C</strong>ell-cell <strong>In</strong>teraction <strong>G</strong>enerator) reconstructs patient-specific cell-cell communication networks from bulk RNA-seq data and extracts network-level features using either a kernel-based or Monte Carlo workflow.</p>
-<p>random cell-cell interaction generator ## Installation</p>
+<p>This package is the R implementation of the <a href="https://github.com/SysBioOncology/RaCInG" class="external-link">original RaCInG Python framework</a>, as described in <a href="https://pubmed.ncbi.nlm.nih.gov/39954673/" class="external-link">van Santvoort et al. (2025)</a>, repackaged for seamless integration with R/Bioconductor analysis pipelines.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <div class="section level3">
 <h3 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
 </h3>
@@ -73,6 +79,7 @@
 <span><span class="co"># Additional optional packages used by the full preprocessing workflow:</span></span>
 <span><span class="co"># ADImpute, multideconv, liana</span></span></code></pre></div>
 </div>
+</div>
 <div class="section level2">
 <h2 id="workflow-at-a-glance">Workflow at a glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
 </h2>
@@ -82,28 +89,28 @@
 <col width="24%">
 <col width="45%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Goal</th>
 <th>Function</th>
 <th>Output</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Build input matrices from raw counts</td>
 <td><code><a href="reference/prepare_input_files.html">prepare_input_files()</a></code></td>
 <td>Named list with <code>L</code>, <code>R</code>, <code>C</code>, <code>LR</code> matrices and labels</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Run deterministic features</td>
 <td><code><a href="reference/compute_racing_kernel.html">compute_racing_kernel()</a></code></td>
 <td>Kernel arrays + feature matrix</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Run simulation-based features</td>
 <td><code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code></td>
 <td>Monte Carlo summaries</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Compare patient groups</td>
 <td><code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code></td>
 <td>Statistics table for downstream plots</td>
