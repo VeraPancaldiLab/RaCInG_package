@@ -1,4 +1,4 @@
-RaCInG <img src="man/figures/logo.svg" align="right" height="139" />
+RaCInG <img src="man/figures/logo.png" align="right" height="139" />
 ================
 
 [![R-CMD-check](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml)
