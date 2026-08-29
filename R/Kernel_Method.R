@@ -1,23 +1,35 @@
 #' Compute the RaCInG kernel for one or more patients
 #'
+#' The kernel is the *unweighted* structural kernel: cell-type abundances are
+#' not baked into it. `calculateDirect()`, `calculateWedges()`,
+#' `computeTriangles()`, and `computeGSCC()` each multiply in the abundance of
+#' every node they use, exactly once per node, when computing raw
+#' (unnormalized) features from this kernel.
+#'
 #' @param liglist Cell-by-ligand compatibility matrix.
 #' @param reclist Cell-by-receptor compatibility matrix.
 #' @param Cmatrix Patient-by-cell-type abundance matrix.
 #' @param LRmatrix Ligand-by-receptor-by-patient interaction tensor.
 #' @param normalize Logical; if `TRUE`, also compute a uniformized baseline kernel.
 #'
-#' @return Either a 3D kernel array or a list with `kernel` and `kernel_norm`.
+#' @return Either a 3D kernel array `[sender x receiver x patient]`, or (when
+#'   `normalize = TRUE`) a list with `kernel` and `kernel_norm`.
 #' @export
 compute_kernel <- function(liglist, reclist, Cmatrix, LRmatrix, normalize = FALSE) {
-  # liglist:   [num_genes × num_ligands] binary/weighted matrix mapping genes to ligands
-  # reclist:   [num_genes × num_receptors] binary/weighted matrix mapping genes to receptors
-  # Cmatrix:     [num_patients × num_genes] cell type abundances for each patient
-  # LRmatrix:     [num_ligands × num_receptors × num_patients] ligand–receptor interaction strengths for each patient
-  # normalize: if TRUE, normalize LRmatrix so that each patient has the same total interaction strength
+  # liglist:   [cell type × ligand] binary/weighted matrix mapping cell types to ligands
+  # reclist:   [cell type × receptor] binary/weighted matrix mapping cell types to receptors
+  # Cmatrix:   [patient × cell type] cell type abundances for each patient
+  # LRmatrix:  [ligand × receptor × patient] ligand-receptor interaction strengths for each patient
+  # normalize: if TRUE, also compute the kernel under a uniformized LRmatrix
   #
   # Return:
   #  - if normalize == FALSE: kernel array [sender x receiver x patient]
-  #  - if normalize == TRUE: list(kernel = unnormalized_kernel, kernel_norm = normalized_kernel)
+  #  - if normalize == TRUE: list(kernel = kernel, kernel_norm = normalized_kernel)
+  #
+  # NOTE: the returned kernel is the *unweighted* structural kernel (cell-type
+  # abundances are NOT baked in). Each feature-extraction function multiplies
+  # in the abundance of every node it uses, exactly once per node, mirroring
+  # the original Python implementation.
 
   # Ensure matrix format
   Cmatrix <- if (is.null(dim(Cmatrix))) matrix(Cmatrix, nrow = 1) else Cmatrix
@@ -43,62 +55,23 @@ compute_kernel <- function(liglist, reclist, Cmatrix, LRmatrix, normalize = FALS
 
     Cvec <- Cmatrix[p, ]  # cell abundances
 
-    ############################# LIGANDS #############################
+    # ---- ligand weights ----
+    # weightlig[i] = total abundance-weighted ligand i expression across cell types
+    lig_norm <- colSums(sweep(liglist, 1, Cvec, "*"))
+    lig_norm[lig_norm == 0] <- 1  # avoid division by zero
+    # lig_weight[A, i] = P(ligand i is sent by cell type A)
+    lig_weight <- sweep(liglist, 2, lig_norm, "/")
 
-    # ---- Step 1: ligand weights ----
-    # Row-wise multiplication:
-    # each row (cell type A) is scaled by its abundance C(A) in patient p,
-    # producing abundance-weighted ligand expression C(A) * L(A,i) per patient
-    lig_weight_raw <- sweep(liglist, 1, Cvec, "*")
+    # ---- receptor weights ----
+    rec_norm <- colSums(sweep(reclist, 1, Cvec, "*"))
+    rec_norm[rec_norm == 0] <- 1
+    # rec_weight[B, j] = P(receptor j is received by cell type B)
+    rec_weight <- sweep(reclist, 2, rec_norm, "/")
 
-    # ---- Step 1.5: Calculate normalization factors for ligands ----
-    # For each ligand i, sum contributions from all cell types:
-    # gives total C(A) * L(A,i) used for normalization
-    lig_norm <- colSums(lig_weight_raw) # How much total of this ligand exists across all cell types, weighted by abundance?
-
-    # avoid division by zero
-    lig_norm[lig_norm == 0] <- 1
-
-    # ---- Step 2: normalize ligand weights ----
-    # dim: [celltype x ligand]
-    lig_weight <- sweep(lig_weight_raw, 2, lig_norm, "/") #turns raw values into a probability distribution over sender cell types
-
-    ############################## RECEPTORS #############################
-
-    # ---- Step 2: receptor weights ----
-    rec_weight_raw <- sweep(reclist, 1, Cvec, "*") ## Abundance-weighted receptor expression C(A) * R(A,j) per patient
-    rec_norm <- colSums(rec_weight_raw) ## Normalization factor for each receptor: total C(A) * R(A,j) across all cell types
-    rec_norm[rec_norm == 0] <- 1 ## avoid division by zero
-
-    rec_weight <- sweep(rec_weight_raw, 2, rec_norm, "/") # normalized receptor weights: probability distribution over receiver cell types for each receptor
-
-    # ---- Step 3: aggregate over ligand–receptor pairs ----
-    # Matrix multiplication performs the full kernel computation:
-    #
-    # lig_weight:   [cell A × ligand i]
-    #   → contribution of each sender cell type A to ligand i
-    #
-    # LRmatrix:        [ligand i × receptor j]
-    #   → interaction strength between ligand i and receptor j
-    #
-    # t(rec_weight): [receptor j × cell B]
-    #   → contribution of receptor j to receiver cell type B
-    #
-    # Multiplication order:
-    #   (lig_weight %*% LRmatrix)        → [cell A × receptor j]
-    #   (... %*% t(rec_weight))       → [cell A × cell B]
-    #
-    # Final result:
-    #   kernel[A, B] = sum over all ligand–receptor pairs (i,j) of
-    #                  (sender contribution) × (LR interaction) × (receiver contribution)
-    #
-    # Interpretation:
-    #   Expected interaction strength from cell type A → cell type B
-    #   aggregated over all ligand–receptor pairs
-
+    # ---- aggregate over ligand-receptor pairs ----
+    # kernel[A, B] = sum over (i,j) of P(A sends i) * LRmatrix[i,j] * P(B receives j)
     kernel[, , p] <- lig_weight %*% LRmatrix[, , p] %*% t(rec_weight)
 
-    # If requested, compute normalized kernel for this patient using LRmatrix_norm
     if (normalize) {
       kernel_norm[, , p] <- lig_weight %*% LRmatrix_norm[, , p] %*% t(rec_weight)
     }
@@ -116,58 +89,39 @@ compute_kernel <- function(liglist, reclist, Cmatrix, LRmatrix, normalize = FALS
 #' @param kernel Kernel array returned by [compute_kernel()].
 #' @param unifKernel Optional normalized baseline kernel.
 #' @param cells Character vector of cell-type names.
+#' @param Dcell Patient-by-cell-type abundance matrix, used to weight raw
+#'   (unnormalized) scores. Ignored when `unifKernel` is supplied, since the
+#'   abundance weights cancel out of the ratio.
 #' @param bundle Logical; if `TRUE`, combine reciprocal directions.
 #'
 #' @return A patient-by-feature data frame of direct communication scores.
 #' @export
-calculateDirect <- function(kernel, unifKernel = NULL, cells, bundle = TRUE) {
-  #---------------------------------------------------------------
-  # Function: calculateDirectSimple
-  # Purpose:  Compute direct communication scores between cell types
-  #           from precomputed kernel arrays.
-  #
-  # Inputs:
-  #   kernel      - 3D array [sender cell x receiver cell x patient], raw scores
-  #   unifKernel  - optional 3D array, same dimensions as kernel, normalized scores
-  #   cells       - character vector of cell type names (length = dim(kernel)[1])
-  #   bundle      - logical; if TRUE, sum reciprocal interactions (A->B + B->A)
-  #
-  # Output:
-  #   Data frame: rows = patients, columns = direct interaction scores for each cell type pair
-  #---------------------------------------------------------------
-
+calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE) {
   n_celltypes <- length(cells)      # number of cell types
   n_patients <- dim(kernel)[3]      # number of patients
 
   df_list <- list()                 # list to store each column before converting to data frame
 
-  #---------------------------------------------------------------
-  # Loop over all cell type pairs (sender i, receiver j)
-  # If bundle = TRUE, we only consider upper triangle to avoid double counting
-  #---------------------------------------------------------------
+  # Loop over all cell type pairs (sender i, receiver j).
+  # If bundle = TRUE, only the upper triangle is used to avoid double counting.
   for (i in 1:n_celltypes) {
     for (j in if (bundle) i:n_celltypes else 1:n_celltypes) {
 
-      colname <- paste0("Dir_", cells[i], "_", cells[j])  # column name for this pair
+      colname <- paste0("Dir_", cells[i], "_", cells[j])
 
-      #-----------------------------------------------------------
-      # Compute direct communication value
-      # - If unifKernel is provided, normalize by the corresponding uniform kernel
-      # - If bundle = TRUE, sum the reciprocal interaction (A->B + B->A)
-      #-----------------------------------------------------------
       if (!is.null(unifKernel)) {
-        # normalized direct score
+        # normalized direct score: abundance weights cancel out of the ratio
         value <- if (bundle) {
           (kernel[i, j, ] + kernel[j, i, ]) / (unifKernel[i, j, ] + unifKernel[j, i, ])
         } else {
           kernel[i, j, ] / unifKernel[i, j, ]
         }
       } else {
-        # raw direct score (already abundance-weighted in kernel)
+        # raw direct score: weight explicitly by the abundance of each node
         value <- if (bundle) {
-          kernel[i, j, ] + kernel[j, i, ]
+          Dcell[, i] * Dcell[, j] * (kernel[i, j, ] + kernel[j, i, ])
         } else {
-          kernel[i, j, ]
+          Dcell[, i] * Dcell[, j] * kernel[i, j, ]
         }
       }
 
@@ -175,10 +129,6 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, bundle = TRUE) {
     }
   }
 
-  #---------------------------------------------------------------
-  # Convert list of columns into a data frame
-  # Rows are patients, columns are cell type pair direct interactions
-  #---------------------------------------------------------------
   df <- as.data.frame(df_list)
   rownames(df) <- paste0("Patient_", 1:n_patients)
 
@@ -190,47 +140,27 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, bundle = TRUE) {
 #' @param kernel Kernel array returned by [compute_kernel()].
 #' @param unifKernel Optional normalized baseline kernel.
 #' @param cells Character vector of cell-type names.
+#' @param Dcell Patient-by-cell-type abundance matrix, used to weight raw
+#'   (unnormalized) scores. Ignored when `unifKernel` is supplied.
 #' @param bundle Logical; if `TRUE`, combine directionally equivalent wedges.
 #'
 #' @return A patient-by-feature data frame of wedge scores.
 #' @export
-calculateWedges <- function(kernel, unifKernel = NULL, cells, bundle = TRUE) {
-  #---------------------------------------------------------------
-  # Function: calculateWedgesSimple
-  # Purpose:  Compute "wedge" values W for triplets of cell types
-  #           from precomputed kernel arrays.
-  #
-  # Inputs:
-  #   kernel      - 3D array [cell A x cell B x patient], direct interaction scores
-  #   unifKernel  - optional 3D array, same dimensions as kernel, normalized scores
-  #   cells       - character vector of cell type names (length = dim(kernel)[1])
-  #   bundle      - logical; if TRUE, sum reciprocal interactions in wedge calculation
-  #
-  # Output:
-  #   Data frame: rows = patients, columns = wedge scores for each cell triplet
-  #---------------------------------------------------------------
-
+calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE) {
   n_celltypes <- length(cells)
   n_patients <- dim(kernel)[3]
 
   df_list <- list()   # list to collect columns before converting to data frame
 
-  #---------------------------------------------------------------
-  # Loop over all triplets of cell types (i, j, k)
-  # i = sender, j = intermediate, k = receiver
-  #---------------------------------------------------------------
+  # Loop over all triplets of cell types (i, j, k): i = sender, j = intermediate, k = receiver
   for (i in 1:n_celltypes) {
     for (j in 1:n_celltypes) {
       for (k in if (bundle) j:n_celltypes else 1:n_celltypes) {
 
         colname <- paste0("W_", cells[i], "_", cells[j], "_", cells[k])
 
-        #-----------------------------------------------------------
-        # Compute wedge score
-        # - If unifKernel provided, normalize by corresponding uniform kernel
-        # - If bundle = TRUE, sum reciprocal contributions (i<->k via j)
-        #-----------------------------------------------------------
         if (!is.null(unifKernel)) {
+          # normalized wedge score: abundance weights cancel out of the ratio
           value <- if (bundle) {
             (kernel[i,j,] * kernel[j,k,] + kernel[k,j,] * kernel[j,i,]) /
               (unifKernel[i,j,] * unifKernel[j,k,] + unifKernel[k,j,] * unifKernel[j,i,])
@@ -239,11 +169,11 @@ calculateWedges <- function(kernel, unifKernel = NULL, cells, bundle = TRUE) {
               (unifKernel[i,j,] * unifKernel[j,k,])
           }
         } else {
-          # raw wedge (kernel already includes cell abundances)
+          # raw wedge: weight explicitly by the abundance of each of the 3 nodes
           value <- if (bundle) {
-            kernel[i,j,] * kernel[j,k,] + kernel[k,j,] * kernel[j,i,]
+            Dcell[,i] * Dcell[,j] * Dcell[,k] * (kernel[i,j,] * kernel[j,k,] + kernel[k,j,] * kernel[j,i,])
           } else {
-            kernel[i,j,] * kernel[j,k,]
+            Dcell[,i] * Dcell[,j] * Dcell[,k] * (kernel[i,j,] * kernel[j,k,])
           }
         }
 
@@ -252,10 +182,6 @@ calculateWedges <- function(kernel, unifKernel = NULL, cells, bundle = TRUE) {
     }
   }
 
-  #---------------------------------------------------------------
-  # Convert list of columns into a data frame
-  # Rows = patients, Columns = wedges for each triplet
-  #---------------------------------------------------------------
   df <- as.data.frame(df_list)
   rownames(df) <- paste0("Patient_", 1:n_patients)
 
@@ -375,74 +301,64 @@ computeGSCC <- function(kernel, Dcell, cell_names, patient_names,
 #' @param kernel Kernel array from [compute_kernel()].
 #' @param cell_names Character vector of cell-type names.
 #' @param patient_names Character vector of patient names.
+#' @param Dcell Patient-by-cell-type abundance matrix, used to weight raw
+#'   (unnormalized) scores. Ignored when `unifKernel`/`norm` is used.
 #' @param unifKernel Optional normalized baseline kernel.
 #' @param norm Logical; if `TRUE`, divide by the baseline triangle scores.
-#' @param bundle Logical; if `TRUE`, aggregate directionally equivalent triangles.
+#' @param bundle Logical; if `TRUE`, aggregate all directions into a single
+#'   "Tr" triangle score per triple. If `FALSE`, two scores are returned per
+#'   triple: "TT" (trust/transitive triangle, `i->j->k` and `i->k`) and,
+#'   for `i<=j<=k` only, "CT" (cycle triangle, `i->j->k->i`).
 #'
 #' @return A patient-by-feature data frame of triangle scores.
 #' @export
-computeTriangles <- function(kernel, cell_names, patient_names,
+computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
                              unifKernel = NULL, norm = FALSE, bundle = TRUE) {
-  # kernel: 3D array [sender x receiver x patient] from compute_kernel
-  #         Already includes cell abundances, so no extra weighting needed
-  # cell_names: vector of cell type names
-  # patient_names: vector of patient IDs/names
-  # unifKernel: optional 3D array same shape as kernel, for normalization
-  # norm: if TRUE, divide triangle scores by the corresponding uniform kernel
-  # bundle: if TRUE, sum all permutations of three nodes to remove directionality
-
   n_patients <- dim(kernel)[3]   # number of patients
   n_cells <- length(cell_names)   # number of cell types
 
   df_list <- list()  # will store triangle values per patient
 
-  # Loop over all triples of cell types
+  weight_or_ratio <- function(num_fun, i, j, k) {
+    # num_fun(K) computes the triangle numerator from a kernel array K
+    if (norm && !is.null(unifKernel)) {
+      value <- num_fun(kernel) / num_fun(unifKernel)
+      value[is.nan(value)] <- 1
+    } else {
+      value <- Dcell[, i] * Dcell[, j] * Dcell[, k] * num_fun(kernel)
+    }
+    value
+  }
+
   for (i in 1:n_cells) {
-    for (j in if (bundle) i:n_cells else 1:n_cells) {  # avoid double counting if bundling
+    for (j in if (bundle) i:n_cells else 1:n_cells) {
       for (k in if (bundle) j:n_cells else 1:n_cells) {
 
-        # Create a column name that describes the triangle
-        colname <- if (bundle) {
-          paste0("Tr_", cell_names[i], "_", cell_names[j], "_", cell_names[k])
-        } else {
-          paste0("TT_", cell_names[i], "_", cell_names[j], "_", cell_names[k])
-        }
-
-        # Initialize vector to store triangle value per patient
-        num <- rep(0, n_patients)
-
-        # Determine which permutations of the triple to consider
         if (bundle) {
-          # Include all 8 permutations to remove directionality
-          perms <- list(
-            c(i,j,k), c(i,j,k), c(i,k,j), c(i,k,j),
-            c(j,i,k), c(j,k,i), c(j,k,i), c(k,j,i)
-          )
-        } else {
-          # Only one permutation for directed triangles (trust triangles)
-          perms <- list(c(i,j,k))
-        }
-
-        # Compute the triangle score for each patient
-        # For each permutation, multiply the kernel values along the triangle path
-        for (p in perms) {
-          # kernel[p[1],p[2],] = contribution from cell type p[1] to p[2]
-          # multiply the three edges to get triangle contribution
-          num <- num + kernel[p[1], p[2], ] * kernel[p[2], p[3], ] * kernel[p[3], p[1], ]
-        }
-
-        # Normalize by uniform kernel if requested
-        if (norm && !is.null(unifKernel)) {
-          denom <- rep(0, n_patients)  # store denominator (triangle in uniform kernel)
-          for (p in perms) {
-            denom <- denom + unifKernel[p[1], p[2], ] * unifKernel[p[2], p[3], ] * unifKernel[p[3], p[1], ]
+          # Sum all 8 edge-direction combinations of the 3 undirected edges
+          # (2 cyclic + 6 transitive) to remove directionality entirely.
+          triangle_sum <- function(K) {
+            K[i,j,]*K[j,k,]*K[k,i,] + K[i,j,]*K[j,k,]*K[i,k,] +
+            K[i,j,]*K[k,j,]*K[i,k,] + K[i,j,]*K[k,j,]*K[k,i,] +
+            K[j,i,]*K[k,j,]*K[k,i,] + K[j,i,]*K[j,k,]*K[k,i,] +
+            K[j,i,]*K[j,k,]*K[i,k,] + K[j,i,]*K[k,j,]*K[i,k,]
           }
-          num <- num / denom   # divide numerator by denominator
-          num[is.nan(num)] <- 1  # handle divisions by zero
-        }
+          df_list[[paste0("Tr_", cell_names[i], "_", cell_names[j], "_", cell_names[k])]] <-
+            weight_or_ratio(triangle_sum, i, j, k)
 
-        # Store the triangle values for this triple
-        df_list[[colname]] <- num
+        } else {
+          # Trust triangle (transitive): i->j, j->k, i->k
+          trust_triangle <- function(K) K[i,j,] * K[j,k,] * K[i,k,]
+          df_list[[paste0("TT_", cell_names[i], "_", cell_names[j], "_", cell_names[k])]] <-
+            weight_or_ratio(trust_triangle, i, j, k)
+
+          # Cycle triangle: i->j->k->i (only counted once per unordered triple)
+          if (i <= j && j <= k) {
+            cycle_triangle <- function(K) K[i,j,] * K[j,k,] * K[k,i,]
+            df_list[[paste0("CT_", cell_names[i], "_", cell_names[j], "_", cell_names[k])]] <-
+              weight_or_ratio(cycle_triangle, i, j, k)
+          }
+        }
       }
     }
   }
@@ -462,7 +378,9 @@ computeTriangles <- function(kernel, cell_names, patient_names,
 #' @param communication_type Feature family to compute (`"D"`, `"W"`, `"TT"`, or `"GSCC"`).
 #' @param bundle Logical; if `TRUE`, merge directionally equivalent features where appropriate.
 #' @param patient_names Optional patient labels.
-#' @param Dcell Optional abundance matrix required for `"GSCC"`.
+#' @param Dcell Patient-by-cell-type abundance matrix. Always required for
+#'   `"GSCC"`; required for `"D"`, `"W"`, `"TT"` only when `unifKernel` is not
+#'   supplied (raw, unnormalized features).
 #' @param norm Logical; if `TRUE`, compute normalized features when a baseline is supplied.
 #' @param patient_idx Optional patient index subset.
 #'
@@ -481,15 +399,19 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
 
   comm <- toupper(communication_type)
 
+  if (comm %in% c("D", "W", "TT") && is.null(Dcell) && is.null(unifKernel)) {
+    stop("Dcell (cell abundance matrix) is required to compute raw (unnormalized) ", comm, " features.")
+  }
+
   if (comm == "D") {
-    df <- calculateDirect(kernel = kernel, unifKernel = unifKernel, cells = celltypes, bundle = bundle)
+    df <- calculateDirect(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle)
 
   } else if (comm == "W") {
-    df <- calculateWedges(kernel = kernel, unifKernel = unifKernel, cells = celltypes, bundle = bundle)
+    df <- calculateWedges(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle)
 
   } else if (comm == "TT") {
-    # trust triangles (directed): use bundle = FALSE in computeTriangles
-    df <- computeTriangles(kernel = kernel, cell_names = celltypes,
+    # trust/cycle triangles (directed): use bundle = FALSE in computeTriangles
+    df <- computeTriangles(kernel = kernel, cell_names = celltypes, Dcell = Dcell,
                            patient_names = if (!is.null(patient_names)) patient_names else paste0("Patient_", seq_len(dim(kernel)[3])),
                            unifKernel = unifKernel, norm = norm, bundle = FALSE)
 
@@ -514,13 +436,20 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
 #' @param counts Gene-by-sample count matrix. Required when `input_data` is not
 #'   supplied; ignored otherwise.
 #' @param output_folder Directory used to write and read intermediate input files.
-#' @param deconv Optional deconvolution matrix.
-#' @param cc_network Optional ligand-receptor prior network.
+#' @param deconv Optional patient-by-cell-type abundance matrix. If omitted, it
+#'   is computed via `multideconv::compute.deconvolution()` followed by
+#'   `multideconv::compute.deconvolution.analysis()` (which identifies and
+#'   collapses correlated cell-type subgroups) and
+#'   `multideconv::standardize_celltype_colnames()`. See [prepare_input_files()].
+#' @param cc_network Optional ligand-receptor prior network. If omitted, it is
+#'   retrieved via `liana::get_curated_omni()`. See [prepare_input_files()].
 #' @param fun_LR Function used to combine ligand and receptor expression values.
-#' @param cell_expr_profile Optional cell-type expression profile matrix.
+#' @param cell_expr_profile Optional gene-by-cell-type expression profile
+#'   matrix. If omitted, it is estimated from `counts` and `deconv` via
+#'   per-gene non-negative least squares. See [prepare_input_files()].
 #' @param source,target Column names to use as ligand and receptor identifiers in `cc_network`.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix.
-#' @param deconv_method Deconvolution method used when `deconv` is not supplied.
+#' @param deconv_method Deconvolution method(s) used when `deconv` is not supplied.
 #' @param cbsx.name,cbsx.token Optional credentials for the deconvolution workflow.
 #' @param file_name File stem used for intermediate input files.
 #' @param nPatients Number of patients to process, or `"all"`.

@@ -12,7 +12,9 @@ volcano_plot(
 )
 }
 \arguments{
-\item{wilcox_results}{Output of \code{\link[=wilcox_group_test]{wilcox_group_test()}}.}
+\item{wilcox_results}{Output of \code{\link[=wilcox_group_test]{wilcox_group_test()}}. If it contains more
+than one \code{Comparison}, only the first is plotted; subset beforehand to
+plot a specific comparison.}
 
 \item{top_labels}{Number of top significant features to label.}
 

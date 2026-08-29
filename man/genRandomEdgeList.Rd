@@ -4,7 +4,7 @@
 \alias{genRandomEdgeList}
 \title{Sample an edge list from ligand-receptor probabilities}
 \usage{
-genRandomEdgeList(Dligrec, vertextypelist, structurelig, structurerec)
+genRandomEdgeList(Dligrec, vertextypelist, structurelig, structurerec, edgeNo)
 }
 \arguments{
 \item{Dligrec}{Ligand-by-receptor probability matrix.}
@@ -14,6 +14,8 @@ genRandomEdgeList(Dligrec, vertextypelist, structurelig, structurerec)
 \item{structurelig}{Cell-by-ligand compatibility matrix.}
 
 \item{structurerec}{Cell-by-receptor compatibility matrix.}
+
+\item{edgeNo}{Number of edges to generate (typically \code{round(avdeg * N)}).}
 }
 \value{
 A list with \code{cell_connection} and \code{ligrec_type} matrices.

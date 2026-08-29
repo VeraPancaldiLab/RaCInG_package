@@ -25,17 +25,25 @@ prepare_input_files(
 
 \item{output_folder}{Directory where the generated \code{L}, \code{R}, \code{C}, and \code{LR} files are written.}
 
-\item{deconv}{Optional deconvolution matrix. If omitted, the function will try to compute it.}
+\item{deconv}{Optional patient-by-cell-type abundance matrix. If omitted, it
+is computed via \code{multideconv::compute.deconvolution()} followed by
+\code{multideconv::compute.deconvolution.analysis()} (which identifies and
+collapses correlated cell-type subgroups) and
+\code{multideconv::standardize_celltype_colnames()}.}
 
-\item{cc_network}{Optional ligand-receptor prior network.}
+\item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
+retrieved via \code{liana::get_curated_omni()} (a curated, OmniPath-backed
+consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).}
 
 \item{fun_LR}{Function used to combine ligand and receptor expression values.}
 
-\item{cell_expr_profile}{Optional cell-type expression profile matrix.}
+\item{cell_expr_profile}{Optional gene-by-cell-type expression profile
+matrix. If omitted, it is estimated from \code{counts} and \code{deconv} via
+per-gene non-negative least squares (see \code{.estimate_expression_profiles()}).}
 
 \item{source, target}{Column names to use as ligand and receptor identifiers when \code{cc_network} is supplied.}
 
-\item{deconv_method}{Deconvolution method passed to \code{multideconv::compute.deconvolution()}.}
+\item{deconv_method}{Deconvolution method(s) passed to \code{multideconv::compute.deconvolution()}.}
 
 \item{cbsx.name, cbsx.token}{Optional credentials forwarded to the deconvolution workflow.}
 

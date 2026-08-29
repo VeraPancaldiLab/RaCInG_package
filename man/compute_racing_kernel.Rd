@@ -32,19 +32,26 @@ supplied; ignored otherwise.}
 
 \item{output_folder}{Directory used to write and read intermediate input files.}
 
-\item{deconv}{Optional deconvolution matrix.}
+\item{deconv}{Optional patient-by-cell-type abundance matrix. If omitted, it
+is computed via \code{multideconv::compute.deconvolution()} followed by
+\code{multideconv::compute.deconvolution.analysis()} (which identifies and
+collapses correlated cell-type subgroups) and
+\code{multideconv::standardize_celltype_colnames()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 
-\item{cc_network}{Optional ligand-receptor prior network.}
+\item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
+retrieved via \code{liana::get_curated_omni()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 
 \item{fun_LR}{Function used to combine ligand and receptor expression values.}
 
-\item{cell_expr_profile}{Optional cell-type expression profile matrix.}
+\item{cell_expr_profile}{Optional gene-by-cell-type expression profile
+matrix. If omitted, it is estimated from \code{counts} and \code{deconv} via
+per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 
 \item{source, target}{Column names to use as ligand and receptor identifiers in \code{cc_network}.}
 
 \item{signed}{Logical; if \code{TRUE}, also try to load a sign matrix.}
 
-\item{deconv_method}{Deconvolution method used when \code{deconv} is not supplied.}
+\item{deconv_method}{Deconvolution method(s) used when \code{deconv} is not supplied.}
 
 \item{cbsx.name, cbsx.token}{Optional credentials for the deconvolution workflow.}
 

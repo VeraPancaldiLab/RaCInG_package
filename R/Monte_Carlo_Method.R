@@ -27,17 +27,17 @@ countWedges <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
     V <- graph$V      # Vector of cell types per vertex
     E <- graph$E      # Edge list
     
-    # Build adjacency matrix from edge list
-    Adj <- EdgetoAdj(E, length(V))
-    
+    # Build adjacency matrix from edge list, excluding self-loops
+    Adj <- EdgetoAdj_No_loop(E, length(V))
+
     # --- CALL THE EXISTING WEDGES FUNCTION ---
     wedge_result <- Wedges(Adj)   # <- this uses already defined function
-    
+
     # Store total number of wedges
     trianglecount[i] <- wedge_result$NoWedges
-    
+
     # Count wedges by cell type combination
-    triangletensor[,,,i] <- Count_Types(wedge_result$Wedge_list, V)
+    triangletensor[,,,i] <- Count_Types(wedge_result$Wedge_list, V, maxTypes = nCells)
   }
   
   # Compute averages and standard deviations across Monte Carlo iterations
@@ -78,17 +78,17 @@ countTrustTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) 
     V <- graph$V  # Vector assigning cell type to each vertex
     E <- graph$E  # Edge list
     
-    # Build adjacency matrix from edge list
-    Adj <- EdgetoAdj(E, length(V))
-    
+    # Build adjacency matrix from edge list, excluding self-loops
+    Adj <- EdgetoAdj_No_loop(E, length(V))
+
     # --- CALL EXISTING FUNCTION TO FIND TRUST TRIANGLES ---
     tri_result <- Trust_Triangles(Adj)
-    
+
     # Store total number of trust triangles in this iteration
     trianglecount[i] <- tri_result$NoTriangles
-    
+
     # Count the number of triangles by cell type combination
-    triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V)
+    triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
   }
   
   # Compute average triangle counts per cell-type combination across iterations
@@ -136,17 +136,17 @@ countCycleTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) 
     V <- graph$V  # Vector: cell type for each vertex
     E <- graph$E  # Edge list of the graph
     
-    # Convert edge list to adjacency matrix
-    Adj <- EdgetoAdj(E, length(V))
-    
+    # Convert edge list to adjacency matrix, excluding self-loops
+    Adj <- EdgetoAdj_No_loop(E, length(V))
+
     # --- CALL EXISTING FUNCTION TO FIND CYCLE TRIANGLES ---
     tri_result <- Cycle_Triangles(Adj)
-    
+
     # Store total number of cycle triangles in this iteration
     trianglecount[i] <- tri_result$NoTriangles
-    
+
     # Count the number of triangles by cell-type combination
-    triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V)
+    triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
   }
   
   # Compute average triangle counts per cell-type combination across iterations
@@ -194,10 +194,10 @@ countDirect <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
     V <- graph$V  # Vector: cell type for each vertex
     E <- graph$E  # Edge list of the graph
     
-    # Convert edge list to adjacency matrix
-    Adj <- EdgetoAdj(E, length(V))
-    
-    # Total number of edges in this iteration
+    # Convert edge list to adjacency matrix, excluding self-loops
+    Adj <- EdgetoAdj_No_loop(E, length(V))
+
+    # Total number of edges in this iteration (matches Python: includes self-loops)
     directCount[i] <- nrow(E)
     
     # Count edges between each pair of cell types
@@ -256,9 +256,9 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
     V <- graph$V  # Vector: cell type for each vertex
     E <- graph$E  # Edge list of the graph
     
-    # Convert edge list to adjacency matrix
-    Adj <- EdgetoAdj(E, length(V))
-    
+    # Convert edge list to adjacency matrix, excluding self-loops
+    Adj <- EdgetoAdj_No_loop(E, length(V))
+
     # Compute the GSCC (giant strongly connected component)
     # Returns a vector of vertex indices in the GSCC
     gscc <- GSCC(Adj)
@@ -292,68 +292,6 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
     std_count = std_count # Std of GSCC size
   ))
 }
-
-# ------------------------------------------------------------
-# Run one patient simulation
-# ------------------------------------------------------------
-# runSimOne <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_type, pat,
-#                       N = 10000, itNo = 100, av = 20,
-#                       norm = FALSE) {
-  
-#   # ------------------------------------------------------------
-#   # Purpose: Generate random graphs for one patient, extract
-#   #          network features (edges, wedges, triangles, GSCC),
-#   #          and print the results.
-#   # Inputs:
-#   #   communication_type : string, which feature to extract
-#   #                        ("D", "W", "TT", "CT", "GSCC")
-#   #   pat                : integer, patient index
-#   #   N                  : number of cells per graph (default 10000)
-#   #   itNo               : number of random graphs to generate (default 100)
-#   #   av                 : average degree per cell (default 20)
-#   #   norm               : logical, whether to normalize interactions
-#   #   folder             : folder path for input files
-#   # Outputs:
-#   #   Prints summary results and returns them invisibly
-#   # ------------------------------------------------------------
-  
-#   # Extract data for the specific patient
-#   CellD <- Cmatrix[pat, ]           # patient-specific cell fractions
-#   IntD  <- LRmatrix[,,pat]          # patient-specific ligand-receptor interactions
-  
-#   # Optionally normalize interaction distribution
-#   if(norm){
-#     normvec <- 1/sum(IntD != 0)
-#     IntD[IntD != 0] <- normvec
-#   }
-  
-#   # ------------------------------------------------------------
-#   # Depending on communication type, extract the corresponding feature
-#   # ------------------------------------------------------------
-#   if (communication_type == "D") {
-#     # Direct edges
-#     res <- countDirect(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    
-#   } else if (communication_type == "W") {
-#     # Wedges (2-step chains)
-#     res <- countWedges(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    
-#   } else if (communication_type == "TT") {
-#     # Trust triangles (open-to-closed triads)
-#     res <- countTrustTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    
-#   } else if (communication_type == "GSCC") {
-#     # Giant strongly connected component
-#     res <- countGSCC(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    
-#   } else {
-#     # Cycle triangles (closed loops)
-#     res <- countCycleTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-#   }
-  
-#   # Return the results invisibly (so it can be captured if needed)
-#   return(invisible(res))
-# }
 
 #' Run Monte Carlo simulations for one or more patients
 #'
@@ -510,145 +448,26 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
   
   close(con)
 }
-# runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_type, pats = "all",
-#                    N = 10000, itNo = 100, av = 20, output_folder = NULL, file.name = NULL,norm = FALSE) {
-  
-  
-#   cellstring <- paste(cells, collapse = ",")
-  
-#   # Normalization
-#   if (norm) {
-#     normvec <- 1 / apply(LRmatrix != 0, 3, sum)
-#     for (i in 1:dim(LRmatrix)[3]) {
-#       LRmatrix[,,i][LRmatrix[,,i] != 0] <- normvec[i]
-#     }
-#     filename <- paste0(output_folder, "/", file.name, "_norm.out")
-#   } else {
-#     filename <- paste0(output_folder, "/", file.name, ".out")
-#   }
-  
-#   # Number of patients
-#   if (pats == "all") {
-#     limit <- nrow(Cmatrix)
-#   } else {
-#     limit <- pats
-#   }
-  
-#   con <- file(filename, open = "w")
-  
-#   # Header
-#   writeLines(communication_type, con)
-#   writeLines(paste(nrow(Cmatrix), N, itNo, av, sep=","), con)
-  
-#   # ------------------------------------------------------------
-#   # Loop over patients
-#   # ------------------------------------------------------------
-#   for (pat in 1:limit) {
-    
-#     writeLines(paste(pat, N, av, sep=","), con)
-#     writeLines(cellstring, con)
-    
-#     CellD <- Cmatrix[pat, ]
-#     IntD  <- LRmatrix[,,pat]
-    
-#     # Compute feature
-#     if (communication_type == "D") {
-#       res <- countDirect(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-#       av_mat <- res$av_dir
-#       std_mat <- res$std_dir
-      
-#     } else if (communication_type == "W") {
-#       res <- countWedges(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-#       av_mat <- res$av_triag
-#       std_mat <- res$std_triag
-      
-#     } else if (communication_type == "TT") {
-#       res <- countTrustTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-#       av_mat <- res$av_triag
-#       std_mat <- res$std_triag
-      
-#     } else if (communication_type == "GSCC") {
-#       res <- countGSCC(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-#       av_vec <- res$av_GSCC
-#       std_vec <- res$std_GSCC
-      
-#     } else {
-#       res <- countCycleTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-#       av_mat <- res$av_triag
-#       std_mat <- res$std_triag
-#     }
-    
-#     # Write counts
-#     writeLines(paste("Count", res$av_count, res$std_count, sep=","), con)
-    
-#     # ------------------------------------------------------------
-#     # Write composition
-#     # ------------------------------------------------------------
-#     if (communication_type == "D") {
-      
-#       writeLines("Composition - Average:", con)
-#       for (i in 1:nrow(av_mat)) {
-#         for (j in 1:ncol(av_mat)) {
-#           writeLines(paste(i, j, av_mat[i,j], sep=","), con)
-#         }
-#       }
-      
-#       writeLines("Composition - Std:", con)
-#       for (i in 1:nrow(std_mat)) {
-#         for (j in 1:ncol(std_mat)) {
-#           writeLines(paste(i, j, std_mat[i,j], sep=","), con)
-#         }
-#       }
-      
-#     } else if (communication_type == "GSCC") {
-      
-#       writeLines("Composition - Average:", con)
-#       for (i in 1:length(av_vec)) {
-#         writeLines(paste(i, av_vec[i], sep=","), con)
-#       }
-      
-#       writeLines("Composition - Std:", con)
-#       for (i in 1:length(std_vec)) {
-#         writeLines(paste(i, std_vec[i], sep=","), con)
-#       }
-      
-#     } else {
-      
-#       writeLines("Composition - Average:", con)
-#       for (i in 1:dim(av_mat)[1]) {
-#         for (j in 1:dim(av_mat)[2]) {
-#           for (k in 1:dim(av_mat)[3]) {
-#             writeLines(paste(i, j, k, av_mat[i,j,k], sep=","), con)
-#           }
-#         }
-#       }
-      
-#       writeLines("Composition - Std:", con)
-#       for (i in 1:dim(std_mat)[1]) {
-#         for (j in 1:dim(std_mat)[2]) {
-#           for (k in 1:dim(std_mat)[3]) {
-#             writeLines(paste(i, j, k, std_mat[i,j,k], sep=","), con)
-#           }
-#         }
-#       }
-#     }
-#   }
-  
-#   close(con)
-# }
 
 #' Run the full Monte Carlo RaCInG workflow
 #'
 #' @param counts Gene-by-sample count matrix. Required when `input_data` is not
 #'   supplied; ignored otherwise.
 #' @param output_folder Directory used to write intermediate and output files.
-#' @param deconv Optional deconvolution matrix.
-#' @param cc_network Optional ligand-receptor prior network.
+#' @param deconv Optional patient-by-cell-type abundance matrix. If omitted, it
+#'   is computed via `multideconv::compute.deconvolution()` followed by
+#'   `multideconv::compute.deconvolution.analysis()` (which identifies and
+#'   collapses correlated cell-type subgroups) and
+#'   `multideconv::standardize_celltype_colnames()`. See [prepare_input_files()].
+#' @param cc_network Optional ligand-receptor prior network. If omitted, it is
+#'   retrieved via `liana::get_curated_omni()`. See [prepare_input_files()].
 #' @param fun_LR Function used to combine ligand and receptor expression values.
-#' @param cell_expr_profile Optional cell-type expression profile matrix.
+#' @param cell_expr_profile Optional gene-by-cell-type expression profile
+#'   matrix. If omitted, it is estimated from `counts` and `deconv` via
+#'   per-gene non-negative least squares. See [prepare_input_files()].
 #' @param source,target Column names to use as ligand and receptor identifiers in `cc_network`.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix.
-#' @param deconv_method Deconvolution method used when `deconv` is not supplied.
+#' @param deconv_method Deconvolution method(s) used when `deconv` is not supplied.
 #' @param cbsx.name,cbsx.token Optional credentials for the deconvolution workflow.
 #' @param pt_idx Optional single patient index to simulate.
 #' @param file_name File stem used for intermediate files.

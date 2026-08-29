@@ -56,8 +56,11 @@ Read_Sim_Output <- function(filename) {
     dim_type <- 3
   }
 
-  # Infer number of cells
-  nCells <- ncol(lines[4,])
+  # Infer number of cells from the cellstring line (line 4). read.csv() pads
+  # every row with NA up to the widest row in the file, so ncol() alone would
+  # overcount whenever another line (e.g. the 4-field metadata line) is wider
+  # than the cellstring line — count only the non-NA entries instead.
+  nCells <- sum(!is.na(lines[4, ]))
 
   # -----------------------------
   # Initialize storage

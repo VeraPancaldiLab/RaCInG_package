@@ -29,7 +29,9 @@ compute_kernel_features(
 
 \item{patient_names}{Optional patient labels.}
 
-\item{Dcell}{Optional abundance matrix required for \code{"GSCC"}.}
+\item{Dcell}{Patient-by-cell-type abundance matrix. Always required for
+\code{"GSCC"}; required for \code{"D"}, \code{"W"}, \code{"TT"} only when \code{unifKernel} is not
+supplied (raw, unnormalized features).}
 
 \item{norm}{Logical; if \code{TRUE}, compute normalized features when a baseline is supplied.}
 

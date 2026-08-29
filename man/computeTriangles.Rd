@@ -8,6 +8,7 @@ computeTriangles(
   kernel,
   cell_names,
   patient_names,
+  Dcell = NULL,
   unifKernel = NULL,
   norm = FALSE,
   bundle = TRUE
@@ -20,11 +21,17 @@ computeTriangles(
 
 \item{patient_names}{Character vector of patient names.}
 
+\item{Dcell}{Patient-by-cell-type abundance matrix, used to weight raw
+(unnormalized) scores. Ignored when \code{unifKernel}/\code{norm} is used.}
+
 \item{unifKernel}{Optional normalized baseline kernel.}
 
 \item{norm}{Logical; if \code{TRUE}, divide by the baseline triangle scores.}
 
-\item{bundle}{Logical; if \code{TRUE}, aggregate directionally equivalent triangles.}
+\item{bundle}{Logical; if \code{TRUE}, aggregate all directions into a single
+"Tr" triangle score per triple. If \code{FALSE}, two scores are returned per
+triple: "TT" (trust/transitive triangle, \code{i->j->k} and \code{i->k}) and,
+for \verb{i<=j<=k} only, "CT" (cycle triangle, \code{i->j->k->i}).}
 }
 \value{
 A patient-by-feature data frame of triangle scores.

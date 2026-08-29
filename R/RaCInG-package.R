@@ -11,9 +11,9 @@
 
 utils::globalVariables(
   c(
-    "Adj_P_value", "Celltype", "Datasets", "Effect", "Expr_Ligand",
-    "Expr_Receptor", "Feature", "Ligand", "Receiver", "Receptor",
-    "Sender", "Significant", "category_intercell_source",
+    "Adj_P_value", "Celltype", "Datasets", "Direction", "Effect",
+    "Expr_Ligand", "Expr_Receptor", "Feature", "Ligand", "Receiver",
+    "Receptor", "Rho", "Sender", "Significant", "category_intercell_source",
     "category_intercell_target"
   )
 )

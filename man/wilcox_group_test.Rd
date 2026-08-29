@@ -9,13 +9,18 @@ wilcox_group_test(data_matrix, groups, p_adjust_method = "fdr")
 \arguments{
 \item{data_matrix}{Numeric matrix or data frame with patients in rows and features in columns.}
 
-\item{groups}{Vector of group labels with length matching \code{nrow(data_matrix)}.}
+\item{groups}{Vector of group labels with length matching \code{nrow(data_matrix)}.
+When more than two groups are present, every pairwise comparison is run.}
 
 \item{p_adjust_method}{Multiple-testing correction method passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}.}
 }
 \value{
-A data frame with test statistics and adjusted p-values.
+A data frame with one row per feature per group comparison, including
+\code{Comparison}, \code{Wilcox_statistic}, \code{Fold_change}, \code{Log2FC}, \code{P_value}, and
+\code{Adjusted_P_value} (adjusted jointly across all comparisons).
 }
 \description{
-Run Wilcoxon tests across network features
+Runs a Wilcoxon rank-sum test per feature (column) between every pair of
+groups. Also reports the fold change (ratio of group means) so results can
+be plotted as a standard volcano plot with \code{\link[=volcano_plot]{volcano_plot()}}.
 }

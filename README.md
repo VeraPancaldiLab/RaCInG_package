@@ -9,7 +9,16 @@ reconstructs patient-specific cell-cell communication networks from bulk
 RNA-seq data and extracts network-level features using either a
 kernel-based or Monte Carlo workflow.
 
-This package is the R implementation of the [original RaCInG Python framework](https://github.com/SysBioOncology/RaCInG), as described in [van Santvoort et al. (2025)](https://pubmed.ncbi.nlm.nih.gov/39954673/), repackaged for seamless integration with R/Bioconductor analysis pipelines.
+This package is the R implementation of the [original RaCInG Python
+framework](https://github.com/SysBioOncology/RaCInG), as described in
+[van Santvoort et
+al. (2025)](https://pubmed.ncbi.nlm.nih.gov/39954673/), repackaged for
+seamless integration with R/Bioconductor analysis pipelines. It is
+additionally coupled with
+[multideconv](https://github.com/VeraPancaldiLab/multideconv) for
+deconvolution and cell-type subgroup identification, and with
+[OmnipathR](https://omnipathdb.org/)/[liana](https://saezlab.github.io/liana/)
+for ligand-receptor prior knowledge.
 
 ## Installation
 
@@ -35,9 +44,11 @@ If you want to start directly from raw counts with
 during deconvolution and prior-network construction:
 
 ``` r
-install.packages(c("ggplot2", "OmnipathR"))
-# Additional optional packages used by the full preprocessing workflow:
-# ADImpute, multideconv, liana
+install.packages(c("ggplot2", "nnls"))
+# ADImpute and OmnipathR are available from Bioconductor:
+BiocManager::install(c("ADImpute", "OmnipathR"))
+# liana and multideconv are GitHub-only:
+remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 ```
 
 ## Workflow at a glance
@@ -54,7 +65,11 @@ install.packages(c("ggplot2", "OmnipathR"))
 ``` r
 library(RaCInG)
 
-# Build input matrices from raw counts
+# Build input matrices from a real bulk RNA-seq counts matrix
+# (bundled with the optional `multideconv` dependency)
+data(raw_counts, package = "multideconv")
+counts_matrix <- as.matrix(raw_counts)
+
 input <- prepare_input_files(
   counts = counts_matrix,
   output_folder = "Results/",
@@ -85,6 +100,11 @@ mc_res <- compute_racing_montecarlo(
   Ngraphs = 10,
   Ndegree = 3
 )
+
+# Compare clinical groups or correlate features with a continuous score
+grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
+wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
+volcano_plot(wilcox_results)
 ```
 
 ## Documentation

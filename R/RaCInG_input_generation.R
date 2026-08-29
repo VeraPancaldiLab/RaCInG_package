@@ -101,17 +101,16 @@ createCellTypeDistr <- function(cells, filename) {
   # Read CSV file, using the first column as rownames (datasets)
   df <- utils::read.csv(filename, row.names = 1)
   
-  # Extract column names as cell type names and row names as dataset names
+  # Extract column names as cell type names and row names as dataset/patient names
   celltypes <- colnames(df)
   datasets <- rownames(df)
-  
-  # Convert the data frame to a numeric matrix and remove rownames
-  Dtypes = df %>%
-    tibble::rownames_to_column("Datasets") %>%
-    dplyr::select(-Datasets) %>%
-    dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
-    as.matrix()
-  
+
+  # Convert the data frame to a numeric matrix, keeping dataset names as rownames
+  # so downstream functions (e.g. compute_racing_montecarlo) can recover patient IDs
+  Dtypes <- as.matrix(df)
+  storage.mode(Dtypes) <- "numeric"
+  rownames(Dtypes) <- datasets
+
   # Normalize rows so each dataset sums to 1 (relative fractions) --> ############### Estimates from deconv should be always proportions (this should not be necessary unless there is MCP or XCell)
   row_sums <- rowSums(Dtypes)
   normalized <- Dtypes / row_sums
@@ -323,6 +322,69 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
   ))
 }
 
+#' Strip method/signature prefixes from deconvolution column names
+#'
+#' `multideconv::compute.deconvolution()` names its columns
+#' `"{method}_{signature}_{celltype}"` (e.g. `"Quantiseq_TIL10_B.cells"`).
+#' After `multideconv::standardize_celltype_colnames()` has normalized the
+#' trailing cell-type portion to multideconv's canonical vocabulary, this
+#' matches the longest canonical cell-type name each column ends with and
+#' drops everything before it, leaving a short, method-agnostic label.
+#' Columns that don't end in a recognized cell-type name are left unchanged.
+#'
+#' @param x Character vector of (already standardized) column names.
+#'
+#' @return A character vector of cleaned cell-type names, the same length as `x`.
+#' @keywords internal
+.clean_celltype_names <- function(x) {
+  # Mirrors multideconv's internal canonical cell-type vocabulary.
+  canonical <- c(
+    "B.naive.cells", "B.memory.cells", "B.cells",
+    "Macrophages.M0", "Macrophages.M1", "Macrophages.M2", "Macrophages.cells",
+    "Monocytes", "Neutrophils",
+    "NK.activated", "NK.resting", "NK.cells", "NKT.cells",
+    "CD4.memory.activated", "CD4.memory.resting", "CD4.naive",
+    "CD4.non.regulatory", "CD4.regulatory", "CD4.cells", "CD8.cells",
+    "T.cells.helper", "T.cells.gamma.delta",
+    "Dendritic.activated.cells", "Dendritic.resting.cells", "Dendritic.cells",
+    "Cancer", "Endothelial", "Eosinophils", "Plasma", "Myocytes",
+    "Fibroblasts", "Mast.activated.cells", "Mast.resting.cells", "Mast.cells",
+    "CAF", "uncharacterized_cell"
+  )
+  canonical <- canonical[order(-nchar(canonical))]  # longest match wins
+
+  vapply(x, function(nm) {
+    hit <- canonical[endsWith(nm, canonical)]
+    if (length(hit) > 0) hit[1] else nm
+  }, character(1), USE.NAMES = FALSE)
+}
+
+#' Estimate per-cell-type average expression profiles
+#'
+#' For each gene, solves a non-negative least squares regression of bulk TPM
+#' expression across samples against per-sample cell-type fractions, giving
+#' one expression value per gene per cell type:
+#' `bulk_expr[gene, sample] ~= sum_celltype fractions[sample, celltype] * profile[gene, celltype]`.
+#'
+#' @param counts_tpm Gene-by-sample TPM matrix.
+#' @param deconv Sample-by-cell-type fraction matrix.
+#'
+#' @return A gene-by-cell-type data frame of estimated expression profiles.
+#' @keywords internal
+.estimate_expression_profiles <- function(counts_tpm, deconv) {
+  samples <- intersect(colnames(counts_tpm), rownames(deconv))
+  X <- as.matrix(deconv[samples, , drop = FALSE])
+  Y <- as.matrix(counts_tpm[, samples, drop = FALSE])
+
+  profile <- matrix(0, nrow = nrow(Y), ncol = ncol(X),
+                    dimnames = list(rownames(Y), colnames(X)))
+  for (g in seq_len(nrow(Y))) {
+    profile[g, ] <- stats::coef(nnls::nnls(X, Y[g, ]))
+  }
+
+  as.data.frame(profile)
+}
+
 #' Build RaCInG input files from raw count data
 #'
 #' This function combines the preprocessing and input-loading steps into a single
@@ -332,12 +394,20 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
 #'
 #' @param counts Gene-by-sample count matrix.
 #' @param output_folder Directory where the generated `L`, `R`, `C`, and `LR` files are written.
-#' @param deconv Optional deconvolution matrix. If omitted, the function will try to compute it.
-#' @param cc_network Optional ligand-receptor prior network.
+#' @param deconv Optional patient-by-cell-type abundance matrix. If omitted, it
+#'   is computed via `multideconv::compute.deconvolution()` followed by
+#'   `multideconv::compute.deconvolution.analysis()` (which identifies and
+#'   collapses correlated cell-type subgroups) and
+#'   `multideconv::standardize_celltype_colnames()`.
+#' @param cc_network Optional ligand-receptor prior network. If omitted, it is
+#'   retrieved via `liana::get_curated_omni()` (a curated, OmniPath-backed
+#'   consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).
 #' @param fun_LR Function used to combine ligand and receptor expression values.
-#' @param cell_expr_profile Optional cell-type expression profile matrix.
+#' @param cell_expr_profile Optional gene-by-cell-type expression profile
+#'   matrix. If omitted, it is estimated from `counts` and `deconv` via
+#'   per-gene non-negative least squares (see `.estimate_expression_profiles()`).
 #' @param source,target Column names to use as ligand and receptor identifiers when `cc_network` is supplied.
-#' @param deconv_method Deconvolution method passed to `multideconv::compute.deconvolution()`.
+#' @param deconv_method Deconvolution method(s) passed to `multideconv::compute.deconvolution()`.
 #' @param cbsx.name,cbsx.token Optional credentials forwarded to the deconvolution workflow.
 #' @param file_name File stem used when exporting the generated CSV files.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix from `output_folder`.
@@ -362,7 +432,7 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   cat("Calculating deconvolution estimates...\n")
   ## C-matrix
   if (is.null(deconv)) {
-    deconv <- multideconv::compute.deconvolution(
+    deconv_raw <- multideconv::compute.deconvolution(
       counts.tpm,
       normalized = FALSE,
       methods = deconv_method,
@@ -370,27 +440,40 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
       credentials.token = cbsx.token,
       file_name = file_name
     )
+
+    ## Verify patient names match between files before running the (costly) subgroup analysis
+    if (!all(rownames(deconv_raw) %in% colnames(counts))) {
+      stop("Patient names in deconvolution estimates do not match those in the counts matrix.")
+    }
+
+    cat("Identifying cell type subgroups...\n")
+    subgroups <- multideconv::compute.deconvolution.analysis(deconv_raw)
+    deconv <- multideconv::standardize_celltype_colnames(subgroups[["Deconvolution matrix"]])
+    # standardize_celltype_colnames() only fixes spelling variants of the
+    # cell-type suffix (e.g. "Macrophage_M0" -> "Macrophages.M0"); it
+    # deliberately keeps any leading "{method}_{signature}_" prefix. Strip
+    # that prefix so cell-type labels stay short and method-agnostic, as
+    # expected by the rest of the pipeline (e.g. the M1/M2 merge below).
+    colnames(deconv) <- make.unique(.clean_celltype_names(colnames(deconv)))
   } else {
     cat("Using provided deconvolution estimates...\n")
+    if (!all(rownames(deconv) %in% colnames(counts))) {
+      stop("Patient names in deconvolution estimates do not match those in the counts matrix.")
+    }
   }
-  
+
   ## Cell type expression profiles
   cat("\nEstimating cell type expression profiles...\n")
   if (is.null(cell_expr_profile)) {
-    cell_expr_profile <- multideconv::estimate_expression_profiles(counts, deconv)
-    cell_expr_profile = rbind(sapply(cell_expr_profile, function(x) colMeans(x))) %>% as.data.frame()
+    .check_installed_packages("nnls")
+    cell_expr_profile <- .estimate_expression_profiles(counts.tpm, deconv)
   }
-
-  ## Verify if patients names match between files
-  if(!all(rownames(deconv) %in% colnames(counts))){
-    stop("Patient names in deconvolution estimates do not match those in the counts matrix.")
-  }  
 
   ## Prior knowledge network CC
   cat("Processing cell-cell interaction network...\n")
   if (is.null(cc_network)) {
     .check_installed_packages(c("OmnipathR", "liana"))
-    cc_network <- OmnipathR::import_intercell_network(high_confidence = TRUE) %>%
+    cc_network <- liana::get_curated_omni() %>%
       dplyr::filter(category_intercell_source %in% c("cell_surface_ligand", "ligand") &
                     category_intercell_target %in% c("receptor", "adhesion")) %>%
       liana::decomplexify(columns = c("source_genesymbol", "target_genesymbol"))

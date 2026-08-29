@@ -79,6 +79,8 @@ reference:
     contents:
       - wilcox_group_test
       - volcano_plot
+      - correlate_features_with_score
+      - correlation_plot
       - Read_Sim_Output
       - compute_results_processing
 

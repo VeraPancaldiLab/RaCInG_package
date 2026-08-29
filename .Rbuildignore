@@ -8,3 +8,5 @@
 ^\.vscode$
 ^\.\.Rcheck$
 ^_pkgdown\.yml$
+^Results$
+^Rplots\.pdf$

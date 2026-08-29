@@ -18,8 +18,13 @@ compute_kernel(liglist, reclist, Cmatrix, LRmatrix, normalize = FALSE)
 \item{normalize}{Logical; if \code{TRUE}, also compute a uniformized baseline kernel.}
 }
 \value{
-Either a 3D kernel array or a list with \code{kernel} and \code{kernel_norm}.
+Either a 3D kernel array \verb{[sender x receiver x patient]}, or (when
+\code{normalize = TRUE}) a list with \code{kernel} and \code{kernel_norm}.
 }
 \description{
-Compute the RaCInG kernel for one or more patients
+The kernel is the \emph{unweighted} structural kernel: cell-type abundances are
+not baked into it. \code{calculateDirect()}, \code{calculateWedges()},
+\code{computeTriangles()}, and \code{computeGSCC()} each multiply in the abundance of
+every node they use, exactly once per node, when computing raw
+(unnormalized) features from this kernel.
 }

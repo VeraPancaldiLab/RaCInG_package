@@ -1,7 +1,7 @@
 Package: RaCInG
 Type: Package
 Title: Reconstruct Cell-Cell Interaction Graphs from Bulk Transcriptomics
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person(given = "Marcelo", family = "Hurtado",
            email = "marcelo.hurt137@gmail.com",
@@ -24,20 +24,25 @@ Imports:
     Matrix,
     nleqslv,
     rlang,
+    stats,
     tibble,
-    tidyr
+    tidyr,
+    utils
 Suggests:
     ADImpute,
     ggplot2,
     knitr,
     liana,
     multideconv,
+    nnls,
     OmnipathR,
     pkgdown,
     remotes,
     rmarkdown,
-    roxygen2
+    roxygen2,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
 Remotes:
     saezlab/liana,
     VeraPancaldiLab/multideconv

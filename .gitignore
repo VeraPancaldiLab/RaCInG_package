@@ -11,3 +11,7 @@ omnipathr-log/
 .Rhistory
 .RData
 README.html
+
+# Script run outputs (prepare_input_files()/runSim() default output_folder, stray plots)
+Results/
+Rplots.pdf

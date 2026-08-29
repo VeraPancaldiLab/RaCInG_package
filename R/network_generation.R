@@ -134,19 +134,19 @@ genRandomCellTypeList <- function(Dcelltype, vertexNo) {
 #' @param vertextypelist Integer vector assigning a cell type to each vertex.
 #' @param structurelig Cell-by-ligand compatibility matrix.
 #' @param structurerec Cell-by-receptor compatibility matrix.
+#' @param edgeNo Number of edges to generate (typically `round(avdeg * N)`).
 #'
 #' @return A list with `cell_connection` and `ligrec_type` matrices.
 #' @keywords internal
-genRandomEdgeList <- function(Dligrec, vertextypelist, structurelig, structurerec) {
-  
+genRandomEdgeList <- function(Dligrec, vertextypelist, structurelig, structurerec, edgeNo) {
+
   ligNo <- nrow(Dligrec)   # Number of ligand types
   recNo <- ncol(Dligrec)   # Number of receptor types
-  
+
   # Flatten the ligand-receptor probability matrix to a vector
   distr <- as.vector(Dligrec)
-  M <- length(distr)        # Total number of possible ligand-receptor pairs
-  # Randomly sample edges based on probabilities
-  linearEdgeList <- sample(seq_along(distr), M, prob = distr, replace = TRUE)
+  # Randomly sample edgeNo edges based on probabilities
+  linearEdgeList <- sample(seq_along(distr), edgeNo, prob = distr, replace = TRUE)
   
   # Convert linear indices to row (ligand) and column (receptor) indices
   edge_indices <- arrayInd(linearEdgeList, .dim = dim(Dligrec))
@@ -245,7 +245,7 @@ model1 <- function(N, avdeg,
   # These are **indices of cells**, NOT their types.
   # For example, E[1,] = c(8, 11) means there is an edge from cell #8 to cell #11.
   # To get the types of these cells, you can use V[E[,1]] and V[E[,2]].
-  edges <- genRandomEdgeList(Dligrec, V, cellLigList, cellRecList)
+  edges <- genRandomEdgeList(Dligrec, V, cellLigList, cellRecList, edgeNo = M)
   E <- edges$cell_connection
   
   # -------------------------------

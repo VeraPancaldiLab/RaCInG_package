@@ -4,7 +4,7 @@
 \alias{calculateWedges}
 \title{Calculate wedge features from a kernel}
 \usage{
-calculateWedges(kernel, unifKernel = NULL, cells, bundle = TRUE)
+calculateWedges(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
 }
 \arguments{
 \item{kernel}{Kernel array returned by \code{\link[=compute_kernel]{compute_kernel()}}.}
@@ -12,6 +12,9 @@ calculateWedges(kernel, unifKernel = NULL, cells, bundle = TRUE)
 \item{unifKernel}{Optional normalized baseline kernel.}
 
 \item{cells}{Character vector of cell-type names.}
+
+\item{Dcell}{Patient-by-cell-type abundance matrix, used to weight raw
+(unnormalized) scores. Ignored when \code{unifKernel} is supplied.}
 
 \item{bundle}{Logical; if \code{TRUE}, combine directionally equivalent wedges.}
 }

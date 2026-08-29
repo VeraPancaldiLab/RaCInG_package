@@ -94,8 +94,8 @@ Count_Types <- function(oblist, V, maxTypes = 0){
   # Each row now shows the types for the vertices of that object
   typelist <- matrix(V[oblist], nrow = nrow(oblist), ncol = ncol(oblist))
   
-  # Loop over all objects
-  for (i in 1:nrow(typelist)) {
+  # Loop over all objects (seq_len avoids the 1:0 == c(1,0) pitfall when empty)
+  for (i in seq_len(nrow(typelist))) {
     types <- typelist[i, ]  # types of the vertices for this object
     
     # Increment the count in the array at the position matching this type combination
