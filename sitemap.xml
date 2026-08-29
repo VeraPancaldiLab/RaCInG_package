@@ -8,6 +8,7 @@
 <url><loc>https://mhurtado13.github.io/racing/articles/index.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/authors.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/index.html</loc></url>
+<url><loc>https://mhurtado13.github.io/racing/news/index.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/BFS.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/Count_Types.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/Cycle_Triangles.html</loc></url>
@@ -38,6 +39,8 @@
 <url><loc>https://mhurtado13.github.io/racing/reference/compute_racing_kernel.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/compute_results_processing.html</loc></url>
+<url><loc>https://mhurtado13.github.io/racing/reference/correlate_features_with_score.html</loc></url>
+<url><loc>https://mhurtado13.github.io/racing/reference/correlation_plot.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/countCycleTriangles.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/countDirect.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/countGSCC.html</loc></url>
@@ -48,6 +51,8 @@
 <url><loc>https://mhurtado13.github.io/racing/reference/createCellTypeDistr.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/createInteractionDistr.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/dot-check_installed_packages.html</loc></url>
+<url><loc>https://mhurtado13.github.io/racing/reference/dot-clean_celltype_names.html</loc></url>
+<url><loc>https://mhurtado13.github.io/racing/reference/dot-estimate_expression_profiles.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/genRandomCellLigands.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/genRandomCellReceptors.html</loc></url>
 <url><loc>https://mhurtado13.github.io/racing/reference/genRandomCellTypeDistr.html</loc></url>

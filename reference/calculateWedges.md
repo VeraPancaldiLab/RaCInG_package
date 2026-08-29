@@ -5,7 +5,7 @@ Calculate wedge features from a kernel
 ## Usage
 
 ``` r
-calculateWedges(kernel, unifKernel = NULL, cells, bundle = TRUE)
+calculateWedges(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
 ```
 
 ## Arguments
@@ -22,6 +22,11 @@ calculateWedges(kernel, unifKernel = NULL, cells, bundle = TRUE)
 - cells:
 
   Character vector of cell-type names.
+
+- Dcell:
+
+  Patient-by-cell-type abundance matrix, used to weight raw
+  (unnormalized) scores. Ignored when `unifKernel` is supplied.
 
 - bundle:
 

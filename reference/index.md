@@ -111,6 +111,10 @@
   : Run Wilcoxon tests across network features
 - [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md)
   : Create a volcano plot from Wilcoxon results
+- [`correlate_features_with_score()`](https://mhurtado13.github.io/racing/reference/correlate_features_with_score.md)
+  : Correlate network features with an external score
+- [`correlation_plot()`](https://mhurtado13.github.io/racing/reference/correlation_plot.md)
+  : Rainfall plot of feature-score correlations
 - [`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md)
   : Read a RaCInG simulation output file
 - [`compute_results_processing()`](https://mhurtado13.github.io/racing/reference/compute_results_processing.md)

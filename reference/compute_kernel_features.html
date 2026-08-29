@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,9 @@
 
 
 <dt id="arg-dcell">Dcell<a class="anchor" aria-label="anchor" href="#arg-dcell"></a></dt>
-<dd><p>Optional abundance matrix required for <code>"GSCC"</code>.</p></dd>
+<dd><p>Patient-by-cell-type abundance matrix. Always required for
+<code>"GSCC"</code>; required for <code>"D"</code>, <code>"W"</code>, <code>"TT"</code> only when <code>unifKernel</code> is not
+supplied (raw, unnormalized features).</p></dd>
 
 
 <dt id="arg-norm">norm<a class="anchor" aria-label="anchor" href="#arg-norm"></a></dt>
@@ -103,7 +105,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

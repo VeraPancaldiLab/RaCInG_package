@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,11 +73,16 @@ supplied; ignored otherwise.</p></dd>
 
 
 <dt id="arg-deconv">deconv<a class="anchor" aria-label="anchor" href="#arg-deconv"></a></dt>
-<dd><p>Optional deconvolution matrix.</p></dd>
+<dd><p>Optional patient-by-cell-type abundance matrix. If omitted, it
+is computed via <code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> followed by
+<code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html" class="external-link">multideconv::compute.deconvolution.analysis()</a></code> (which identifies and
+collapses correlated cell-type subgroups) and
+<code><a href="https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html" class="external-link">multideconv::standardize_celltype_colnames()</a></code>. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
 
 
 <dt id="arg-cc-network">cc_network<a class="anchor" aria-label="anchor" href="#arg-cc-network"></a></dt>
-<dd><p>Optional ligand-receptor prior network.</p></dd>
+<dd><p>Optional ligand-receptor prior network. If omitted, it is
+retrieved via <code><a href="https://saezlab.github.io/liana/reference/get_curated_omni.html" class="external-link">liana::get_curated_omni()</a></code>. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
 
 
 <dt id="arg-fun-lr">fun_LR<a class="anchor" aria-label="anchor" href="#arg-fun-lr"></a></dt>
@@ -85,7 +90,9 @@ supplied; ignored otherwise.</p></dd>
 
 
 <dt id="arg-cell-expr-profile">cell_expr_profile<a class="anchor" aria-label="anchor" href="#arg-cell-expr-profile"></a></dt>
-<dd><p>Optional cell-type expression profile matrix.</p></dd>
+<dd><p>Optional gene-by-cell-type expression profile
+matrix. If omitted, it is estimated from <code>counts</code> and <code>deconv</code> via
+per-gene non-negative least squares. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
 
 
 <dt id="arg-source-target">source, target<a class="anchor" aria-label="anchor" href="#arg-source-target"></a></dt>
@@ -97,7 +104,7 @@ supplied; ignored otherwise.</p></dd>
 
 
 <dt id="arg-deconv-method">deconv_method<a class="anchor" aria-label="anchor" href="#arg-deconv-method"></a></dt>
-<dd><p>Deconvolution method used when <code>deconv</code> is not supplied.</p></dd>
+<dd><p>Deconvolution method(s) used when <code>deconv</code> is not supplied.</p></dd>
 
 
 <dt id="arg-cbsx-name-cbsx-token">cbsx.name, cbsx.token<a class="anchor" aria-label="anchor" href="#arg-cbsx-name-cbsx-token"></a></dt>
@@ -151,7 +158,7 @@ When supplied, the <code>counts</code> argument and all preprocessing parameters
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

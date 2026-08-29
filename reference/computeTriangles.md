@@ -9,6 +9,7 @@ computeTriangles(
   kernel,
   cell_names,
   patient_names,
+  Dcell = NULL,
   unifKernel = NULL,
   norm = FALSE,
   bundle = TRUE
@@ -30,6 +31,11 @@ computeTriangles(
 
   Character vector of patient names.
 
+- Dcell:
+
+  Patient-by-cell-type abundance matrix, used to weight raw
+  (unnormalized) scores. Ignored when `unifKernel`/`norm` is used.
+
 - unifKernel:
 
   Optional normalized baseline kernel.
@@ -40,7 +46,10 @@ computeTriangles(
 
 - bundle:
 
-  Logical; if `TRUE`, aggregate directionally equivalent triangles.
+  Logical; if `TRUE`, aggregate all directions into a single "Tr"
+  triangle score per triple. If `FALSE`, two scores are returned per
+  triple: "TT" (trust/transitive triangle, `i->j->k` and `i->k`) and,
+  for `i<=j<=k` only, "CT" (cycle triangle, `i->j->k->i`).
 
 ## Value
 

@@ -41,11 +41,23 @@ compute_racing_kernel(
 
 - deconv:
 
-  Optional deconvolution matrix.
+  Optional patient-by-cell-type abundance matrix. If omitted, it is
+  computed via
+  [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html)
+  followed by
+  [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
+  (which identifies and collapses correlated cell-type subgroups) and
+  [`multideconv::standardize_celltype_colnames()`](https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html).
+  See
+  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
 
 - cc_network:
 
-  Optional ligand-receptor prior network.
+  Optional ligand-receptor prior network. If omitted, it is retrieved
+  via
+  [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html).
+  See
+  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
 
 - fun_LR:
 
@@ -53,7 +65,10 @@ compute_racing_kernel(
 
 - cell_expr_profile:
 
-  Optional cell-type expression profile matrix.
+  Optional gene-by-cell-type expression profile matrix. If omitted, it
+  is estimated from `counts` and `deconv` via per-gene non-negative
+  least squares. See
+  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
 
 - source, target:
 
@@ -66,7 +81,7 @@ compute_racing_kernel(
 
 - deconv_method:
 
-  Deconvolution method used when `deconv` is not supplied.
+  Deconvolution method(s) used when `deconv` is not supplied.
 
 - cbsx.name, cbsx.token:
 

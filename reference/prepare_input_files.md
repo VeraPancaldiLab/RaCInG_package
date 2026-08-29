@@ -38,12 +38,21 @@ prepare_input_files(
 
 - deconv:
 
-  Optional deconvolution matrix. If omitted, the function will try to
-  compute it.
+  Optional patient-by-cell-type abundance matrix. If omitted, it is
+  computed via
+  [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html)
+  followed by
+  [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
+  (which identifies and collapses correlated cell-type subgroups) and
+  [`multideconv::standardize_celltype_colnames()`](https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html).
 
 - cc_network:
 
-  Optional ligand-receptor prior network.
+  Optional ligand-receptor prior network. If omitted, it is retrieved
+  via
+  [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html)
+  (a curated, OmniPath-backed consensus of
+  CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).
 
 - fun_LR:
 
@@ -51,7 +60,10 @@ prepare_input_files(
 
 - cell_expr_profile:
 
-  Optional cell-type expression profile matrix.
+  Optional gene-by-cell-type expression profile matrix. If omitted, it
+  is estimated from `counts` and `deconv` via per-gene non-negative
+  least squares (see
+  [`.estimate_expression_profiles()`](https://mhurtado13.github.io/racing/reference/dot-estimate_expression_profiles.md)).
 
 - source, target:
 
@@ -60,7 +72,7 @@ prepare_input_files(
 
 - deconv_method:
 
-  Deconvolution method passed to
+  Deconvolution method(s) passed to
   [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html).
 
 - cbsx.name, cbsx.token:

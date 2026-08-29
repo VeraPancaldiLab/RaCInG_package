@@ -48,7 +48,9 @@ compute_kernel_features(
 
 - Dcell:
 
-  Optional abundance matrix required for `"GSCC"`.
+  Patient-by-cell-type abundance matrix. Always required for `"GSCC"`;
+  required for `"D"`, `"W"`, `"TT"` only when `unifKernel` is not
+  supplied (raw, unnormalized features).
 
 - norm:
 

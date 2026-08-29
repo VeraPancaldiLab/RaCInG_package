@@ -19,6 +19,8 @@ volcano_plot(
 
   Output of
   [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md).
+  If it contains more than one `Comparison`, only the first is plotted;
+  subset beforehand to plot a specific comparison.
 
 - top_labels:
 

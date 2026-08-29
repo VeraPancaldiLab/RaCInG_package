@@ -5,7 +5,7 @@ Sample an edge list from ligand-receptor probabilities
 ## Usage
 
 ``` r
-genRandomEdgeList(Dligrec, vertextypelist, structurelig, structurerec)
+genRandomEdgeList(Dligrec, vertextypelist, structurelig, structurerec, edgeNo)
 ```
 
 ## Arguments
@@ -25,6 +25,10 @@ genRandomEdgeList(Dligrec, vertextypelist, structurelig, structurerec)
 - structurerec:
 
   Cell-by-receptor compatibility matrix.
+
+- edgeNo:
+
+  Number of edges to generate (typically `round(avdeg * N)`).
 
 ## Value
 

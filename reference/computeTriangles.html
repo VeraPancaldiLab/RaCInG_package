@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@
 <span>  <span class="va">kernel</span>,</span>
 <span>  <span class="va">cell_names</span>,</span>
 <span>  <span class="va">patient_names</span>,</span>
+<span>  Dcell <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unifKernel <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  bundle <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -62,6 +63,11 @@
 <dd><p>Character vector of patient names.</p></dd>
 
 
+<dt id="arg-dcell">Dcell<a class="anchor" aria-label="anchor" href="#arg-dcell"></a></dt>
+<dd><p>Patient-by-cell-type abundance matrix, used to weight raw
+(unnormalized) scores. Ignored when <code>unifKernel</code>/<code>norm</code> is used.</p></dd>
+
+
 <dt id="arg-unifkernel">unifKernel<a class="anchor" aria-label="anchor" href="#arg-unifkernel"></a></dt>
 <dd><p>Optional normalized baseline kernel.</p></dd>
 
@@ -71,7 +77,10 @@
 
 
 <dt id="arg-bundle">bundle<a class="anchor" aria-label="anchor" href="#arg-bundle"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, aggregate directionally equivalent triangles.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, aggregate all directions into a single
+"Tr" triangle score per triple. If <code>FALSE</code>, two scores are returned per
+triple: "TT" (trust/transitive triangle, <code>i-&gt;j-&gt;k</code> and <code>i-&gt;k</code>) and,
+for <code>i&lt;=j&lt;=k</code> only, "CT" (cycle triangle, <code>i-&gt;j-&gt;k-&gt;i</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -88,7 +97,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
