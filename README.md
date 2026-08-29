@@ -1,8 +1,8 @@
 RaCInG <img src="man/figures/logo.png" align="right" height="139" />
 ================
 
-[![R-CMD-check](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml)
-[![pkgdown](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml)
+[![R-CMD-check](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml)
 
 **RaCInG** (**Ra**ndom **C**ell-cell **In**teraction **G**enerator)
 reconstructs patient-specific cell-cell communication networks from bulk
@@ -26,7 +26,7 @@ for ligand-receptor prior knowledge.
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("mhurtado13/racing")
+remotes::install_github("VeraPancaldiLab/RaCInG_package")
 library(RaCInG)
 ```
 
@@ -110,8 +110,8 @@ volcano_plot(wilcox_results)
 ## Documentation
 
 - 📘 Vignette: [Getting started with
-  RaCInG](https://mhurtado13.github.io/racing/articles/RaCiNG.html)
-- 🌐 Website: <https://mhurtado13.github.io/racing/>
+  RaCInG](https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.html)
+- 🌐 Website: <https://VeraPancaldiLab.github.io/RaCInG_package/>
 - 🐍 Original Python implementation:
   <https://github.com/SysBioOncology/RaCInG>
 

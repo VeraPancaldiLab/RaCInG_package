@@ -13,9 +13,9 @@ features, and perform downstream statistical analysis.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/mhurtado13/racing}
-  \item \url{https://mhurtado13.github.io/racing/}
-  \item Report bugs at \url{https://github.com/mhurtado13/racing/issues}
+  \item \url{https://github.com/VeraPancaldiLab/RaCInG_package}
+  \item \url{https://VeraPancaldiLab.github.io/RaCInG_package/}
+  \item Report bugs at \url{https://github.com/VeraPancaldiLab/RaCInG_package/issues}
 }
 
 }

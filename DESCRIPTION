@@ -12,8 +12,8 @@ Description: Tools to prepare ligand-receptor inputs, generate patient-specific
     cell-cell interaction networks, compute kernel and Monte Carlo network
     features, and perform downstream statistical analysis for RaCInG studies.
 License: MIT + file LICENSE
-URL: https://github.com/mhurtado13/racing, https://mhurtado13.github.io/racing/
-BugReports: https://github.com/mhurtado13/racing/issues
+URL: https://github.com/VeraPancaldiLab/RaCInG_package, https://VeraPancaldiLab.github.io/RaCInG_package/
+BugReports: https://github.com/VeraPancaldiLab/RaCInG_package/issues
 Encoding: UTF-8
 Depends:
     R (>= 4.1)

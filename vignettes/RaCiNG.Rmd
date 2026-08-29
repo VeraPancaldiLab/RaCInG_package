@@ -37,7 +37,7 @@ counts matrix run through the full preprocessing pipeline.
 
 ```{r eval = FALSE}
 # install.packages("remotes")
-remotes::install_github("mhurtado13/racing")
+remotes::install_github("VeraPancaldiLab/RaCInG_package")
 library(RaCInG)
 ```
 
