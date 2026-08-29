@@ -23,7 +23,7 @@ compute_kernel_features(
 - kernel:
 
   Kernel array from
-  [`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md).
+  [`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md).
 
 - unifKernel:
 

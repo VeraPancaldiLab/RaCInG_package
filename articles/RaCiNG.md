@@ -22,7 +22,7 @@ preprocessing pipeline.
 ``` r
 
 # install.packages("remotes")
-remotes::install_github("mhurtado13/racing")
+remotes::install_github("VeraPancaldiLab/RaCInG_package")
 library(RaCInG)
 ```
 
@@ -37,7 +37,7 @@ library(RaCInG)
 
 If you want to build the RaCInG input matrices directly from raw counts,
 install the optional preprocessing dependencies used by
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md):
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md):
 
 ``` r
 
@@ -52,16 +52,16 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 
 | Goal | Function | Output |
 |----|----|----|
-| Build input matrices from raw counts | [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Compute deterministic features | [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
-| Compute simulation summaries | [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | Processed Monte Carlo results |
-| Compare clinical groups | [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md) + [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md) | Statistics table and volcano plot |
-| Relate features to a continuous score | [`correlate_features_with_score()`](https://mhurtado13.github.io/racing/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://mhurtado13.github.io/racing/reference/correlation_plot.md) | Correlation table and rainfall plot |
+| Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Compute deterministic features | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
+| Compute simulation summaries | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Processed Monte Carlo results |
+| Compare clinical groups | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md) | Statistics table and volcano plot |
+| Relate features to a continuous score | [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md) | Correlation table and rainfall plot |
 
 ## How `prepare_input_files()` builds its inputs
 
 Starting from a raw gene-by-sample counts matrix,
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 chains together several packages so you never have to run them by hand:
 
 1.  **Normalization**: counts are converted to TPM with
@@ -195,10 +195,10 @@ head(mc_res$output$mean[, 1:5])
 
 Once features are available in a patient-by-feature matrix, use the
 built-in Wilcoxon workflow to compare groups.
-[`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)
+[`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)
 reports, per feature and per pair of groups, the Wilcoxon statistic,
 fold change, and (jointly) FDR-adjusted p-value;
-[`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md)
+[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md)
 visualizes `log2(fold change)` against significance.
 
 ``` r
@@ -212,17 +212,17 @@ volcano_plot(wilcox_results, top_labels = 15)
 With more than two groups, every pairwise comparison is run
 automatically; subset `wilcox_results` by `Comparison` (or pass a
 two-group subset to
-[`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md))
+[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md))
 to inspect one pair at a time.
 
 ### 5. Correlate features with a continuous score
 
 If you have a continuous per-patient score (e.g. an immune response or
 survival score),
-[`correlate_features_with_score()`](https://mhurtado13.github.io/racing/reference/correlate_features_with_score.md)
+[`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md)
 reports the Spearman correlation between every feature and the score,
 pooled across all patients and, optionally, within groups.
-[`correlation_plot()`](https://mhurtado13.github.io/racing/reference/correlation_plot.md)
+[`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md)
 shows the top positive and negative correlations.
 
 ``` r
@@ -235,15 +235,15 @@ correlation_plot(corr_results, top_n = 10)
 
 ## Notes
 
-- [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)
+- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
   and
-  [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
   are the main entry points.
 - Both accept an `input_data` argument with pre-computed matrices (as
   returned by
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)),
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)),
   which skips all preprocessing.
-- [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
   requires the optional packages listed under Installation for
   deconvolution and prior-network assembly.
 - The original Python implementation is available at
@@ -267,7 +267,7 @@ table below summarises each component:
 | **Sign_matrix** | ligands × receptors | Optional matrix encoding known stimulatory (+1) or inhibitory (−1) interactions. Zeros indicate unknown. |
 
 These inputs are typically generated by
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 from a raw counts matrix, or they can be assembled manually from
 pre-existing deconvolution and prior-network data. The bundled
 `skcm_example` dataset provides a ready-made example of this structure.

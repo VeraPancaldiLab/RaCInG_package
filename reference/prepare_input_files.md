@@ -63,7 +63,7 @@ prepare_input_files(
   Optional gene-by-cell-type expression profile matrix. If omitted, it
   is estimated from `counts` and `deconv` via per-gene non-negative
   least squares (see
-  [`.estimate_expression_profiles()`](https://mhurtado13.github.io/racing/reference/dot-estimate_expression_profiles.md)).
+  [`.estimate_expression_profiles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-estimate_expression_profiles.md)).
 
 - source, target:
 

@@ -62,12 +62,12 @@ decisions include:
 - Defines a class `informationMicroEnv` that encapsulates cell-type
   distributions, ligand-receptor distributions, and connectivity rules.
 - Class methods:
-  [`genRandomEdgeList()`](https://mhurtado13.github.io/racing/reference/genRandomEdgeList.md),
-  [`genRandomCellTypeList()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeList.md)
+  [`genRandomEdgeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomEdgeList.md),
+  [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md)
 - Imports `distribution_generation` module (separate file) for
   `genRandomCellTypeDistr`, `genRandomLigRecDistr`,
   `genRandomCellLigands`, `genRandomCellReceptors`.
-- [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)
+- [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)
   function creates an `informationMicroEnv` instance and generates a
   graph.
 
@@ -75,12 +75,12 @@ decisions include:
 
 - **Adapted from class-based to functional design**: The
   `informationMicroEnv` class is restructured as standalone functions
-  ([`genRandomCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeDistr.md),
-  [`genRandomLigRecDistr()`](https://mhurtado13.github.io/racing/reference/genRandomLigRecDistr.md),
-  [`genRandomCellLigands()`](https://mhurtado13.github.io/racing/reference/genRandomCellLigands.md),
-  [`genRandomCellReceptors()`](https://mhurtado13.github.io/racing/reference/genRandomCellReceptors.md),
-  [`genRandomCellTypeList()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeList.md),
-  [`genRandomEdgeList()`](https://mhurtado13.github.io/racing/reference/genRandomEdgeList.md)),
+  ([`genRandomCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeDistr.md),
+  [`genRandomLigRecDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomLigRecDistr.md),
+  [`genRandomCellLigands()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellLigands.md),
+  [`genRandomCellReceptors()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellReceptors.md),
+  [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md),
+  [`genRandomEdgeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomEdgeList.md)),
   each independently documented and exported.
 - **Consolidated `distribution_generation` into the same file**: The
   separate Python module `distribution_generation.py` (referenced as
@@ -89,12 +89,12 @@ decisions include:
   place.
 - **All functions are individually documented** with roxygen2 `@param`,
   `@return`, and `@export` tags.
-- **[`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)**:
+- **[`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)**:
   Converted from using a class instance to calling standalone functions.
   Parameters use R-style `NULL` defaults instead of Python empty lists
   `[]`.
 - **Added
-  [`generateUniformLRGraph()`](https://mhurtado13.github.io/racing/reference/generateUniformLRGraph.md)**:
+  [`generateUniformLRGraph()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateUniformLRGraph.md)**:
   A new exported function that generates a graph under a uniformized
   (flat) LR distribution for a specific patient. This function does not
   exist in the original Python code and is useful for normalization
@@ -107,23 +107,23 @@ decisions include:
 #### Original Python
 
 Contains all graph motif counting functions: -
-[`Find_Number_Trust_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Trust_Triangles_Unique.md),
-[`Find_Number_Triangles()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles.md),
-[`Find_Number_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles_Unique.md) -
-[`Find_Number_2Loops()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops.md),
-[`Find_Number_2Loops_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops_Unique.md) -
-[`Find_Number_Wedges()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges.md),
-[`Find_Number_Wedges_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges_Unique.md) -
-[`Trust_Triangles()`](https://mhurtado13.github.io/racing/reference/Trust_Triangles.md),
-[`Cycle_Triangles()`](https://mhurtado13.github.io/racing/reference/Cycle_Triangles.md),
-[`Wedges()`](https://mhurtado13.github.io/racing/reference/Wedges.md) -
-[`BFS()`](https://mhurtado13.github.io/racing/reference/BFS.md),
+[`Find_Number_Trust_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Trust_Triangles_Unique.md),
+[`Find_Number_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles.md),
+[`Find_Number_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles_Unique.md) -
+[`Find_Number_2Loops()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops.md),
+[`Find_Number_2Loops_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops_Unique.md) -
+[`Find_Number_Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges.md),
+[`Find_Number_Wedges_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges_Unique.md) -
+[`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md),
+[`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md),
+[`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md) -
+[`BFS()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/BFS.md),
 `StrongConnect()`, `Tarjan()`,
-[`TarjanIterative()`](https://mhurtado13.github.io/racing/reference/TarjanIterative.md),
+[`TarjanIterative()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/TarjanIterative.md),
 `sconnect()` -
-[`GSCC()`](https://mhurtado13.github.io/racing/reference/GSCC.md),
-[`IN()`](https://mhurtado13.github.io/racing/reference/IN.md),
-[`OUT()`](https://mhurtado13.github.io/racing/reference/OUT.md)
+[`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md),
+[`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md),
+[`OUT()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/OUT.md)
 
 Uses `scipy.sparse` matrix operations. Contains both recursive and
 iterative Tarjan implementations.
@@ -159,11 +159,11 @@ iterative Tarjan implementations.
   `.npz` files.
 - `saveKernel()`: Saves kernel to disk as compressed NumPy arrays
   (`.npz`).
-- [`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md),
-  [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md):
+- [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md),
+  [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md):
   Extract features from kernels and write CSV files to disk (naming
   convention: `{cancer}_{weight}_weight_Dir_bundle_norm.csv`).
-- [`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md):
+- [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md):
   Computes GSCC analytically using `nleqslv`-equivalent from SciPy,
   reads patient data from files.
 - Heavy reliance on file I/O throughout; tightly coupled to a specific
@@ -171,60 +171,60 @@ iterative Tarjan implementations.
 
 #### R Package Changes
 
-- **[`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md)
+- **[`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)
   replaces `Calculate_kernel()`**: Accepts matrices as function
   arguments instead of reading files from disk. No file I/O inside the
   function—pure computation. Supports an optional `normalize` parameter
   to also return a uniformized baseline kernel in the same call.
-- **[`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md)
+- **[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)
   and
-  [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md)**:
+  [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)**:
   Rewritten to take kernel arrays and cell-name vectors as arguments and
   return data frames. No file writing. The `bundle` parameter for
   combining reciprocal directions is preserved.
-- **[`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)
+- **[`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
   replaces
-  [`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md)**:
+  [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md)**:
   Same mathematical approach (Poisson branching process via `nleqslv`),
   but receives kernel and abundance matrices as arguments rather than
   reading from files. The
-  [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md)
+  [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md)
   helper is preserved as an internal function.
-- **[`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md)
+- **[`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md)
   retained as legacy stub**: The original function name is kept but now
   [`stop()`](https://rdrr.io/r/base/stop.html)s with a message directing
   users to
-  [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md),
+  [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md),
   ensuring backward-compatible error messages.
 - **NEW:
-  [`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md)**:
+  [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)**:
   Computes triangle features (trust triangles and bundled cycle
   triangles) directly from kernel arrays. This feature extraction
   function has no direct equivalent in the original Python
   `Kernel_Method.py`—the Python version only computed triangles via
   Monte Carlo simulation.
 - **NEW:
-  [`compute_kernel_features()`](https://mhurtado13.github.io/racing/reference/compute_kernel_features.md)**:
+  [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md)**:
   A high-level dispatcher that routes to
-  [`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md),
-  [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md),
-  [`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md),
+  [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md),
+  [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md),
+  [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md),
   or
-  [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)
+  [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
   based on a `communication_type` parameter. Supports patient subsetting
   via `patient_idx`. This function simplifies the user API.
 - **NEW:
-  [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)**:
+  [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)**:
   An end-to-end workflow function that:
   1.  Accepts either raw count matrices or pre-computed input data
   2.  Calls
-      [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+      [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
       (if needed)
   3.  Calls
-      [`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md)
+      [`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)
       with optional normalization
   4.  Calls
-      [`compute_kernel_features()`](https://mhurtado13.github.io/racing/reference/compute_kernel_features.md)
+      [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md)
       for the requested feature type
   5.  Returns kernel arrays and the feature data frame
 
@@ -241,14 +241,14 @@ iterative Tarjan implementations.
 
 #### Original Python
 
-- [`countWedges()`](https://mhurtado13.github.io/racing/reference/countWedges.md),
-  [`countTrustTriangles()`](https://mhurtado13.github.io/racing/reference/countTrustTriangles.md),
-  [`countCycleTriangles()`](https://mhurtado13.github.io/racing/reference/countCycleTriangles.md),
-  [`countDirect()`](https://mhurtado13.github.io/racing/reference/countDirect.md),
-  [`countGSCC()`](https://mhurtado13.github.io/racing/reference/countGSCC.md):
+- [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md),
+  [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md),
+  [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md),
+  [`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md),
+  [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md):
   Functions that run Monte Carlo simulations and count graph motifs.
 - `runSimOne()`: Runs simulation for a single patient.
-- [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md):
+- [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md):
   Iterates over patients, writes results to structured `.txt`/`.out`
   files with a well-defined layout.
 - Output uses a purpose-built text format, with companion parsers in
@@ -258,17 +258,17 @@ iterative Tarjan implementations.
 #### R Package Changes
 
 - **Core counting functions preserved**:
-  [`countWedges()`](https://mhurtado13.github.io/racing/reference/countWedges.md),
-  [`countTrustTriangles()`](https://mhurtado13.github.io/racing/reference/countTrustTriangles.md),
-  [`countCycleTriangles()`](https://mhurtado13.github.io/racing/reference/countCycleTriangles.md),
-  [`countDirect()`](https://mhurtado13.github.io/racing/reference/countDirect.md),
-  [`countGSCC()`](https://mhurtado13.github.io/racing/reference/countGSCC.md)
+  [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md),
+  [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md),
+  [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md),
+  [`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md),
+  [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)
   all faithfully replicate the Python logic with R syntax.
 - **`runSimOne()` removed (commented out)**: The per-patient function is
   replaced by the loop inside
-  [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md)
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
   directly. The commented-out code is preserved for reference.
-- **[`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md)
+- **[`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
   improved**:
   - Added `output_folder` parameter with automatic directory creation.
   - Added `file.name` parameter for customizable output naming.
@@ -277,16 +277,16 @@ iterative Tarjan implementations.
   - Uses R [`file()`](https://rdrr.io/r/base/connections.html)
     connections for writing (proper resource management via `con`).
   - Output format is structured CSV-like, compatible with
-    [`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md).
+    [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md).
 - **NEW:
-  [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)**:
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)**:
   An end-to-end workflow function (parallel to
-  [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md))
+  [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md))
   that:
   1.  Accepts raw counts or pre-computed input data
   2.  Optionally generates input files
   3.  Calls
-      [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md)
+      [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
       for the requested feature type
   4.  Reads back results and returns as R data structures
 
@@ -297,50 +297,50 @@ iterative Tarjan implementations.
 
 #### Original Python
 
-- [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md):
+- [`sortPermute()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/sortPermute.md):
   Sorts a list and returns the permutation.
-- [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md),
-  [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md),
-  [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md),
-  [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md):
+- [`createCellLigList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellLigList.md),
+  [`createCellRecList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellRecList.md),
+  [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md),
+  [`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md):
   Read CSV files following a consistent naming convention (e.g.,
   `{cancer}_celltype_ligand_{weight}.csv`).
-- [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md):
+- [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md):
   Reads a ligand-receptor interaction file.
-- [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md):
+- [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md):
   Master function that calls all readers with hardcoded file naming.
 - `get_patient_names()`: Extracts patient names from file names.
 
 #### R Package Changes
 
 - **All reader functions ported and generalized**:
-  [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md),
-  [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md),
-  [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md),
-  [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md)
+  [`createCellLigList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellLigList.md),
+  [`createCellRecList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellRecList.md),
+  [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md),
+  [`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md)
   all accept explicit `filename` parameters rather than constructing
   paths from cancer type and weight type. This makes them usable with
   any naming convention.
-- **[`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md)
+- **[`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md)
   enhanced**: Includes M1/M2 macrophage merging logic that was done
   externally in the original Python workflow. The function now accepts a
   `cells` parameter and automatically merges M1+M2 if the number of cell
   types doesn’t match.
-- **[`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md)
+- **[`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md)
   enhanced**: Builds a proper 3D tensor (ligand × receptor × patient)
   instead of a flat matrix. Includes automatic normalization so each
   patient’s interaction distribution sums to 1. Handles NA values by
   replacing them with 0.
-- **[`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md)
+- **[`sortPermute()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/sortPermute.md)
   preserved** as an internal helper.
-- **[`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md)
+- **[`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md)
   generalized**: Uses `file_name` and `output_folder` parameters instead
   of cancer type/weight type. Supports an optional `read_signs`
   parameter.
 - **`get_patient_names()` removed**: Not needed because patient names
   are extracted directly from data frame row names in R.
 - **NEW:
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**:
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)**:
   A comprehensive input preparation function that:
   1.  Normalizes counts to TPM (via
       [`ADImpute::NormalizeTPM`](https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html))
@@ -359,7 +359,7 @@ iterative Tarjan implementations.
   This function replaces the three separate R Markdown notebooks
   (`RaCInG_ccc_prior_knowledge.Rmd`, `RaCInG_input_tcga.Rmd`,
   `RaCInG_input_published_cohorts.Rmd`) and the Python
-  [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md)
+  [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md)
   function, consolidating over 500 lines of notebook code into a single
   callable function.
 
@@ -367,28 +367,28 @@ iterative Tarjan implementations.
 
 #### Original Python
 
-- [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md):
+- [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md):
   Builds a sparse matrix from an edge list.
-- [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md):
+- [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md):
   Same but removes self-loops.
-- [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md):
+- [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md):
   Counts motifs by cell-type combinations.
 - `createSlurm()`: Generates SLURM job submission scripts for HPC.
-- [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md):
+- [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md):
   Poisson branching process helper for GSCC computation.
 
 #### R Package Changes
 
-- **[`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md)
+- **[`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md)
   and
-  [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md)
+  [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md)
   ported**: Use
   [`Matrix::sparseMatrix()`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html)
   instead of `scipy.sparse`. The functions are exported and documented.
-- **[`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md)
+- **[`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md)
   ported and generalized**: Now works with R’s 1-based indexing. Accepts
   an optional `maxTypes` parameter.
-- **[`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md)
+- **[`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md)
   preserved** as an internal helper.
 - **`createSlurm()` not done yet**: It will be implemented in R using
   parallelization frameworks (`parallel`, `future`, `batchtools`) for
@@ -420,7 +420,7 @@ contribution analysis with Mann-Whitney tests.
 - **Generalized approach**: The original’s extensive analysis suite is
   distilled into two flexible, reusable functions (TO BE COMPLETED WITH
   ADDITIONAL FUNCTIONS OF demo.py):
-  1.  **[`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)**:
+  1.  **[`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)**:
       A generic Wilcoxon rank-sum test function that accepts any data
       matrix and group labels. Uses
       [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) for
@@ -428,9 +428,9 @@ contribution analysis with Mann-Whitney tests.
       via a parameter). Returns a tidy data frame sorted by adjusted
       p-value. This generalizes the original’s cancer-specific testing
       pipeline into a dataset-agnostic tool.
-  2.  **[`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md)**:
+  2.  **[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md)**:
       A `ggplot2`-based volcano plot that accepts the output of
-      [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md).
+      [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md).
 - **Functions not carried over** (with rationale):
   - Data reading functions (`readAllDataExact`, `dataReadExact`,
     `data_read`, `readAllData`): Superseded by the generic input
@@ -455,11 +455,11 @@ contribution analysis with Mann-Whitney tests.
     heatmap capabilities.
   - `contributionAnalysisGSCC()`: Study-specific analysis that users can
     implement using
-    [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)
+    [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
     output.
   - `volcanoCross()`, `volcanoPan()`, `volcanoInd()`: Consolidated into
     the single generic
-    [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md).
+    [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md).
 
 ### 3.8 `txt_to_csv.py` → `R/txt_to_csv.R`
 
@@ -474,19 +474,19 @@ contribution analysis with Mann-Whitney tests.
 
 #### R Package Changes
 
-- **[`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md)
+- **[`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md)
   unifies the three readers**: A single function that auto-detects the
   communication type (D, W, TT, CT, GSCC) from the file header and
   adapts its parsing logic accordingly. The original Python version used
   three dedicated parsers, each optimized for its respective data
   dimensionality (1D for GSCC, 2D for Direct, 3D for triangles/wedges).
 - **`Generate_normalised_count_csv()` included as
-  [`compute_results_processing()`](https://mhurtado13.github.io/racing/reference/compute_results_processing.md)**:
+  [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md)**:
   Handles normalization of Monte Carlo output, direction bundling, and
   CSV export.
 - **Output format adapted**: The R package writes a labeled CSV-like
   format from
-  [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md),
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md),
   building on the original’s structured text format with added column
   headers for self-describing output.
 
@@ -496,9 +496,9 @@ contribution analysis with Mann-Whitney tests.
 |----|----|----|
 | `Circos.py` | Circos plot generation for visualizing cell-cell interactions | **Not yet ported**. Planned for a future release. |
 | `HPC_CLI.py` | Command-line interface for HPC cluster submission | **Not yet ported**. The R package currently focuses on interactive use. Planned for a future release. |
-| `R_Code/RaCInG_ccc_prior_knowledge.Rmd` | Notebook for building prior knowledge from OmniPath/Ramilowski/CCLE | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)** as automated pipeline steps. |
-| `R_Code/RaCInG_input_tcga.Rmd` | Notebook for processing TCGA data | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**. |
-| `R_Code/RaCInG_input_published_cohorts.Rmd` | Notebook for processing published cohort data | **Integrated into [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)**. |
+| `R_Code/RaCInG_ccc_prior_knowledge.Rmd` | Notebook for building prior knowledge from OmniPath/Ramilowski/CCLE | **Integrated into [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)** as automated pipeline steps. |
+| `R_Code/RaCInG_input_tcga.Rmd` | Notebook for processing TCGA data | **Integrated into [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)**. |
+| `R_Code/RaCInG_input_published_cohorts.Rmd` | Notebook for processing published cohort data | **Integrated into [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)**. |
 | `R_Code/utils/run_TMEmod_deconvolution.R` | Script to run 6 deconvolution methods | **Replaced** by integration with `multideconv` package. |
 | `Python_Code/Demo.ipynb` | Jupyter notebook demo | **Replaced** by the R vignette (`vignettes/RaCiNG.Rmd`) and pkgdown website. |
 
@@ -527,10 +527,10 @@ system.
 
 Two new high-level entry points that did not exist in the original:
 
-- **[`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)**:
+- **[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)**:
   From raw counts → input preparation → kernel computation → feature
   extraction in one call.
-- **[`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)**:
+- **[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)**:
   From raw counts → input preparation → Monte Carlo simulation → result
   processing in one call.
 
@@ -547,7 +547,7 @@ patient subsetting support.
 ### 4.4 Kernel-Based Triangle Computation
 
 The function
-[`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md)
+[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
 computes triangle features analytically from the kernel, which was only
 available via Monte Carlo simulation in the original Python code. This
 eliminates the need for computationally expensive graph simulations when
@@ -568,9 +568,9 @@ vignette with step-by-step walkthrough - Input files explanation section
 ### 4.7 Dependency Validation
 
 The
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 function uses
-[`.check_installed_packages()`](https://mhurtado13.github.io/racing/reference/dot-check_installed_packages.md)
+[`.check_installed_packages()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-check_installed_packages.md)
 to verify that optional dependencies (`ADImpute`, `multideconv`,
 `OmnipathR`, `liana`) are installed before attempting to use them,
 providing clear error messages instead of cryptic import failures.
@@ -599,21 +599,21 @@ providing clear error messages instead of cryptic import failures.
 The original Python code integrated computation with file I/O, which was
 well-suited for its batch processing workflow: - `Calculate_kernel()`
 reads CSV files, computes kernels, and writes `.npz` files. -
-[`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md)
+[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)
 computes features and writes CSV files. -
-[`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md)
+[`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
 computes features and writes `.txt` files.
 
 The R package separates concerns: - **Computation functions**
-([`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md),
-[`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md),
+([`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md),
+[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md),
 etc.) are pure: they accept data as arguments and return results. -
 **I/O functions**
-([`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md),
-[`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md))
+([`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md),
+[`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md))
 handle file operations explicitly. - **Workflow functions**
-([`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md),
-[`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md))
+([`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md),
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md))
 compose computation and I/O.
 
 ### 6.2 Consistent Parameter Naming
@@ -630,9 +630,9 @@ documentation for each parameter.
 ### 6.3 Flexible Input Modes
 
 The
-[`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
 and
-[`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
 functions accept either: 1. Raw count matrices (triggering the full
 preprocessing pipeline) 2. Pre-computed input data lists (bypassing
 preprocessing)
@@ -688,66 +688,66 @@ simulation size).
 
 | R Function | Python Origin | Changes |
 |----|----|----|
-| [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md) | [`sortPermute()`](https://mhurtado13.github.io/racing/reference/sortPermute.md) | Minimal; R syntax |
-| [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md) | [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md) | Generic filename; adds sorting |
-| [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md) | [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md) | Generic filename; adds sorting |
-| [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md) | [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md) | Adds M1/M2 merge logic |
-| [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md) | [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md) | Returns 3D tensor; auto-normalizes |
-| [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md) | [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md) | Uses [`data.table::fread`](https://rdrr.io/pkg/data.table/man/fread.html) |
-| [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md) | [`generateInput()`](https://mhurtado13.github.io/racing/reference/generateInput.md) | Generalized file naming |
-| [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md) | [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md) | Standalone functions instead of class |
-| [`genRandomCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeDistr.md) | `dg.genRandomCellTypeDistr()` | Direct port |
-| [`genRandomLigRecDistr()`](https://mhurtado13.github.io/racing/reference/genRandomLigRecDistr.md) | `dg.genRandomLigRecDistr()` | Direct port |
-| [`genRandomCellLigands()`](https://mhurtado13.github.io/racing/reference/genRandomCellLigands.md) | `dg.genRandomCellLigands()` | Direct port |
-| [`genRandomCellReceptors()`](https://mhurtado13.github.io/racing/reference/genRandomCellReceptors.md) | `dg.genRandomCellReceptors()` | Direct port |
-| [`genRandomCellTypeList()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeList.md) | `informationMicroEnv.genRandomCellTypeList()` | Extracted from class |
-| [`genRandomEdgeList()`](https://mhurtado13.github.io/racing/reference/genRandomEdgeList.md) | `informationMicroEnv.genRandomEdgeList()` | Extracted from class |
-| [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md) | [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
-| [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md) | [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
-| [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md) | [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md) | 1-based indexing |
-| [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md) | [`poiBPFunc()`](https://mhurtado13.github.io/racing/reference/poiBPFunc.md) | Internal; same math |
-| [`Find_Number_Trust_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Trust_Triangles_Unique.md) | Same | Dense matrix operations |
-| [`Find_Number_Triangles()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles.md) | Same | Direct port |
-| [`Find_Number_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles_Unique.md) | Same | Direct port |
-| [`Find_Number_2Loops()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops.md) | Same | Direct port |
-| [`Find_Number_2Loops_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops_Unique.md) | Same | Direct port |
-| [`Find_Number_Wedges()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges.md) | Same | Direct port |
-| [`Find_Number_Wedges_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges_Unique.md) | Same | Direct port |
-| [`Trust_Triangles()`](https://mhurtado13.github.io/racing/reference/Trust_Triangles.md) | Same | Returns list instead of tuple |
-| [`Cycle_Triangles()`](https://mhurtado13.github.io/racing/reference/Cycle_Triangles.md) | Same | Returns list instead of tuple |
-| [`Wedges()`](https://mhurtado13.github.io/racing/reference/Wedges.md) | Same | Returns list instead of tuple |
-| [`BFS()`](https://mhurtado13.github.io/racing/reference/BFS.md) | Same | Internal; 1-based indexing |
-| [`TarjanIterative()`](https://mhurtado13.github.io/racing/reference/TarjanIterative.md) | Same | Uses R closures |
-| [`GSCC()`](https://mhurtado13.github.io/racing/reference/GSCC.md) | Same | Direct port |
-| [`IN()`](https://mhurtado13.github.io/racing/reference/IN.md) | Same | Direct port |
-| [`OUT()`](https://mhurtado13.github.io/racing/reference/OUT.md) | Same | Direct port |
-| [`countWedges()`](https://mhurtado13.github.io/racing/reference/countWedges.md) | Same | Direct port |
-| [`countTrustTriangles()`](https://mhurtado13.github.io/racing/reference/countTrustTriangles.md) | Same | Direct port |
-| [`countCycleTriangles()`](https://mhurtado13.github.io/racing/reference/countCycleTriangles.md) | Same | Direct port |
-| [`countDirect()`](https://mhurtado13.github.io/racing/reference/countDirect.md) | Same | Direct port |
-| [`countGSCC()`](https://mhurtado13.github.io/racing/reference/countGSCC.md) | Same | Direct port |
-| [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md) | Same | Enhanced with output_folder, file.name, patient_idx |
-| [`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md) | Same | No file I/O; returns data.frame |
-| [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md) | Same | No file I/O; returns data.frame |
-| [`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md) | Same | Legacy stub; redirects to computeGSCC() |
-| [`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md) | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()` | Unified auto-detecting parser |
-| [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md) | `wilcoxon()` | Simplified, generic, FDR-corrected |
-| [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md) | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
+| [`sortPermute()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/sortPermute.md) | [`sortPermute()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/sortPermute.md) | Minimal; R syntax |
+| [`createCellLigList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellLigList.md) | [`createCellLigList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellLigList.md) | Generic filename; adds sorting |
+| [`createCellRecList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellRecList.md) | [`createCellRecList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellRecList.md) | Generic filename; adds sorting |
+| [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md) | [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md) | Adds M1/M2 merge logic |
+| [`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md) | [`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md) | Returns 3D tensor; auto-normalizes |
+| [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md) | [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md) | Uses [`data.table::fread`](https://rdrr.io/pkg/data.table/man/fread.html) |
+| [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md) | [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md) | Generalized file naming |
+| [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md) | [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md) | Standalone functions instead of class |
+| [`genRandomCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeDistr.md) | `dg.genRandomCellTypeDistr()` | Direct port |
+| [`genRandomLigRecDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomLigRecDistr.md) | `dg.genRandomLigRecDistr()` | Direct port |
+| [`genRandomCellLigands()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellLigands.md) | `dg.genRandomCellLigands()` | Direct port |
+| [`genRandomCellReceptors()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellReceptors.md) | `dg.genRandomCellReceptors()` | Direct port |
+| [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md) | `informationMicroEnv.genRandomCellTypeList()` | Extracted from class |
+| [`genRandomEdgeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomEdgeList.md) | `informationMicroEnv.genRandomEdgeList()` | Extracted from class |
+| [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md) | [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
+| [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md) | [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
+| [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md) | [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md) | 1-based indexing |
+| [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md) | [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md) | Internal; same math |
+| [`Find_Number_Trust_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Trust_Triangles_Unique.md) | Same | Dense matrix operations |
+| [`Find_Number_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles.md) | Same | Direct port |
+| [`Find_Number_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles_Unique.md) | Same | Direct port |
+| [`Find_Number_2Loops()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops.md) | Same | Direct port |
+| [`Find_Number_2Loops_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops_Unique.md) | Same | Direct port |
+| [`Find_Number_Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges.md) | Same | Direct port |
+| [`Find_Number_Wedges_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges_Unique.md) | Same | Direct port |
+| [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md) | Same | Returns list instead of tuple |
+| [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md) | Same | Returns list instead of tuple |
+| [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md) | Same | Returns list instead of tuple |
+| [`BFS()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/BFS.md) | Same | Internal; 1-based indexing |
+| [`TarjanIterative()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/TarjanIterative.md) | Same | Uses R closures |
+| [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md) | Same | Direct port |
+| [`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md) | Same | Direct port |
+| [`OUT()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/OUT.md) | Same | Direct port |
+| [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md) | Same | Direct port |
+| [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md) | Same | Direct port |
+| [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md) | Same | Direct port |
+| [`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md) | Same | Direct port |
+| [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md) | Same | Direct port |
+| [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md) | Same | Enhanced with output_folder, file.name, patient_idx |
+| [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md) | Same | No file I/O; returns data.frame |
+| [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md) | Same | No file I/O; returns data.frame |
+| [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md) | Same | Legacy stub; redirects to computeGSCC() |
+| [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md) | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()` | Unified auto-detecting parser |
+| [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) | `wilcoxon()` | Simplified, generic, FDR-corrected |
+| [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md) | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
 
 ### New Functions (no Python equivalent):
 
 | R Function | Purpose |
 |----|----|
-| [`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md) | Pure kernel computation from matrices |
-| [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md) | Analytical GSCC from kernel (function-argument based) |
-| [`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md) | Kernel-based triangle feature computation |
-| [`compute_kernel_features()`](https://mhurtado13.github.io/racing/reference/compute_kernel_features.md) | Feature dispatcher for all kernel feature types |
-| [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md) | End-to-end kernel workflow |
-| [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | End-to-end Monte Carlo workflow |
-| [`compute_results_processing()`](https://mhurtado13.github.io/racing/reference/compute_results_processing.md) | Normalize and bundle Monte Carlo results |
-| [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md) | Automated input preparation from raw counts |
-| [`generateUniformLRGraph()`](https://mhurtado13.github.io/racing/reference/generateUniformLRGraph.md) | Generate graph under uniform LR null model |
-| [`.check_installed_packages()`](https://mhurtado13.github.io/racing/reference/dot-check_installed_packages.md) | Internal dependency checker |
+| [`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md) | Pure kernel computation from matrices |
+| [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md) | Analytical GSCC from kernel (function-argument based) |
+| [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md) | Kernel-based triangle feature computation |
+| [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md) | Feature dispatcher for all kernel feature types |
+| [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md) | End-to-end kernel workflow |
+| [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | End-to-end Monte Carlo workflow |
+| [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md) | Normalize and bundle Monte Carlo results |
+| [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Automated input preparation from raw counts |
+| [`generateUniformLRGraph()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateUniformLRGraph.md) | Generate graph under uniform LR null model |
+| [`.check_installed_packages()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-check_installed_packages.md) | Internal dependency checker |
 
 ------------------------------------------------------------------------
 

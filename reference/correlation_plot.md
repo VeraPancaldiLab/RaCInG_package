@@ -1,7 +1,7 @@
 # Rainfall plot of feature-score correlations
 
 Shows the top positive and top negative correlations from
-[`correlate_features_with_score()`](https://mhurtado13.github.io/racing/reference/correlate_features_with_score.md)
+[`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md)
 as a diverging bar chart.
 
 ## Usage
@@ -20,7 +20,7 @@ correlation_plot(
 - correlation_results:
 
   Output of
-  [`correlate_features_with_score()`](https://mhurtado13.github.io/racing/reference/correlate_features_with_score.md).
+  [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md).
 
 - group:
 

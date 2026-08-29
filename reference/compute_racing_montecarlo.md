@@ -52,7 +52,7 @@ compute_racing_montecarlo(
   (which identifies and collapses correlated cell-type subgroups) and
   [`multideconv::standardize_celltype_colnames()`](https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html).
   See
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - cc_network:
 
@@ -60,7 +60,7 @@ compute_racing_montecarlo(
   via
   [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html).
   See
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - fun_LR:
 
@@ -71,7 +71,7 @@ compute_racing_montecarlo(
   Optional gene-by-cell-type expression profile matrix. If omitted, it
   is estimated from `counts` and `deconv` via per-gene non-negative
   least squares. See
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - source, target:
 
@@ -130,7 +130,7 @@ compute_racing_montecarlo(
 - input_data:
 
   Optional named list of pre-computed input matrices as returned by
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
   Must contain `Lmatrix`, `Rmatrix`, `Cmatrix`, `LRmatrix`, `celltypes`,
   `ligands`, and `receptors`. When supplied, the `counts` argument and
   all preprocessing parameters (`deconv`, `cc_network`, etc.) are

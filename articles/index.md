@@ -3,4 +3,4 @@
 ### Vignettes
 
 - [Getting started with
-  RaCInG](https://mhurtado13.github.io/racing/articles/RaCiNG.md):
+  RaCInG](https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.md):

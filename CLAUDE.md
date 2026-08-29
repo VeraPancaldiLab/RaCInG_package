@@ -50,7 +50,7 @@ network motif features from the kernel based on `communication_type`
 `compute_racing_montecarlo(input_list, Ngraphs, Niterations, ...)` - For
 each patient × Niterations, generates `Ngraphs` random directed graphs
 via
-[`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)
+[`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)
 (respects cell-type abundances & LR probabilities), then counts motifs -
 Outputs mean/std of motif counts across iterations; optionally
 normalizes against a uniform random baseline - Results written to CSV
@@ -78,7 +78,7 @@ files
 | `RaCInG_input_generation.R` | Preprocessing raw counts → standardized input matrices; CSV I/O |
 | `Kernel_Method.R` | Deterministic kernel computation and feature extraction |
 | `Monte_Carlo_Method.R` | Monte Carlo simulation orchestration |
-| `network_generation.R` | Random directed graph generation ([`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)) |
+| `network_generation.R` | Random directed graph generation ([`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)) |
 | `feature_extraction.R` | Graph motif enumeration (wedges, triangles, GSCC) |
 | `Utilities.R` | Edge list ↔︎ adjacency matrix conversion; motif helpers |
 | `statistical_analysis.R` | Wilcoxon tests and volcano plots |
@@ -91,7 +91,7 @@ files
   [`Matrix::sparseMatrix()`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html)
   is used in Monte Carlo for memory-efficient adjacency matrices.
 - **Optional heavy dependencies**:
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
   requires ADImpute, multideconv, OmnipathR, and liana — but all
   workflows accept pre-computed input matrices directly, making these
   optional.

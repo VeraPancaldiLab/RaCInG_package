@@ -2,11 +2,11 @@
 
 The kernel is the *unweighted* structural kernel: cell-type abundances
 are not baked into it.
-[`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md),
-[`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md),
-[`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md),
+[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md),
+[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md),
+[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md),
 and
-[`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)
+[`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
 each multiply in the abundance of every node they use, exactly once per
 node, when computing raw (unnormalized) features from this kernel.
 

@@ -1,7 +1,7 @@
 # RaCInG
 
-[![R-CMD-check](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml)
-[![pkgdown](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml)
+[![R-CMD-check](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml)
 
 **RaCInG** (**Ra**ndom **C**ell-cell **In**teraction **G**enerator)
 reconstructs patient-specific cell-cell communication networks from bulk
@@ -26,7 +26,7 @@ for ligand-receptor prior knowledge.
 ``` r
 
 # install.packages("remotes")
-remotes::install_github("mhurtado13/racing")
+remotes::install_github("VeraPancaldiLab/RaCInG_package")
 library(RaCInG)
 ```
 
@@ -41,7 +41,7 @@ devtools::install(".")
 ### Optional preprocessing dependencies
 
 If you want to start directly from raw counts with
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md),
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md),
 install the optional helper packages used during deconvolution and
 prior-network construction:
 
@@ -58,10 +58,10 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 
 | Goal | Function | Output |
 |----|----|----|
-| Build input matrices from raw counts | [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Run deterministic features | [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
-| Run simulation-based features | [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | Monte Carlo summaries |
-| Compare patient groups | [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md) | Statistics table for downstream plots |
+| Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Run deterministic features | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
+| Run simulation-based features | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Monte Carlo summaries |
+| Compare patient groups | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) | Statistics table for downstream plots |
 
 ## Quick start
 
@@ -114,8 +114,8 @@ volcano_plot(wilcox_results)
 ## Documentation
 
 - 📘 Vignette: [Getting started with
-  RaCInG](https://mhurtado13.github.io/racing/articles/RaCiNG.html)
-- 🌐 Website: <https://mhurtado13.github.io/racing/>
+  RaCInG](https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.html)
+- 🌐 Website: <https://VeraPancaldiLab.github.io/RaCInG_package/>
 - 🐍 Original Python implementation:
   <https://github.com/SysBioOncology/RaCInG>
 
