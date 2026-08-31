@@ -55,7 +55,7 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 | Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
 | Compute deterministic features | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
 | Compute simulation summaries | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Processed Monte Carlo results |
-| Compare clinical groups | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md) | Statistics table and volcano plot |
+| Compare clinical groups | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md) | Statistics table and ranked bar plot |
 | Relate features to a continuous score | [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md) | Correlation table and rainfall plot |
 
 ## How `prepare_input_files()` builds its inputs
@@ -198,21 +198,22 @@ built-in Wilcoxon workflow to compare groups.
 [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)
 reports, per feature and per pair of groups, the Wilcoxon statistic,
 fold change, and (jointly) FDR-adjusted p-value;
-[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md)
-visualizes `log2(fold change)` against significance.
+[`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)
+shows the top up/down features by `log2(fold change)` as a ranked bar
+chart.
 
 ``` r
 
 grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
 wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 head(wilcox_results)
-volcano_plot(wilcox_results, top_labels = 15)
+top_features_plot(wilcox_results, top_n = 15)
 ```
 
 With more than two groups, every pairwise comparison is run
 automatically; subset `wilcox_results` by `Comparison` (or pass a
 two-group subset to
-[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md))
+[`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md))
 to inspect one pair at a time.
 
 ### 5. Correlate features with a continuous score
@@ -420,7 +421,9 @@ head(wilcox_results)
 #> 4 1.0000000                1
 #> 5 0.3523810                1
 #> 6 0.6095238                1
-volcano_plot(wilcox_results, top_labels = 10)
+top_features_plot(wilcox_results, top_n = 10)
+#> Warning: No shared levels found between `names(values)` of the manual scale and the
+#> data's fill values.
 ```
 
 ![](RaCiNG_files/figure-html/unnamed-chunk-17-1.png)

@@ -72,7 +72,26 @@ every node they use, exactly once per node, when computing raw
 
 
 <dt id="arg-normalize">normalize<a class="anchor" aria-label="anchor" href="#arg-normalize"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, also compute a uniformized baseline kernel.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, also compute a second kernel
+(<code>kernel_norm</code>) under a NULL DISTRIBUTION where every ligand-receptor
+pair that is structurally possible (nonzero in <code>LRmatrix</code>) is given the
+same uniform strength (<code>1 / number of active pairs for that patient</code>),
+instead of its real measured expression-derived strength. <code>kernel_norm</code>
+therefore reflects only network topology and cell-type abundance –
+"how much communication would you expect between these two cell types if
+every possible ligand-receptor pair were equally active" – with no
+information about which pairs are actually more or less expressed.
+Downstream functions (<code><a href="calculateDirect.html">calculateDirect()</a></code>, <code><a href="calculateWedges.html">calculateWedges()</a></code>, etc.) use
+this as a baseline to compute a composition-independent enrichment score
+(<code>kernel / kernel_norm</code>) instead of the raw, abundance-weighted score –
+the abundance weighting cancels out of that ratio algebraically, since
+both <code>kernel</code> and <code>kernel_norm</code> are built from the same per-patient
+<code>lig_weight</code>/<code>rec_weight</code> terms. Use <code>normalize = FALSE</code> (default) when
+you want absolute communication strength (abundance and real LR
+expression both matter); use <code>normalize = TRUE</code> when you want a score
+that isolates specificity/enrichment of a cell-type pair's communication
+relative to what topology alone would predict, independent of how common
+those cell types are or how strong LR expression is overall.</p></dd>
 
 </dl></div>
     <div class="section level2">

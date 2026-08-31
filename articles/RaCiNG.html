@@ -135,9 +135,10 @@ counts, install the optional preprocessing dependencies used by
 <tr class="even">
 <td>Compare clinical groups</td>
 <td>
-<code><a href="../reference/wilcox_group_test.html">wilcox_group_test()</a></code> + <code><a href="../reference/volcano_plot.html">volcano_plot()</a></code>
+<code><a href="../reference/wilcox_group_test.html">wilcox_group_test()</a></code> +
+<code><a href="../reference/top_features_plot.html">top_features_plot()</a></code>
 </td>
-<td>Statistics table and volcano plot</td>
+<td>Statistics table and ranked bar plot</td>
 </tr>
 <tr class="odd">
 <td>Relate features to a continuous score</td>
@@ -293,17 +294,17 @@ below are kept small for a quick illustration.</p>
 built-in Wilcoxon workflow to compare groups.
 <code><a href="../reference/wilcox_group_test.html">wilcox_group_test()</a></code> reports, per feature and per pair of
 groups, the Wilcoxon statistic, fold change, and (jointly) FDR-adjusted
-p-value; <code><a href="../reference/volcano_plot.html">volcano_plot()</a></code> visualizes
-<code>log2(fold change)</code> against significance.</p>
+p-value; <code><a href="../reference/top_features_plot.html">top_features_plot()</a></code> shows the top up/down features
+by <code>log2(fold change)</code> as a ranked bar chart.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Responder"</span>, <span class="st">"Responder"</span>, <span class="st">"Non-responder"</span>, <span class="st">"Non-responder"</span><span class="op">)</span></span>
 <span><span class="va">wilcox_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/wilcox_group_test.html">wilcox_group_test</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">grouping</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">wilcox_results</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/volcano_plot.html">volcano_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_labels <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_n <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
 <p>With more than two groups, every pairwise comparison is run
 automatically; subset <code>wilcox_results</code> by
 <code>Comparison</code> (or pass a two-group subset to
-<code><a href="../reference/volcano_plot.html">volcano_plot()</a></code>) to inspect one pair at a time.</p>
+<code><a href="../reference/top_features_plot.html">top_features_plot()</a></code>) to inspect one pair at a time.</p>
 </div>
 <div class="section level3">
 <h3 id="correlate-features-with-a-continuous-score">5. Correlate features with a continuous score<a class="anchor" aria-label="anchor" href="#correlate-features-with-a-continuous-score"></a>
@@ -543,7 +544,9 @@ been computed.</p>
 <span><span class="co">#&gt; 4 1.0000000                1</span></span>
 <span><span class="co">#&gt; 5 0.3523810                1</span></span>
 <span><span class="co">#&gt; 6 0.6095238                1</span></span>
-<span><span class="fu"><a href="../reference/volcano_plot.html">volcano_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_labels <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: No shared levels found between `names(values)` of the manual scale and the</span></span>
+<span><span class="co">#&gt; data's <span style="color: #00BB00;">fill</span> values.</span></span></code></pre></div>
 <p><img src="RaCiNG_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="672"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">response_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span></span>

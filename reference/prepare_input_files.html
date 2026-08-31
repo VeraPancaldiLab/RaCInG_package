@@ -58,7 +58,9 @@ by the kernel and Monte Carlo workflows.</p>
 <span>  cbsx.name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cbsx.token <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  signed <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  signed <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  already_normalized <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  expr_threshold <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,6 +118,23 @@ per-gene non-negative least squares (see <code><a href="dot-estimate_expression_
 
 <dt id="arg-signed">signed<a class="anchor" aria-label="anchor" href="#arg-signed"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, also try to load a sign matrix from <code>output_folder</code>.</p></dd>
+
+
+<dt id="arg-already-normalized">already_normalized<a class="anchor" aria-label="anchor" href="#arg-already-normalized"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, <code>counts</code> is treated as
+already TPM-normalized (linear scale, not logged) and the internal
+<code><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">ADImpute::NormalizeTPM()</a></code> gene-length/library-size normalization is
+skipped. Use this for datasets where only pre-normalized expression is
+available (e.g. public cohorts distributed as log2(TPM+1) matrices with
+no raw counts) – applying <code>NormalizeTPM()</code> to already-normalized data
+would re-apply its gene-length correction on top of the original
+normalization, distorting relative gene expression levels.</p></dd>
+
+
+<dt id="arg-expr-threshold">expr_threshold<a class="anchor" aria-label="anchor" href="#arg-expr-threshold"></a></dt>
+<dd><p>Minimum expression value (in <code>cell_expr_profile</code>
+units) a ligand or receptor must reach in its sending/receiving cell type
+for that ligand-receptor-celltype triple to be kept in <code>CC_table</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

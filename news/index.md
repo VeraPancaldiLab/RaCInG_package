@@ -17,7 +17,7 @@
   average degree. Simulation results computed with earlier versions
   should be treated as invalid and re-run.
 - **[`TarjanIterative()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/TarjanIterative.md)
-  ([`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md)/[`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md)/[`OUT()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/OUT.md)/[`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md))
+  ([`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md)/`IN()`/`OUT()`/[`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md))
   was broken.** A scoping bug (`stack <- ...` instead of `<<-` inside a
   closure) desynced the SCC stack from tracked state, and
   `seq(i + 1, length(neigh))` produced a descending sequence for any
@@ -49,10 +49,9 @@
   was used where
   [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md)
   was required), inflating direct/wedge/triangle counts.
-- [`Find_Number_Trust_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Trust_Triangles_Unique.md)
-  compared against the raw wedge count instead of its sign,
-  undercounting whenever two directly-connected nodes had two or more
-  common neighbors.
+- `Find_Number_Trust_Triangles_Unique()` compared against the raw wedge
+  count instead of its sign, undercounting whenever two
+  directly-connected nodes had two or more common neighbors.
 - Cell-type identifiers (patient row names) were silently dropped from
   `Cmatrix` in
   [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md),
@@ -65,7 +64,7 @@
   ([`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md)/[`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md)/[`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)
   returning zero rows) crashed
   [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md).
-- [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)/[`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md)
+- [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)/`IN()`
   called bare `t(Adj)`, which only dispatches to `Matrix::t()` correctly
   if the `Matrix` package happens to be attached; fixed to call
   `Matrix::t()` explicitly.
@@ -103,8 +102,8 @@
 - [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)
   now reports fold change and `Log2FC` per feature and runs every
   pairwise comparison automatically for more than two groups;
-  [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md)
-  plots `log2(fold change)` instead of the raw Wilcoxon statistic.
+  `volcano_plot()` plots `log2(fold change)` instead of the raw Wilcoxon
+  statistic.
 - Rewrote
   [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md),
   [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md),

@@ -52,18 +52,8 @@
   : Read ligand-receptor interaction probabilities
 - [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md)
   : Read a ligand-receptor sign matrix
-- [`genRandomCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeDistr.md)
-  : Generate a random cell-type distribution
-- [`genRandomLigRecDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomLigRecDistr.md)
-  : Generate a random ligand-receptor distribution
-- [`genRandomCellLigands()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellLigands.md)
-  : Generate a random cell-to-ligand compatibility matrix
-- [`genRandomCellReceptors()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellReceptors.md)
-  : Generate a random cell-to-receptor compatibility matrix
 - [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md)
   : Sample cell-type labels for graph vertices
-- [`generateUniformLRGraph()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateUniformLRGraph.md)
-  : Generate a graph under a uniformized ligand-receptor baseline
 
 ## Graph utilities
 
@@ -79,26 +69,8 @@
   : Enumerate directed cycle triangles
 - [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md)
   : Enumerate wedges in a directed graph
-- [`Find_Number_Trust_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Trust_Triangles_Unique.md)
-  : Count unique trust triangles in a directed graph
-- [`Find_Number_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles.md)
-  : Count triangles allowing multi-edges
-- [`Find_Number_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles_Unique.md)
-  : Count unique triangles in a directed graph
-- [`Find_Number_2Loops()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops.md)
-  : Count reciprocal 2-loops allowing multi-edges
-- [`Find_Number_2Loops_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops_Unique.md)
-  : Count unique reciprocal 2-loops
-- [`Find_Number_Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges.md)
-  : Count wedges allowing multi-edges
-- [`Find_Number_Wedges_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges_Unique.md)
-  : Count unique wedges in a directed graph
 - [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md)
   : Extract the giant strongly connected component
-- [`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md)
-  : Compute the IN component of a directed graph
-- [`OUT()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/OUT.md)
-  : Compute the OUT component of a directed graph
 
 ## Example data
 
@@ -109,8 +81,8 @@
 
 - [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)
   : Run Wilcoxon tests across network features
-- [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md)
-  : Create a volcano plot from Wilcoxon results
+- [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)
+  : Ranked bar plot of top up/down features from Wilcoxon results
 - [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md)
   : Correlate network features with an external score
 - [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md)

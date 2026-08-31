@@ -75,10 +75,8 @@ decisions include:
 
 - **Adapted from class-based to functional design**: The
   `informationMicroEnv` class is restructured as standalone functions
-  ([`genRandomCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeDistr.md),
-  [`genRandomLigRecDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomLigRecDistr.md),
-  [`genRandomCellLigands()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellLigands.md),
-  [`genRandomCellReceptors()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellReceptors.md),
+  (`genRandomCellTypeDistr()`, `genRandomLigRecDistr()`,
+  `genRandomCellLigands()`, `genRandomCellReceptors()`,
   [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md),
   [`genRandomEdgeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomEdgeList.md)),
   each independently documented and exported.
@@ -93,12 +91,10 @@ decisions include:
   Converted from using a class instance to calling standalone functions.
   Parameters use R-style `NULL` defaults instead of Python empty lists
   `[]`.
-- **Added
-  [`generateUniformLRGraph()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateUniformLRGraph.md)**:
-  A new exported function that generates a graph under a uniformized
-  (flat) LR distribution for a specific patient. This function does not
-  exist in the original Python code and is useful for normalization
-  workflows.
+- **Added `generateUniformLRGraph()`**: A new exported function that
+  generates a graph under a uniformized (flat) LR distribution for a
+  specific patient. This function does not exist in the original Python
+  code and is useful for normalization workflows.
 - **1-based indexing**: All vertex and cell-type indices use R’s 1-based
   convention vs. Python’s 0-based.
 
@@ -107,23 +103,18 @@ decisions include:
 #### Original Python
 
 Contains all graph motif counting functions: -
-[`Find_Number_Trust_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Trust_Triangles_Unique.md),
-[`Find_Number_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles.md),
-[`Find_Number_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles_Unique.md) -
-[`Find_Number_2Loops()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops.md),
-[`Find_Number_2Loops_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops_Unique.md) -
-[`Find_Number_Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges.md),
-[`Find_Number_Wedges_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges_Unique.md) -
+`Find_Number_Trust_Triangles_Unique()`, `Find_Number_Triangles()`,
+`Find_Number_Triangles_Unique()` - `Find_Number_2Loops()`,
+`Find_Number_2Loops_Unique()` - `Find_Number_Wedges()`,
+`Find_Number_Wedges_Unique()` -
 [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md),
 [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md),
 [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md) -
-[`BFS()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/BFS.md),
-`StrongConnect()`, `Tarjan()`,
+`BFS()`, `StrongConnect()`, `Tarjan()`,
 [`TarjanIterative()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/TarjanIterative.md),
 `sconnect()` -
 [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md),
-[`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md),
-[`OUT()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/OUT.md)
+`IN()`, `OUT()`
 
 Uses `scipy.sparse` matrix operations. Contains both recursive and
 iterative Tarjan implementations.
@@ -428,8 +419,8 @@ contribution analysis with Mann-Whitney tests.
       via a parameter). Returns a tidy data frame sorted by adjusted
       p-value. This generalizes the original’s cancer-specific testing
       pipeline into a dataset-agnostic tool.
-  2.  **[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md)**:
-      A `ggplot2`-based volcano plot that accepts the output of
+  2.  **`volcano_plot()`**: A `ggplot2`-based volcano plot that accepts
+      the output of
       [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md).
 - **Functions not carried over** (with rationale):
   - Data reading functions (`readAllDataExact`, `dataReadExact`,
@@ -458,8 +449,7 @@ contribution analysis with Mann-Whitney tests.
     [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
     output.
   - `volcanoCross()`, `volcanoPan()`, `volcanoInd()`: Consolidated into
-    the single generic
-    [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md).
+    the single generic `volcano_plot()`.
 
 ### 3.8 `txt_to_csv.py` → `R/txt_to_csv.R`
 
@@ -696,31 +686,31 @@ simulation size).
 | [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md) | [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md) | Uses [`data.table::fread`](https://rdrr.io/pkg/data.table/man/fread.html) |
 | [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md) | [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md) | Generalized file naming |
 | [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md) | [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md) | Standalone functions instead of class |
-| [`genRandomCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeDistr.md) | `dg.genRandomCellTypeDistr()` | Direct port |
-| [`genRandomLigRecDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomLigRecDistr.md) | `dg.genRandomLigRecDistr()` | Direct port |
-| [`genRandomCellLigands()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellLigands.md) | `dg.genRandomCellLigands()` | Direct port |
-| [`genRandomCellReceptors()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellReceptors.md) | `dg.genRandomCellReceptors()` | Direct port |
+| `genRandomCellTypeDistr()` | `dg.genRandomCellTypeDistr()` | Direct port |
+| `genRandomLigRecDistr()` | `dg.genRandomLigRecDistr()` | Direct port |
+| `genRandomCellLigands()` | `dg.genRandomCellLigands()` | Direct port |
+| `genRandomCellReceptors()` | `dg.genRandomCellReceptors()` | Direct port |
 | [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md) | `informationMicroEnv.genRandomCellTypeList()` | Extracted from class |
 | [`genRandomEdgeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomEdgeList.md) | `informationMicroEnv.genRandomEdgeList()` | Extracted from class |
 | [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md) | [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
 | [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md) | [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
 | [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md) | [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md) | 1-based indexing |
 | [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md) | [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md) | Internal; same math |
-| [`Find_Number_Trust_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Trust_Triangles_Unique.md) | Same | Dense matrix operations |
-| [`Find_Number_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles.md) | Same | Direct port |
-| [`Find_Number_Triangles_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Triangles_Unique.md) | Same | Direct port |
-| [`Find_Number_2Loops()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops.md) | Same | Direct port |
-| [`Find_Number_2Loops_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_2Loops_Unique.md) | Same | Direct port |
-| [`Find_Number_Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges.md) | Same | Direct port |
-| [`Find_Number_Wedges_Unique()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Find_Number_Wedges_Unique.md) | Same | Direct port |
+| `Find_Number_Trust_Triangles_Unique()` | Same | Dense matrix operations |
+| `Find_Number_Triangles()` | Same | Direct port |
+| `Find_Number_Triangles_Unique()` | Same | Direct port |
+| `Find_Number_2Loops()` | Same | Direct port |
+| `Find_Number_2Loops_Unique()` | Same | Direct port |
+| `Find_Number_Wedges()` | Same | Direct port |
+| `Find_Number_Wedges_Unique()` | Same | Direct port |
 | [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md) | Same | Returns list instead of tuple |
 | [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md) | Same | Returns list instead of tuple |
 | [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md) | Same | Returns list instead of tuple |
-| [`BFS()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/BFS.md) | Same | Internal; 1-based indexing |
+| `BFS()` | Same | Internal; 1-based indexing |
 | [`TarjanIterative()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/TarjanIterative.md) | Same | Uses R closures |
 | [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md) | Same | Direct port |
-| [`IN()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/IN.md) | Same | Direct port |
-| [`OUT()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/OUT.md) | Same | Direct port |
+| `IN()` | Same | Direct port |
+| `OUT()` | Same | Direct port |
 | [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md) | Same | Direct port |
 | [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md) | Same | Direct port |
 | [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md) | Same | Direct port |
@@ -732,7 +722,7 @@ simulation size).
 | [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md) | Same | Legacy stub; redirects to computeGSCC() |
 | [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md) | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()` | Unified auto-detecting parser |
 | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) | `wilcoxon()` | Simplified, generic, FDR-corrected |
-| [`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md) | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
+| `volcano_plot()` | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
 
 ### New Functions (no Python equivalent):
 
@@ -746,7 +736,7 @@ simulation size).
 | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | End-to-end Monte Carlo workflow |
 | [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md) | Normalize and bundle Monte Carlo results |
 | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Automated input preparation from raw counts |
-| [`generateUniformLRGraph()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateUniformLRGraph.md) | Generate graph under uniform LR null model |
+| `generateUniformLRGraph()` | Generate graph under uniform LR null model |
 | [`.check_installed_packages()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-check_installed_packages.md) | Internal dependency checker |
 
 ------------------------------------------------------------------------

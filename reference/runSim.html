@@ -50,7 +50,8 @@
 <span>  output_folder <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  file.name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  patient_idx <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  patient_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ncores <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -112,6 +113,22 @@
 
 <dt id="arg-patient-idx">patient_idx<a class="anchor" aria-label="anchor" href="#arg-patient-idx"></a></dt>
 <dd><p>Optional single patient index to simulate.</p></dd>
+
+
+<dt id="arg-ncores">ncores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
+<dd><p>Number of cores to compute patients on in parallel, via
+<code><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">parallel::makeCluster()</a></code> + <code><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">doParallel::registerDoParallel()</a></code> +
+<code>foreach::foreach(...) %dopar% {...}</code> (the same backend used throughout
+<code>pipeML</code>), so it works identically on Windows/macOS/Unix. <code>ncores = 1</code>
+(the default) runs sequentially via <code><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply()</a></code> and skips cluster setup
+entirely. Patients are independent of each other, so this parallelizes
+near-linearly. File writing always happens sequentially afterward, in
+patient order, to keep the on-disk format unchanged. Because cluster
+workers are separate R processes (not forks), each one loads the
+installed <code>RaCInG</code> package rather than inheriting the calling session's
+state – if you are iterating on package source via <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> instead
+of <code><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">library(RaCInG)</a></code>, reinstall the package first so workers see your
+latest changes.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -104,7 +104,7 @@
 <div class="section level4">
 <h4 id="r-package-changes">R Package Changes<a class="anchor" aria-label="anchor" href="#r-package-changes"></a></h4>
 <ul><li>
-<strong>Adapted from class-based to functional design</strong>: The <code>informationMicroEnv</code> class is restructured as standalone functions (<code><a href="reference/genRandomCellTypeDistr.html">genRandomCellTypeDistr()</a></code>, <code><a href="reference/genRandomLigRecDistr.html">genRandomLigRecDistr()</a></code>, <code><a href="reference/genRandomCellLigands.html">genRandomCellLigands()</a></code>, <code><a href="reference/genRandomCellReceptors.html">genRandomCellReceptors()</a></code>, <code><a href="reference/genRandomCellTypeList.html">genRandomCellTypeList()</a></code>, <code><a href="reference/genRandomEdgeList.html">genRandomEdgeList()</a></code>), each independently documented and exported.</li>
+<strong>Adapted from class-based to functional design</strong>: The <code>informationMicroEnv</code> class is restructured as standalone functions (<code>genRandomCellTypeDistr()</code>, <code>genRandomLigRecDistr()</code>, <code>genRandomCellLigands()</code>, <code>genRandomCellReceptors()</code>, <code><a href="reference/genRandomCellTypeList.html">genRandomCellTypeList()</a></code>, <code><a href="reference/genRandomEdgeList.html">genRandomEdgeList()</a></code>), each independently documented and exported.</li>
 <li>
 <strong>Consolidated <code>distribution_generation</code> into the same file</strong>: The separate Python module <code>distribution_generation.py</code> (referenced as <code>import distribution_generation as dg</code>) is incorporated directly into <code>network_generation.R</code>, keeping all network generation logic in one place.</li>
 <li>
@@ -112,7 +112,7 @@
 <li>
 <strong><code><a href="reference/model1.html">model1()</a></code></strong>: Converted from using a class instance to calling standalone functions. Parameters use R-style <code>NULL</code> defaults instead of Python empty lists <code>[]</code>.</li>
 <li>
-<strong>Added <code><a href="reference/generateUniformLRGraph.html">generateUniformLRGraph()</a></code></strong>: A new exported function that generates a graph under a uniformized (flat) LR distribution for a specific patient. This function does not exist in the original Python code and is useful for normalization workflows.</li>
+<strong>Added <code>generateUniformLRGraph()</code></strong>: A new exported function that generates a graph under a uniformized (flat) LR distribution for a specific patient. This function does not exist in the original Python code and is useful for normalization workflows.</li>
 <li>
 <strong>1-based indexing</strong>: All vertex and cell-type indices use R’s 1-based convention vs. Python’s 0-based.</li>
 </ul></div>
@@ -122,7 +122,7 @@
 <a class="anchor" aria-label="anchor" href="#id_32-feature_extractionpy--rfeature_extractionr"></a></h3>
 <div class="section level4">
 <h4 id="original-python-1">Original Python<a class="anchor" aria-label="anchor" href="#original-python-1"></a></h4>
-<p>Contains all graph motif counting functions: - <code><a href="reference/Find_Number_Trust_Triangles_Unique.html">Find_Number_Trust_Triangles_Unique()</a></code>, <code><a href="reference/Find_Number_Triangles.html">Find_Number_Triangles()</a></code>, <code><a href="reference/Find_Number_Triangles_Unique.html">Find_Number_Triangles_Unique()</a></code> - <code><a href="reference/Find_Number_2Loops.html">Find_Number_2Loops()</a></code>, <code><a href="reference/Find_Number_2Loops_Unique.html">Find_Number_2Loops_Unique()</a></code> - <code><a href="reference/Find_Number_Wedges.html">Find_Number_Wedges()</a></code>, <code><a href="reference/Find_Number_Wedges_Unique.html">Find_Number_Wedges_Unique()</a></code> - <code><a href="reference/Trust_Triangles.html">Trust_Triangles()</a></code>, <code><a href="reference/Cycle_Triangles.html">Cycle_Triangles()</a></code>, <code><a href="reference/Wedges.html">Wedges()</a></code> - <code><a href="reference/BFS.html">BFS()</a></code>, <code>StrongConnect()</code>, <code>Tarjan()</code>, <code><a href="reference/TarjanIterative.html">TarjanIterative()</a></code>, <code>sconnect()</code> - <code><a href="reference/GSCC.html">GSCC()</a></code>, <code><a href="reference/IN.html">IN()</a></code>, <code><a href="reference/OUT.html">OUT()</a></code></p>
+<p>Contains all graph motif counting functions: - <code>Find_Number_Trust_Triangles_Unique()</code>, <code>Find_Number_Triangles()</code>, <code>Find_Number_Triangles_Unique()</code> - <code>Find_Number_2Loops()</code>, <code>Find_Number_2Loops_Unique()</code> - <code>Find_Number_Wedges()</code>, <code>Find_Number_Wedges_Unique()</code> - <code><a href="reference/Trust_Triangles.html">Trust_Triangles()</a></code>, <code><a href="reference/Cycle_Triangles.html">Cycle_Triangles()</a></code>, <code><a href="reference/Wedges.html">Wedges()</a></code> - <code>BFS()</code>, <code>StrongConnect()</code>, <code>Tarjan()</code>, <code><a href="reference/TarjanIterative.html">TarjanIterative()</a></code>, <code>sconnect()</code> - <code><a href="reference/GSCC.html">GSCC()</a></code>, <code>IN()</code>, <code>OUT()</code></p>
 <p>Uses <code>scipy.sparse</code> matrix operations. Contains both recursive and iterative Tarjan implementations.</p>
 </div>
 <div class="section level4">
@@ -308,7 +308,7 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 <ol style="list-style-type: decimal"><li>
 <strong><code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code></strong>: A generic Wilcoxon rank-sum test function that accepts any data matrix and group labels. Uses <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code> for multiple testing correction (supports FDR, Bonferroni, and others via a parameter). Returns a tidy data frame sorted by adjusted p-value. This generalizes the original’s cancer-specific testing pipeline into a dataset-agnostic tool.</li>
 <li>
-<strong><code><a href="reference/volcano_plot.html">volcano_plot()</a></code></strong>: A <code>ggplot2</code>-based volcano plot that accepts the output of <code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code>.</li>
+<strong><code>volcano_plot()</code></strong>: A <code>ggplot2</code>-based volcano plot that accepts the output of <code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code>.</li>
 </ol></li>
 <li>
 <strong>Functions not carried over</strong> (with rationale):
@@ -328,7 +328,7 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 <li>
 <code>contributionAnalysisGSCC()</code>: Study-specific analysis that users can implement using <code><a href="reference/computeGSCC.html">computeGSCC()</a></code> output.</li>
 <li>
-<code>volcanoCross()</code>, <code>volcanoPan()</code>, <code>volcanoInd()</code>: Consolidated into the single generic <code><a href="reference/volcano_plot.html">volcano_plot()</a></code>.</li>
+<code>volcanoCross()</code>, <code>volcanoPan()</code>, <code>volcanoInd()</code>: Consolidated into the single generic <code>volcano_plot()</code>.</li>
 </ul></li>
 </ul></div>
 </div>
@@ -553,16 +553,16 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 </tr><tr><td><code><a href="reference/model1.html">model1()</a></code></td>
 <td><code><a href="reference/model1.html">model1()</a></code></td>
 <td>Standalone functions instead of class</td>
-</tr><tr><td><code><a href="reference/genRandomCellTypeDistr.html">genRandomCellTypeDistr()</a></code></td>
+</tr><tr><td><code>genRandomCellTypeDistr()</code></td>
 <td><code>dg.genRandomCellTypeDistr()</code></td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/genRandomLigRecDistr.html">genRandomLigRecDistr()</a></code></td>
+</tr><tr><td><code>genRandomLigRecDistr()</code></td>
 <td><code>dg.genRandomLigRecDistr()</code></td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/genRandomCellLigands.html">genRandomCellLigands()</a></code></td>
+</tr><tr><td><code>genRandomCellLigands()</code></td>
 <td><code>dg.genRandomCellLigands()</code></td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/genRandomCellReceptors.html">genRandomCellReceptors()</a></code></td>
+</tr><tr><td><code>genRandomCellReceptors()</code></td>
 <td><code>dg.genRandomCellReceptors()</code></td>
 <td>Direct port</td>
 </tr><tr><td><code><a href="reference/genRandomCellTypeList.html">genRandomCellTypeList()</a></code></td>
@@ -585,25 +585,25 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 </tr><tr><td><code><a href="reference/poiBPFunc.html">poiBPFunc()</a></code></td>
 <td><code><a href="reference/poiBPFunc.html">poiBPFunc()</a></code></td>
 <td>Internal; same math</td>
-</tr><tr><td><code><a href="reference/Find_Number_Trust_Triangles_Unique.html">Find_Number_Trust_Triangles_Unique()</a></code></td>
+</tr><tr><td><code>Find_Number_Trust_Triangles_Unique()</code></td>
 <td>Same</td>
 <td>Dense matrix operations</td>
-</tr><tr><td><code><a href="reference/Find_Number_Triangles.html">Find_Number_Triangles()</a></code></td>
+</tr><tr><td><code>Find_Number_Triangles()</code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/Find_Number_Triangles_Unique.html">Find_Number_Triangles_Unique()</a></code></td>
+</tr><tr><td><code>Find_Number_Triangles_Unique()</code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/Find_Number_2Loops.html">Find_Number_2Loops()</a></code></td>
+</tr><tr><td><code>Find_Number_2Loops()</code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/Find_Number_2Loops_Unique.html">Find_Number_2Loops_Unique()</a></code></td>
+</tr><tr><td><code>Find_Number_2Loops_Unique()</code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/Find_Number_Wedges.html">Find_Number_Wedges()</a></code></td>
+</tr><tr><td><code>Find_Number_Wedges()</code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/Find_Number_Wedges_Unique.html">Find_Number_Wedges_Unique()</a></code></td>
+</tr><tr><td><code>Find_Number_Wedges_Unique()</code></td>
 <td>Same</td>
 <td>Direct port</td>
 </tr><tr><td><code><a href="reference/Trust_Triangles.html">Trust_Triangles()</a></code></td>
@@ -615,7 +615,7 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 </tr><tr><td><code><a href="reference/Wedges.html">Wedges()</a></code></td>
 <td>Same</td>
 <td>Returns list instead of tuple</td>
-</tr><tr><td><code><a href="reference/BFS.html">BFS()</a></code></td>
+</tr><tr><td><code>BFS()</code></td>
 <td>Same</td>
 <td>Internal; 1-based indexing</td>
 </tr><tr><td><code><a href="reference/TarjanIterative.html">TarjanIterative()</a></code></td>
@@ -624,10 +624,10 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 </tr><tr><td><code><a href="reference/GSCC.html">GSCC()</a></code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/IN.html">IN()</a></code></td>
+</tr><tr><td><code>IN()</code></td>
 <td>Same</td>
 <td>Direct port</td>
-</tr><tr><td><code><a href="reference/OUT.html">OUT()</a></code></td>
+</tr><tr><td><code>OUT()</code></td>
 <td>Same</td>
 <td>Direct port</td>
 </tr><tr><td><code><a href="reference/countWedges.html">countWedges()</a></code></td>
@@ -665,7 +665,7 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 </tr><tr><td><code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code></td>
 <td><code>wilcoxon()</code></td>
 <td>Simplified, generic, FDR-corrected</td>
-</tr><tr><td><code><a href="reference/volcano_plot.html">volcano_plot()</a></code></td>
+</tr><tr><td><code>volcano_plot()</code></td>
 <td>
 <code>volcanoPan()</code> + <code>volcanoInd()</code> + <code>volcanoCross()</code>
 </td>
@@ -691,7 +691,7 @@ This function replaces the three separate R Markdown notebooks (<code>RaCInG_ccc
 <td>Normalize and bundle Monte Carlo results</td>
 </tr><tr><td><code><a href="reference/prepare_input_files.html">prepare_input_files()</a></code></td>
 <td>Automated input preparation from raw counts</td>
-</tr><tr><td><code><a href="reference/generateUniformLRGraph.html">generateUniformLRGraph()</a></code></td>
+</tr><tr><td><code>generateUniformLRGraph()</code></td>
 <td>Generate graph under uniform LR null model</td>
 </tr><tr><td><code><a href="reference/dot-check_installed_packages.html">.check_installed_packages()</a></code></td>
 <td>Internal dependency checker</td>

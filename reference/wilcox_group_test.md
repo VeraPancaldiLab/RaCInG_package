@@ -2,8 +2,8 @@
 
 Runs a Wilcoxon rank-sum test per feature (column) between every pair of
 groups. Also reports the fold change (ratio of group means) so results
-can be plotted as a standard volcano plot with
-[`volcano_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/volcano_plot.md).
+can be plotted with
+[`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md).
 
 ## Usage
 

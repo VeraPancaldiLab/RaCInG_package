@@ -1,4 +1,4 @@
-# Load RaCInG input matrices from disk
+# Load RaCInG input matrices from disk –\> Is there any normalization done here? I dont see it in the function
 
 Internal helper called by
 [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)

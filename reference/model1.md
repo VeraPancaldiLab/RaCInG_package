@@ -8,12 +8,11 @@ Generate a single RaCInG graph realization
 model1(
   N,
   avdeg,
-  cellLigList = NULL,
-  cellRecList = NULL,
-  Dcelltype = NULL,
-  Dligrec = NULL,
-  Signmatrix = NULL,
-  genRandom = TRUE
+  cellLigList,
+  cellRecList,
+  Dcelltype,
+  Dligrec,
+  Signmatrix = NULL
 )
 ```
 
@@ -46,10 +45,6 @@ model1(
 - Signmatrix:
 
   Optional ligand-receptor sign matrix.
-
-- genRandom:
-
-  Logical; if `TRUE`, generate random test inputs internally.
 
 ## Value
 

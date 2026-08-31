@@ -69,7 +69,7 @@ files
     compute_kernel()               runSim() → model1() + motif counters
     compute_kernel_features()      compute_results_processing()
         ↓
-    wilcox_group_test() → volcano_plot()
+    wilcox_group_test() → top_features_plot()
 
 ### Module Responsibilities
 

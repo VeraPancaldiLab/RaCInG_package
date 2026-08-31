@@ -27,7 +27,8 @@ compute_racing_montecarlo(
   Ndegree = 20,
   remove_direction = TRUE,
   norm = TRUE,
-  input_data = NULL
+  input_data = NULL,
+  ncores = 1
 )
 ```
 
@@ -135,6 +136,12 @@ compute_racing_montecarlo(
   `ligands`, and `receptors`. When supplied, the `counts` argument and
   all preprocessing parameters (`deconv`, `cc_network`, etc.) are
   ignored.
+
+- ncores:
+
+  Number of cores to compute patients on in parallel. Passed through to
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md);
+  see its documentation for details.
 
 ## Value
 
