@@ -95,7 +95,7 @@ mc_res <- compute_racing_montecarlo(
 # Compare clinical groups or correlate features with a continuous score
 grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
 wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
-volcano_plot(wilcox_results)
+top_features_plot(wilcox_results)
 ```
 
 ## Documentation

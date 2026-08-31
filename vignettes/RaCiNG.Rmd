@@ -67,7 +67,7 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 | Build input matrices from raw counts | `prepare_input_files()` | Named list with `L`, `R`, `C`, `LR` matrices and labels |
 | Compute deterministic features | `compute_racing_kernel()` | Kernel arrays + feature matrix |
 | Compute simulation summaries | `compute_racing_montecarlo()` | Processed Monte Carlo results |
-| Compare clinical groups | `wilcox_group_test()` + `volcano_plot()` | Statistics table and volcano plot |
+| Compare clinical groups | `wilcox_group_test()` + `top_features_plot()` | Statistics table and ranked bar plot |
 | Relate features to a continuous score | `correlate_features_with_score()` + `correlation_plot()` | Correlation table and rainfall plot |
 
 ## How `prepare_input_files()` builds its inputs
@@ -195,17 +195,18 @@ head(mc_res$output$mean[, 1:5])
 Once features are available in a patient-by-feature matrix, use the built-in Wilcoxon
 workflow to compare groups. `wilcox_group_test()` reports, per feature and per pair
 of groups, the Wilcoxon statistic, fold change, and (jointly) FDR-adjusted p-value;
-`volcano_plot()` visualizes `log2(fold change)` against significance.
+`top_features_plot()` shows the top up/down features by `log2(fold change)` as a
+ranked bar chart.
 
 ```{r eval = FALSE}
 grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
 wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 head(wilcox_results)
-volcano_plot(wilcox_results, top_labels = 15)
+top_features_plot(wilcox_results, top_n = 15)
 ```
 
 With more than two groups, every pairwise comparison is run automatically; subset
-`wilcox_results` by `Comparison` (or pass a two-group subset to `volcano_plot()`) to
+`wilcox_results` by `Comparison` (or pass a two-group subset to `top_features_plot()`) to
 inspect one pair at a time.
 
 ### 5. Correlate features with a continuous score
@@ -322,7 +323,7 @@ set.seed(1)
 grouping <- sample(c("GroupA", "GroupB"), nrow(kernel_res$features), replace = TRUE)
 wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 head(wilcox_results)
-volcano_plot(wilcox_results, top_labels = 10)
+top_features_plot(wilcox_results, top_n = 10)
 ```
 
 ```{r}

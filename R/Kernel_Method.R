@@ -10,7 +10,26 @@
 #' @param reclist Cell-by-receptor compatibility matrix.
 #' @param Cmatrix Patient-by-cell-type abundance matrix.
 #' @param LRmatrix Ligand-by-receptor-by-patient interaction tensor.
-#' @param normalize Logical; if `TRUE`, also compute a uniformized baseline kernel.
+#' @param normalize Logical; if `TRUE`, also compute a second kernel
+#'   (`kernel_norm`) under a NULL DISTRIBUTION where every ligand-receptor
+#'   pair that is structurally possible (nonzero in `LRmatrix`) is given the
+#'   same uniform strength (`1 / number of active pairs for that patient`),
+#'   instead of its real measured expression-derived strength. `kernel_norm`
+#'   therefore reflects only network topology and cell-type abundance --
+#'   "how much communication would you expect between these two cell types if
+#'   every possible ligand-receptor pair were equally active" -- with no
+#'   information about which pairs are actually more or less expressed.
+#'   Downstream functions (`calculateDirect()`, `calculateWedges()`, etc.) use
+#'   this as a baseline to compute a composition-independent enrichment score
+#'   (`kernel / kernel_norm`) instead of the raw, abundance-weighted score --
+#'   the abundance weighting cancels out of that ratio algebraically, since
+#'   both `kernel` and `kernel_norm` are built from the same per-patient
+#'   `lig_weight`/`rec_weight` terms. Use `normalize = FALSE` (default) when
+#'   you want absolute communication strength (abundance and real LR
+#'   expression both matter); use `normalize = TRUE` when you want a score
+#'   that isolates specificity/enrichment of a cell-type pair's communication
+#'   relative to what topology alone would predict, independent of how common
+#'   those cell types are or how strong LR expression is overall.
 #'
 #' @return Either a 3D kernel array `[sender x receiver x patient]`, or (when
 #'   `normalize = TRUE`) a list with `kernel` and `kernel_norm`.
@@ -20,7 +39,8 @@ compute_kernel <- function(liglist, reclist, Cmatrix, LRmatrix, normalize = FALS
   # reclist:   [cell type × receptor] binary/weighted matrix mapping cell types to receptors
   # Cmatrix:   [patient × cell type] cell type abundances for each patient
   # LRmatrix:  [ligand × receptor × patient] ligand-receptor interaction strengths for each patient
-  # normalize: if TRUE, also compute the kernel under a uniformized LRmatrix
+  # normalize: if TRUE, also compute the kernel under a uniformized (null-distribution) LRmatrix --
+  #            see @param normalize above for what this represents and why you'd want it.
   #
   # Return:
   #  - if normalize == FALSE: kernel array [sender x receiver x patient]
@@ -116,6 +136,7 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
         } else {
           kernel[i, j, ] / unifKernel[i, j, ]
         }
+        value[is.nan(value)] <- 0 # no possible ligand-receptor pathway between i and j (0/0): no communication, not undefined
       } else {
         # raw direct score: weight explicitly by the abundance of each node
         value <- if (bundle) {
@@ -168,6 +189,7 @@ calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
             (kernel[i,j,] * kernel[j,k,]) /
               (unifKernel[i,j,] * unifKernel[j,k,])
           }
+          value[is.nan(value)] <- 0 # no possible ligand-receptor pathway through this triplet (0/0): no communication, not undefined
         } else {
           # raw wedge: weight explicitly by the abundance of each of the 3 nodes
           value <- if (bundle) {

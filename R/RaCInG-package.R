@@ -7,6 +7,7 @@
 #' @keywords internal
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
+#' @importFrom foreach %dopar%
 "_PACKAGE"
 
 utils::globalVariables(

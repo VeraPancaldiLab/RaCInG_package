@@ -77,10 +77,15 @@ Read_Sim_Output <- function(filename) {
   }
 
   raw_count <- matrix(0, nrow = NoPat, ncol = 2)
+  block_size <- nCells^dim_type
 
   # -----------------------------
   # Read patient data
   # -----------------------------
+  # Each composition block is read as one bulk slice + one vectorized matrix
+  # assignment instead of one lines[idx,] subset per row -- for W/TT/CT
+  # (block_size = nCells^3, ~18.4 million at 264 cell types) the per-row
+  # version takes minutes per patient; this takes a fraction of a second.
   while (idx <= nrow(lines)) {
 
     p <- as.integer(lines[idx, 1]) # patient ID, the other columns correspond to N and avg
@@ -101,65 +106,26 @@ Read_Sim_Output <- function(filename) {
     # Skip "Composition - Average"
     idx <- idx + 1
 
-    # -----------------------------
-    # Read averages
-    # -----------------------------
-    if (dim_type == 3) {
-      for (n in 1:(nCells^3)) {
-        row <- lines[idx, ]; idx <- idx + 1
-        i <- as.integer(row[1])
-        j <- as.integer(row[2])
-        k <- as.integer(row[3])
-        val <- as.numeric(row[4])
-        data_a[i, j, k, p] <- val
-      }
-    } else if (dim_type == 2) {
-      for (n in 1:(nCells^2)) {
-        row <- lines[idx, ]; idx <- idx + 1
-        i <- as.integer(row[1])
-        j <- as.integer(row[2])
-        val <- as.numeric(row[3])
-        data_a[i, j, p] <- val
-      }
-    } else {
-      for (n in 1:nCells) {
-        row <- lines[idx, ]; idx <- idx + 1
-        i <- as.integer(row[1])
-        val <- as.numeric(row[2])
-        data_a[i, p] <- val
-      }
-    }
+    avg_block <- as.matrix(lines[idx:(idx + block_size - 1), seq_len(dim_type + 1), drop = FALSE])
+    mode(avg_block) <- "numeric"
+    idx <- idx + block_size
 
     # Skip "Composition - Std"
     idx <- idx + 1
 
-    # -----------------------------
-    # Read standard deviations
-    # -----------------------------
+    std_block <- as.matrix(lines[idx:(idx + block_size - 1), seq_len(dim_type + 1), drop = FALSE])
+    mode(std_block) <- "numeric"
+    idx <- idx + block_size
+
     if (dim_type == 3) {
-      for (n in 1:(nCells^3)) {
-        row <- lines[idx, ]; idx <- idx + 1
-        i <- as.integer(row[1])
-        j <- as.integer(row[2])
-        k <- as.integer(row[3])
-        val <- as.numeric(row[4])
-        data_s[i, j, k, p] <- val
-      }
+      data_a[cbind(avg_block[, 1], avg_block[, 2], avg_block[, 3], p)] <- avg_block[, 4]
+      data_s[cbind(std_block[, 1], std_block[, 2], std_block[, 3], p)] <- std_block[, 4]
     } else if (dim_type == 2) {
-      for (n in 1:(nCells^2)) {
-        row <- lines[idx, ]; idx <- idx + 1
-        i <- as.integer(row[1])
-        j <- as.integer(row[2])
-        val <- as.numeric(row[3])
-        data_s[i, j, p] <- val
-      }
+      data_a[cbind(avg_block[, 1], avg_block[, 2], p)] <- avg_block[, 3]
+      data_s[cbind(std_block[, 1], std_block[, 2], p)] <- std_block[, 3]
     } else {
-      for (n in 1:nCells) {
-        row <- lines[idx, ]; idx <- idx + 1
-        i <- as.integer(row[1])
-        val <- as.numeric(row[2])
-        data_s[i, p] <- val
-      }
+      data_a[cbind(avg_block[, 1], p)] <- avg_block[, 2]
+      data_s[cbind(std_block[, 1], p)] <- std_block[, 2]
     }
   }
 
@@ -381,113 +347,60 @@ compute_results_processing <- function(celltypes,
   }
 
   # -----------------------------
-  # Convert arrays → data frames (means and stds)
-  # -----------------------------
-  non_unif_data <- list()
-  unif_data     <- list()
-  non_unif_sd   <- list()
-  unif_sd       <- list()
-
-  if (length(dim(av)) == 4) {  # Triangles (3D interactions) + patients
-    for (i in 1:nCells) {
-      for (j in 1:nCells) {
-        for (k in 1:nCells) {
-          label <- paste(celltypes[i], celltypes[j], celltypes[k], sep = "_")
-          non_unif_data[[label]] <- av[i, j, k, ]
-          non_unif_sd[[label]]   <- av_sd[i, j, k, ]
-          if (normalized) {
-            unif_data[[label]] <- avN[i, j, k, ]
-            unif_sd[[label]]   <- avN_sd[i, j, k, ]
-          }
-        }
-      }
+  # Convert arrays -> labeled [patient x interaction] matrices directly via a
+  # single reshape instead of building one named-list entry per interaction
+  # then converting to a data.frame -- for Triangles (nCells^3 interactions,
+  # ~18.4 million at 264 cell types) the list/data.frame version takes
+  # minutes; a reshape is instantaneous regardless of nCells.
+  .array_to_labeled_matrix <- function(arr, celltypes) {
+    d <- dim(arr)
+    dim_type <- length(d) - 1
+    nCells <- d[1]
+    NoPat <- d[length(d)]
+    out <- t(matrix(arr, nrow = nCells^dim_type, ncol = NoPat))
+    if (dim_type == 1) {
+      labels <- celltypes
+    } else {
+      grid <- do.call(expand.grid, rep(list(seq_len(nCells)), dim_type))
+      labels <- do.call(paste, c(lapply(grid, function(idx) celltypes[idx]), list(sep = "_")))
     }
-  } else if (length(dim(av)) == 3) {  # Direct interactions (2D) + patients
-    for (i in 1:nCells) {
-      for (j in 1:nCells) {
-        label <- paste(celltypes[i], celltypes[j], sep = "_")
-        non_unif_data[[label]] <- av[i, j, ]
-        non_unif_sd[[label]]   <- av_sd[i, j, ]
-        if (normalized) {
-          unif_data[[label]] <- avN[i, j, ]
-          unif_sd[[label]]   <- avN_sd[i, j, ]
-        }
-      }
-    }
-  } else {  # GSCC (1D) + patients
-    for (i in 1:nCells) {
-      label <- celltypes[i]
-      non_unif_data[[label]] <- av[i, ]
-      non_unif_sd[[label]]   <- av_sd[i, ]
-      if (normalized) {
-        unif_data[[label]] <- avN[i, ]
-        unif_sd[[label]]   <- avN_sd[i, ]
-      }
-    }
+    colnames(out) <- labels
+    out
   }
 
-  # Convert lists to data frames for easier manipulation
-  df     <- as.data.frame(non_unif_data)
-  dfN    <- if (normalized) as.data.frame(unif_data) else NULL
-  df_sd  <- as.data.frame(non_unif_sd)
-  dfN_sd <- if (normalized) as.data.frame(unif_sd) else NULL
-
-  # Initialize matrices (will be overwritten if remove_direction is TRUE)
-  av      <- as.matrix(df)
-  av_sd   <- as.matrix(df_sd)
+  av    <- .array_to_labeled_matrix(av, celltypes)
+  av_sd <- .array_to_labeled_matrix(av_sd, celltypes)
   if (normalized) {
-    avN    <- as.matrix(dfN)
-    avN_sd <- as.matrix(dfN_sd)
+    avN    <- .array_to_labeled_matrix(avN, celltypes)
+    avN_sd <- .array_to_labeled_matrix(avN_sd, celltypes)
   }
 
   # -----------------------------
   # Remove direction (merge labels)
   # -----------------------------
   # Some triangle types (like W) are directional; this step merges counts for
-  # interactions that are equivalent when ignoring direction.
+  # interactions that are equivalent when ignoring direction. Uses rowsum()
+  # (a single vectorized grouped-sum) instead of a per-column accumulation
+  # loop, which was the same nCells^3-scale bottleneck as above.
   if (remove_direction) {
-    new  <- data.frame(matrix(nrow = nrow(df), ncol = 0))
-    newN <- if (normalized) data.frame(matrix(nrow = nrow(df), ncol = 0)) else NULL
-    # For stds we merge variances (sum variances when summing counts)
-    newVar  <- data.frame(matrix(nrow = nrow(df_sd), ncol = 0))
-    newNVar <- if (normalized) data.frame(matrix(nrow = nrow(df_sd), ncol = 0)) else NULL
+    parts_list <- strsplit(colnames(av), "_")
 
-    for (colname in colnames(df)) {
-      parts <- strsplit(colname, "_")[[1]]
-
+    new_labels <- vapply(parts_list, function(parts) {
       if (triangle_type == "W" && length(parts) == 3) {
         # Sort only first and last cell for W triangles
         sorted_parts <- sort(c(parts[1], parts[3]))
-        parts[1] <- sorted_parts[1]
-        parts[3] <- sorted_parts[2]
-        new_label <- paste(parts, collapse = "_")
+        paste(sorted_parts[1], parts[2], sorted_parts[2], sep = "_")
       } else {
         # Sort all parts for other types (fully direction-agnostic)
-        new_label <- paste(sort(parts), collapse = "_")
+        paste(sort(parts), collapse = "_")
       }
+    }, character(1))
 
-      # Accumulate counts for merged labels
-      if (new_label %in% colnames(new)) {
-        new[[new_label]] <- new[[new_label]] + df[[colname]]
-        if (normalized) newN[[new_label]] <- newN[[new_label]] + dfN[[colname]]
-        # accumulate variances
-        newVar[[new_label]] <- newVar[[new_label]] + (df_sd[[colname]]^2)
-        if (normalized) newNVar[[new_label]] <- newNVar[[new_label]] + (dfN_sd[[colname]]^2)
-      } else {
-        new[[new_label]] <- df[[colname]]
-        if (normalized) newN[[new_label]] <- dfN[[colname]]
-        # initialize variance accumulators
-        newVar[[new_label]] <- (df_sd[[colname]]^2)
-        if (normalized) newNVar[[new_label]] <- (dfN_sd[[colname]]^2)
-      }
-    }
-
-    # Update arrays for normalization
-    av  <- as.matrix(new)
-    if (normalized) avN <- as.matrix(newN)
-    # convert accumulated variances -> sd matrices
-    av_sd <- sqrt(as.matrix(newVar))
-    if (normalized) avN_sd <- sqrt(as.matrix(newNVar))
+    av <- t(rowsum(t(av), group = new_labels))
+    if (normalized) avN <- t(rowsum(t(avN), group = new_labels))
+    # merge variances (sum variances when summing counts), then convert back to sd
+    av_sd <- sqrt(t(rowsum(t(av_sd^2), group = new_labels)))
+    if (normalized) avN_sd <- sqrt(t(rowsum(t(avN_sd^2), group = new_labels)))
   }
 
   # -----------------------------

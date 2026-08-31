@@ -1,3 +1,28 @@
+#' Mean and SD across the last dimension of an array, vectorized
+#'
+#' Equivalent to `apply(arr, seq_len(length(dim(arr)) - 1), mean)` /
+#' `apply(arr, ..., stats::sd)`, but avoids calling `mean()`/`sd()` once per
+#' element of the other dimensions -- for a `[264,264,264,itNo]` tensor that's
+#' ~18.4 million individual R function calls per statistic with `apply()`,
+#' which takes well over a minute regardless of `itNo`. Reshaping to a matrix
+#' and using `rowMeans()`/a vectorized variance formula does the same
+#' computation in a fraction of a second.
+#'
+#' @param arr Array whose last dimension is averaged over.
+#'
+#' @return A list with `mean` and `sd`, each an array with one fewer
+#'   dimension than `arr` (the last dimension collapsed).
+#' @keywords internal
+.mean_sd_last_dim <- function(arr) {
+  d <- dim(arr)
+  itNo <- d[length(d)]
+  out_dim <- d[-length(d)]
+  m <- matrix(arr, ncol = itNo)
+  row_means <- rowMeans(m)
+  row_sd <- if (itNo > 1) sqrt(rowSums((m - row_means)^2) / (itNo - 1)) else rep(NA_real_, nrow(m))
+  list(mean = array(row_means, dim = out_dim), sd = array(row_sd, dim = out_dim))
+}
+
 #' Count wedges across Monte Carlo graph simulations
 #'
 #' @param Dcell Cell-type abundance vector for one patient.
@@ -23,7 +48,7 @@ countWedges <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
   
   for (i in 1:itNo) {
     # Generate a random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn, genRandom = FALSE)
+    graph <- model1(N, av, lig, rec, Dcell, Dconn)
     V <- graph$V      # Vector of cell types per vertex
     E <- graph$E      # Edge list
     
@@ -41,8 +66,9 @@ countWedges <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
   }
   
   # Compute averages and standard deviations across Monte Carlo iterations
-  av_triag <- apply(triangletensor, c(1,2,3), mean)
-  std_triag <- apply(triangletensor, c(1,2,3), stats::sd)
+  .agg <- .mean_sd_last_dim(triangletensor)
+  av_triag <- .agg$mean
+  std_triag <- .agg$sd
   av_count <- mean(trianglecount)
   std_count <- stats::sd(trianglecount)
   
@@ -74,7 +100,7 @@ countTrustTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) 
   # Loop over Monte Carlo iterations
   for (i in 1:itNo) {
     # Generate a random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn, genRandom = FALSE)
+    graph <- model1(N, av, lig, rec, Dcell, Dconn)
     V <- graph$V  # Vector assigning cell type to each vertex
     E <- graph$E  # Edge list
     
@@ -91,12 +117,11 @@ countTrustTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) 
     triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
   }
   
-  # Compute average triangle counts per cell-type combination across iterations
-  av_triag <- apply(triangletensor, c(1,2,3), mean)
-  
-  # Compute standard deviation of triangle counts per combination across iterations
-  std_triag <- apply(triangletensor, c(1,2,3), stats::sd)
-  
+  # Compute average and standard deviation of triangle counts per cell-type combination across iterations
+  .agg <- .mean_sd_last_dim(triangletensor)
+  av_triag <- .agg$mean
+  std_triag <- .agg$sd
+
   # Compute average total number of trust triangles per iteration
   av_count <- mean(trianglecount)
   
@@ -132,7 +157,7 @@ countCycleTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) 
   # Loop over Monte Carlo iterations
   for (i in 1:itNo) {
     # Generate random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn, genRandom = FALSE)
+    graph <- model1(N, av, lig, rec, Dcell, Dconn)
     V <- graph$V  # Vector: cell type for each vertex
     E <- graph$E  # Edge list of the graph
     
@@ -149,12 +174,11 @@ countCycleTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) 
     triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
   }
   
-  # Compute average triangle counts per cell-type combination across iterations
-  av_triag <- apply(triangletensor, c(1,2,3), mean)
-  
-  # Compute standard deviation of triangle counts per combination across iterations
-  std_triag <- apply(triangletensor, c(1,2,3), stats::sd)
-  
+  # Compute average and standard deviation of triangle counts per cell-type combination across iterations
+  .agg <- .mean_sd_last_dim(triangletensor)
+  av_triag <- .agg$mean
+  std_triag <- .agg$sd
+
   # Compute average total number of cycle triangles per iteration
   av_count <- mean(trianglecount)
   
@@ -190,7 +214,7 @@ countDirect <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
   # Loop over Monte Carlo iterations
   for (i in 1:itNo) {
     # Generate random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn, genRandom = FALSE)
+    graph <- model1(N, av, lig, rec, Dcell, Dconn)
     V <- graph$V  # Vector: cell type for each vertex
     E <- graph$E  # Edge list of the graph
     
@@ -252,7 +276,7 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
   # Loop over Monte Carlo iterations
   for (i in 1:itNo) {
     # Generate random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn, genRandom = FALSE)
+    graph <- model1(N, av, lig, rec, Dcell, Dconn)
     V <- graph$V  # Vector: cell type for each vertex
     E <- graph$E  # Edge list of the graph
     
@@ -293,6 +317,22 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
   ))
 }
 
+#' Reset foreach backend to sequential
+#'
+#' Internal helper that unregisters any active parallel backend used by
+#' \pkg{foreach} and restores the sequential backend via
+#' \code{foreach::registerDoSEQ()}, mirroring \code{pipeML}'s helper of the
+#' same purpose. Called after \code{parallel::stopCluster()} to make sure the
+#' cluster is fully released.
+#'
+#' @keywords internal
+.unregister_dopar <- function() {
+  if (!is.null(foreach::getDoParRegistered())) {
+    foreach::registerDoSEQ()
+    gc()
+  }
+}
+
 #' Run Monte Carlo simulations for one or more patients
 #'
 #' @param Lmatrix Cell-by-ligand compatibility matrix.
@@ -309,19 +349,32 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
 #' @param file.name Output filename stem.
 #' @param norm Logical; if `TRUE`, use a uniformized LR baseline.
 #' @param patient_idx Optional single patient index to simulate.
+#' @param ncores Number of cores to compute patients on in parallel, via
+#'   `parallel::makeCluster()` + `doParallel::registerDoParallel()` +
+#'   `foreach::foreach(...) %dopar% {...}` (the same backend used throughout
+#'   `pipeML`), so it works identically on Windows/macOS/Unix. `ncores = 1`
+#'   (the default) runs sequentially via `lapply()` and skips cluster setup
+#'   entirely. Patients are independent of each other, so this parallelizes
+#'   near-linearly. File writing always happens sequentially afterward, in
+#'   patient order, to keep the on-disk format unchanged. Because cluster
+#'   workers are separate R processes (not forks), each one loads the
+#'   installed `RaCInG` package rather than inheriting the calling session's
+#'   state -- if you are iterating on package source via `source()` instead
+#'   of `library(RaCInG)`, reinstall the package first so workers see your
+#'   latest changes.
 #'
 #' @return Invisibly writes the simulation outputs to disk.
 #' @export
 runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_type, pats = "all",
                    N = 10000, itNo = 100, av = 20, output_folder = NULL, file.name = NULL, norm = FALSE,
-                   patient_idx = NULL) {
-  
+                   patient_idx = NULL, ncores = 1) {
+
   if (!is.null(output_folder) && !dir.exists(output_folder)) {
     dir.create(output_folder, recursive = TRUE)
   }
-  
+
   cellstring <- paste(cells, collapse = ",")
-  
+
   # Normalization
   if (norm) {
     normvec <- 1 / apply(LRmatrix != 0, 3, sum)
@@ -332,7 +385,7 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
   } else {
     filename <- paste0(output_folder, "/", file.name, ".out")
   }
-  
+
   # Determine which patient(s) to process.
   # If patient_idx is provided, use that specific patient (not the same as pats = 1).
   if (!is.null(patient_idx)) {
@@ -345,107 +398,109 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
   } else {
     pat_seq <- seq_len(pats)
   }
-  
+
+  # ------------------------------------------------------------
+  # Compute each patient's feature (independent of every other patient, so
+  # this is done in parallel when ncores > 1). Only computation happens here;
+  # writing is kept separate and sequential below.
+  # ------------------------------------------------------------
+  compute_one <- function(pat) {
+    CellD <- Cmatrix[pat, ]
+    IntD  <- LRmatrix[,,pat]
+
+    if (communication_type == "D") {
+      countDirect(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
+    } else if (communication_type == "W") {
+      countWedges(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
+    } else if (communication_type == "TT") {
+      countTrustTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
+    } else if (communication_type == "GSCC") {
+      countGSCC(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
+    } else {
+      countCycleTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
+    }
+  }
+
+  if (ncores > 1) {
+    cl <- parallel::makeCluster(ncores)
+    doParallel::registerDoParallel(cl)
+
+    results <- foreach::foreach(pat = pat_seq, .packages = "RaCInG") %dopar% {
+      compute_one(pat)
+    }
+
+    parallel::stopCluster(cl)
+    .unregister_dopar()
+  } else {
+    results <- lapply(pat_seq, compute_one)
+  }
+
   con <- file(filename, open = "w")
-  
+
   # Header
   writeLines(communication_type, con)
   writeLines(paste(nrow(Cmatrix), N, itNo, av, sep=","), con)
-  
+
   # ------------------------------------------------------------
-  # Loop over patients (pat_seq may be a single index or a sequence)
+  # Write each patient's precomputed result, in order (sequential, since it's
+  # a single file). Composition blocks are written via one vectorized
+  # paste()+writeLines() call each instead of one writeLines() call per cell
+  # -- for a [264,264,264] matrix that's ~18.4 million individual writeLines()
+  # calls per block versus one; confirmed the vectorized form produces
+  # byte-identical output.
   # ------------------------------------------------------------
-  for (pat in pat_seq) {
-    
+  for (idx in seq_along(pat_seq)) {
+    pat <- pat_seq[idx]
+    res <- results[[idx]]
+
     writeLines(paste(pat, N, av, sep=","), con)
     writeLines(cellstring, con)
-    
-    CellD <- Cmatrix[pat, ]
-    IntD  <- LRmatrix[,,pat]
-    
-    # Compute feature
+
     if (communication_type == "D") {
-      res <- countDirect(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
       av_mat <- res$av_dir
       std_mat <- res$std_dir
-      
-    } else if (communication_type == "W") {
-      res <- countWedges(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-      av_mat <- res$av_triag
-      std_mat <- res$std_triag
-      
-    } else if (communication_type == "TT") {
-      res <- countTrustTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-      av_mat <- res$av_triag
-      std_mat <- res$std_triag
-      
     } else if (communication_type == "GSCC") {
-      res <- countGSCC(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
       av_vec <- res$av_GSCC
       std_vec <- res$std_GSCC
-      
     } else {
-      res <- countCycleTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
       av_mat <- res$av_triag
       std_mat <- res$std_triag
     }
-    
+
     # Write counts
     writeLines(paste("Count", res$av_count, res$std_count, sep=","), con)
-    
+
     # ------------------------------------------------------------
     # Write composition
     # ------------------------------------------------------------
     if (communication_type == "D") {
-      
+
+      grid <- expand.grid(j = 1:ncol(av_mat), i = 1:nrow(av_mat)) # j fastest, matching the original inner loop
       writeLines("Composition - Average:", con)
-      for (i in 1:nrow(av_mat)) {
-        for (j in 1:ncol(av_mat)) {
-          writeLines(paste(i, j, av_mat[i,j], sep=","), con)
-        }
-      }
-      
+      writeLines(paste(grid$i, grid$j, av_mat[cbind(grid$i, grid$j)], sep=","), con)
+
       writeLines("Composition - Std:", con)
-      for (i in 1:nrow(std_mat)) {
-        for (j in 1:ncol(std_mat)) {
-          writeLines(paste(i, j, std_mat[i,j], sep=","), con)
-        }
-      }
-      
+      writeLines(paste(grid$i, grid$j, std_mat[cbind(grid$i, grid$j)], sep=","), con)
+
     } else if (communication_type == "GSCC") {
-      
+
       writeLines("Composition - Average:", con)
-      for (i in 1:length(av_vec)) {
-        writeLines(paste(i, av_vec[i], sep=","), con)
-      }
-      
+      writeLines(paste(seq_along(av_vec), av_vec, sep=","), con)
+
       writeLines("Composition - Std:", con)
-      for (i in 1:length(std_vec)) {
-        writeLines(paste(i, std_vec[i], sep=","), con)
-      }
-      
+      writeLines(paste(seq_along(std_vec), std_vec, sep=","), con)
+
     } else {
-      
+
+      grid <- expand.grid(k = 1:dim(av_mat)[3], j = 1:dim(av_mat)[2], i = 1:dim(av_mat)[1]) # k fastest, matching the original innermost loop
       writeLines("Composition - Average:", con)
-      for (i in 1:dim(av_mat)[1]) {
-        for (j in 1:dim(av_mat)[2]) {
-          for (k in 1:dim(av_mat)[3]) {
-            writeLines(paste(i, j, k, av_mat[i,j,k], sep=","), con)
-          }
-        }
-      }
-      
+      writeLines(paste(grid$i, grid$j, grid$k, av_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
+
       writeLines("Composition - Std:", con)
-      for (i in 1:dim(std_mat)[1]) {
-        for (j in 1:dim(std_mat)[2]) {
-          for (k in 1:dim(std_mat)[3]) {
-            writeLines(paste(i, j, k, std_mat[i,j,k], sep=","), con)
-          }
-        }
-      }
+      writeLines(paste(grid$i, grid$j, grid$k, std_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
     }
   }
-  
+
   close(con)
 }
 
@@ -484,14 +539,16 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #'   `ligands`, and `receptors`.
 #'   When supplied, the `counts` argument and all preprocessing parameters
 #'   (`deconv`, `cc_network`, etc.) are ignored.
+#' @param ncores Number of cores to compute patients on in parallel. Passed
+#'   through to [runSim()]; see its documentation for details.
 #'
 #' @return A list with the generated inputs and processed feature matrices.
 #' @export
-compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min, 
+compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                      cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol", signed = FALSE,
                                      deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, pt_idx = NULL, file_name = NULL,
                                      nPatients = "all", communication_type = "W", Ncells = 10000, Ngraphs = 100, Ndegree = 20, remove_direction = TRUE, norm = TRUE,
-                                     input_data = NULL) {
+                                     input_data = NULL, ncores = 1) {
   
   if (is.null(file_name)) {
     file_name <- "RaCInG_input"
@@ -540,7 +597,8 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
     output_folder = output_folder,
     file.name = file_name,
     norm = FALSE,
-    patient_idx = pt_idx
+    patient_idx = pt_idx,
+    ncores = ncores
   )
 
   if (norm) {
@@ -558,7 +616,8 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
       output_folder = output_folder,
       file.name = file_name,
       norm = TRUE,
-      patient_idx = pt_idx
+      patient_idx = pt_idx,
+      ncores = ncores
     )
   }
   

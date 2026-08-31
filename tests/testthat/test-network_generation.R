@@ -13,7 +13,7 @@ test_that("model1() generates the requested number of edges", {
 
   N <- 100
   av <- 4
-  g <- model1(N, av, lig, rec, Dcell, Dconn, genRandom = FALSE)
+  g <- model1(N, av, lig, rec, Dcell, Dconn)
 
   # ligNo * recNo == 35 here, round(av * N) == 400: if the bug regresses,
   # nrow(E) collapses to 35 regardless of N/av.

@@ -1,104 +1,3 @@
-#' Generate a random cell-type distribution
-#'
-#' @param cellTypeNo Number of cell types.
-#'
-#' @return A probability vector summing to 1.
-#' @export
-genRandomCellTypeDistr <- function(cellTypeNo) {
-  # Generate a random probability distribution for cell types
-  #
-  # Arguments:
-  #   cellTypeNo : number of cell types
-  #
-  # Returns:
-  #   A numeric vector of length `cellTypeNo` representing the probability
-  #   of each cell type. The sum of the probabilities is 1.
-  
-  probs <- stats::runif(cellTypeNo)  # generate random values for each cell type
-  probs <- probs / sum(probs)  # normalize so total probability sums to 1
-  
-  return(probs)
-}
-
-#' Generate a random ligand-receptor distribution
-#'
-#' @param ligNo Number of ligand types.
-#' @param recNo Number of receptor types.
-#'
-#' @return A normalized ligand-by-receptor probability matrix.
-#' @export
-genRandomLigRecDistr <- function(ligNo, recNo) {
-  # Generate a random ligand-receptor probability distribution matrix
-  #
-  # Arguments:
-  #   ligNo : number of ligand types (rows)
-  #   recNo : number of receptor types (columns)
-  #
-  # Returns:
-  #   A ligNo x recNo matrix where each element represents the probability
-  #   of a specific ligand-receptor pair occurring. The sum of all elements is 1.
-  
-  mat <- matrix(
-    stats::runif(ligNo * recNo),   # generate random values for each ligand-receptor pair
-    nrow = ligNo,
-    ncol = recNo
-  )
-  
-  mat <- mat / sum(mat)      # normalize the matrix so that all probabilities sum to 1
-  
-  return(mat)
-}
-
-#' Generate a random cell-to-ligand compatibility matrix
-#'
-#' @param cellTypeNo Number of cell types.
-#' @param ligNo Number of ligand types.
-#'
-#' @return A binary matrix describing ligand availability per cell type.
-#' @export
-genRandomCellLigands <- function(cellTypeNo, ligNo) {
-  # Generate a random 0/1 matrix indicating which cell types can secrete which ligands
-  # Arguments:
-  #   cellTypeNo : number of cell types (rows)
-  #   ligNo      : number of ligand types (columns)
-  # Returns:
-  #   A matrix of size cellTypeNo x ligNo
-  #     - 1 means the cell type can secrete that ligand
-  #     - 0 means the cell type cannot secrete that ligand
-  
-  mat <- matrix(
-    sample(0:1, cellTypeNo * ligNo, replace = TRUE),  # randomly assign 0 or 1 for each cell-ligand pair
-    nrow = cellTypeNo                                   # set number of rows = number of cell types
-  )
-  
-  return(mat)
-}
-
-#' Generate a random cell-to-receptor compatibility matrix
-#'
-#' @param cellTypeNo Number of cell types.
-#' @param recNo Number of receptor types.
-#'
-#' @return A binary matrix describing receptor availability per cell type.
-#' @export
-genRandomCellReceptors <- function(cellTypeNo, recNo) {
-  # Generate a random 0/1 matrix indicating which cell types can express which receptors
-  # Arguments:
-  #   cellTypeNo : number of cell types (rows)
-  #   recNo      : number of receptor types (columns)
-  # Returns:
-  #   A matrix of size cellTypeNo x recNo
-  #     - 1 means the cell type can express that receptor
-  #     - 0 means the cell type cannot express that receptor
-  
-  mat <- matrix(
-    sample(0:1, cellTypeNo * recNo, replace = TRUE),  # randomly sample 0 or 1 for each cell-receptor pair
-    nrow = cellTypeNo                                   # set number of rows = number of cell types
-  )
-  
-  return(mat)
-}
-
 #' Sample cell-type labels for graph vertices
 #'
 #' @param Dcelltype Probability vector over cell types.
@@ -206,31 +105,13 @@ genRandomEdgeList <- function(Dligrec, vertextypelist, structurelig, structurere
 #' @param Dcelltype Cell-type abundance probabilities.
 #' @param Dligrec Ligand-by-receptor probability matrix.
 #' @param Signmatrix Optional ligand-receptor sign matrix.
-#' @param genRandom Logical; if `TRUE`, generate random test inputs internally.
 #'
 #' @return A list with vertex labels, an edge list, and ligand-receptor types.
 #' @export
-model1 <- function(N, avdeg,
-                   cellLigList = NULL, cellRecList = NULL,
-                   Dcelltype = NULL, Dligrec = NULL, Signmatrix = NULL,
-                   genRandom = TRUE) {
-  
-  if (genRandom) {
-    cellTypeNo <- 11
-    ligNo <- 10
-    recNo <- 10
-    M <- round(avdeg * N)
-    Dcelltype <- genRandomCellTypeDistr(cellTypeNo)
-    Dligrec <- genRandomLigRecDistr(ligNo, recNo)
-    cellLigList <- genRandomCellLigands(cellTypeNo, ligNo)
-    cellRecList <- genRandomCellReceptors(cellTypeNo, recNo)
-  } else {
-    cellTypeNo <- length(Dcelltype)
-    ligNo <- nrow(Dligrec)
-    recNo <- ncol(Dligrec)
-    M <- round(avdeg * N)
-  }
-  
+model1 <- function(N, avdeg, cellLigList, cellRecList, Dcelltype, Dligrec, Signmatrix = NULL) {
+
+  M <- round(avdeg * N)
+
   # -------------------------------
   # Generate vertex list
   # -------------------------------
@@ -262,64 +143,4 @@ model1 <- function(N, avdeg,
   }
   
   return(list(V = V, E = E, types = types))
-}
-
-#' Generate a graph under a uniformized ligand-receptor baseline
-#'
-#' @param LRdistr Ligand-receptor tensor.
-#' @param Lmatrix Cell-by-ligand compatibility matrix.
-#' @param Rmatrix Cell-by-receptor compatibility matrix.
-#' @param Cdistr Patient-by-cell-type abundance matrix.
-#' @param cellTypes Character vector of cell-type labels.
-#' @param patient Patient index to simulate.
-#' @param N Number of cells in the generated graph.
-#' @param avdeg Target average degree.
-#'
-#' @return A list containing the simulated graph and the uniform LR distribution used.
-#' @export
-generateUniformLRGraph <- function(LRdistr, Lmatrix, Rmatrix, Cdistr, cellTypes, patient = 1, N = 20, avdeg = 2) {
-  # Set seed for reproducibility
-  set.seed(1)
-  
-  # Create a new array to hold the uniform LR distribution
-  # It has the same dimensions as the original LR distribution array
-  LRdistrUniform <- array(0, dim = dim(LRdistr))
-  
-  # Calculate the value to assign to every non-zero entry
-  # We want the non-zero probabilities to be uniform and sum to 1
-  # sum(LRdistr[,,patient] != 0) counts how many non-zero entries there are
-  normval <- 1 / sum(LRdistr[,,patient] != 0)
-  
-  # Copy the LR distribution for the selected patient (slice of the 3D array)
-  copy <- LRdistr[,,patient]
-  
-  # Replace all non-zero entries with the uniform value
-  # Zero entries remain zero
-  copy[copy > 0] <- normval
-  
-  # Store the uniformized matrix back in the uniform LR array
-  # Only for the selected patient
-  LRdistrUniform[,,patient] <- copy
-  
-  # Generate graph with uniform LR distribution
-  result <- model1(
-    N = N,
-    avdeg = avdeg,
-    cellLigList = Lmatrix,
-    cellRecList = Rmatrix,
-    Dcelltype = Cdistr[patient, ],  # select patient distribution
-    Dligrec = LRdistrUniform[,,patient],
-    genRandom = FALSE
-  )
-  
-  Vnorm <- result$V
-  Enorm <- result$E
-  typesNorm <- result$types
-  
-  return(list(
-    V = Vnorm,
-    E = Enorm,
-    types = typesNorm,
-    LRdistrUniform = LRdistrUniform[,,patient]
-  ))
 }

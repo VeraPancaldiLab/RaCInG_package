@@ -18,7 +18,8 @@ runSim(
   output_folder = NULL,
   file.name = NULL,
   norm = FALSE,
-  patient_idx = NULL
+  patient_idx = NULL,
+  ncores = 1
 )
 }
 \arguments{
@@ -49,6 +50,20 @@ runSim(
 \item{norm}{Logical; if \code{TRUE}, use a uniformized LR baseline.}
 
 \item{patient_idx}{Optional single patient index to simulate.}
+
+\item{ncores}{Number of cores to compute patients on in parallel, via
+\code{parallel::makeCluster()} + \code{doParallel::registerDoParallel()} +
+\code{foreach::foreach(...) \%dopar\% {...}} (the same backend used throughout
+\code{pipeML}), so it works identically on Windows/macOS/Unix. \code{ncores = 1}
+(the default) runs sequentially via \code{lapply()} and skips cluster setup
+entirely. Patients are independent of each other, so this parallelizes
+near-linearly. File writing always happens sequentially afterward, in
+patient order, to keep the on-disk format unchanged. Because cluster
+workers are separate R processes (not forks), each one loads the
+installed \code{RaCInG} package rather than inheriting the calling session's
+state -- if you are iterating on package source via \code{source()} instead
+of \code{library(RaCInG)}, reinstall the package first so workers see your
+latest changes.}
 }
 \value{
 Invisibly writes the simulation outputs to disk.

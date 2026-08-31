@@ -12,13 +12,19 @@ test_that("wilcox_group_test() reports fold change and runs all pairwise compari
   expect_equal(nrow(res), 3)
 })
 
-test_that("volcano_plot() requires a Log2FC column and plots log2 fold change", {
+test_that("top_features_plot() requires a Log2FC column and ranks top up/down features", {
   bad_input <- data.frame(Feature = "f1", Adjusted_P_value = 0.01, Wilcox_statistic = 5)
-  expect_error(volcano_plot(bad_input), "Log2FC")
+  expect_error(top_features_plot(bad_input), "Log2FC")
 
-  good_input <- data.frame(Feature = "f1", Adjusted_P_value = 0.01, Log2FC = 1.5)
-  p <- volcano_plot(good_input)
+  good_input <- data.frame(
+    Feature = c("f1", "f2", "f3"),
+    Adjusted_P_value = c(0.01, 0.01, 0.01),
+    Log2FC = c(1.5, -2, 0.5)
+  )
+  p <- top_features_plot(good_input, top_n = 5)
   expect_s3_class(p, "ggplot")
+  # a feature can never be labeled both Up and Down
+  expect_false(any(duplicated(p$data$Feature)))
 })
 
 test_that("correlate_features_with_score() aligns patients by name and supports groups", {

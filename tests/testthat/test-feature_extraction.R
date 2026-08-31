@@ -54,11 +54,3 @@ test_that("Count_Types() handles an empty (zero-row) object list", {
   expect_silent(res <- Count_Types(empty, V, maxTypes = 2))
   expect_equal(sum(res), 0)
 })
-
-test_that("Find_Number_Trust_Triangles_Unique() counts multi-edge common neighbors correctly", {
-  # A <-> B, and two distinct common out-neighbors C, D of both A and B, so
-  # the wedge count between A and B is 2 (not 0/1) - this used to be
-  # compared against the raw wedge count instead of its sign, undercounting.
-  adj <- sp(c(1, 2, 1, 1, 2, 2), c(2, 1, 3, 4, 3, 4), 4)
-  expect_equal(Find_Number_Trust_Triangles_Unique(adj), 4L)
-})

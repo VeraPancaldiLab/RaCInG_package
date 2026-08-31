@@ -48,12 +48,7 @@ reference:
       - createCellTypeDistr
       - createInteractionDistr
       - Read_Lig_Rec_Interaction
-      - genRandomCellTypeDistr
-      - genRandomLigRecDistr
-      - genRandomCellLigands
-      - genRandomCellReceptors
       - genRandomCellTypeList
-      - generateUniformLRGraph
   - title: Graph utilities
     contents:
       - EdgetoAdj
@@ -62,23 +57,14 @@ reference:
       - Trust_Triangles
       - Cycle_Triangles
       - Wedges
-      - Find_Number_Trust_Triangles_Unique
-      - Find_Number_Triangles
-      - Find_Number_Triangles_Unique
-      - Find_Number_2Loops
-      - Find_Number_2Loops_Unique
-      - Find_Number_Wedges
-      - Find_Number_Wedges_Unique
       - GSCC
-      - IN
-      - OUT
   - title: Example data
     contents:
       - skcm_example
   - title: Statistics and I/O
     contents:
       - wilcox_group_test
-      - volcano_plot
+      - top_features_plot
       - correlate_features_with_score
       - correlation_plot
       - Read_Sim_Output

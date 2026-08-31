@@ -2,7 +2,7 @@
 % Please edit documentation in R/RaCInG_input_generation.R
 \name{generateInput}
 \alias{generateInput}
-\title{Load RaCInG input matrices from disk}
+\title{Load RaCInG input matrices from disk --> Is there any normalization done here? I dont see it in the function}
 \usage{
 generateInput(file_name, output_folder, read_signs = FALSE)
 }

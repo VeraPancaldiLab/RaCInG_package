@@ -22,5 +22,5 @@ A data frame with one row per feature per group comparison, including
 \description{
 Runs a Wilcoxon rank-sum test per feature (column) between every pair of
 groups. Also reports the fold change (ratio of group means) so results can
-be plotted as a standard volcano plot with \code{\link[=volcano_plot]{volcano_plot()}}.
+be plotted with \code{\link[=top_features_plot]{top_features_plot()}}.
 }

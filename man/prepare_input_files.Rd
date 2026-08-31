@@ -17,7 +17,9 @@ prepare_input_files(
   cbsx.name = NULL,
   cbsx.token = NULL,
   file_name = NULL,
-  signed = FALSE
+  signed = FALSE,
+  already_normalized = FALSE,
+  expr_threshold = 10
 )
 }
 \arguments{
@@ -50,6 +52,19 @@ per-gene non-negative least squares (see \code{.estimate_expression_profiles()})
 \item{file_name}{File stem used when exporting the generated CSV files.}
 
 \item{signed}{Logical; if \code{TRUE}, also try to load a sign matrix from \code{output_folder}.}
+
+\item{already_normalized}{Logical; if \code{TRUE}, \code{counts} is treated as
+already TPM-normalized (linear scale, not logged) and the internal
+\code{ADImpute::NormalizeTPM()} gene-length/library-size normalization is
+skipped. Use this for datasets where only pre-normalized expression is
+available (e.g. public cohorts distributed as log2(TPM+1) matrices with
+no raw counts) -- applying \code{NormalizeTPM()} to already-normalized data
+would re-apply its gene-length correction on top of the original
+normalization, distorting relative gene expression levels.}
+
+\item{expr_threshold}{Minimum expression value (in \code{cell_expr_profile}
+units) a ligand or receptor must reach in its sending/receiving cell type
+for that ligand-receptor-celltype triple to be kept in \code{CC_table}.}
 }
 \value{
 A named list with the processed input matrices and their labels:

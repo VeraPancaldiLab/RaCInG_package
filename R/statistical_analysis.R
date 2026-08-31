@@ -2,7 +2,7 @@
 #'
 #' Runs a Wilcoxon rank-sum test per feature (column) between every pair of
 #' groups. Also reports the fold change (ratio of group means) so results can
-#' be plotted as a standard volcano plot with [volcano_plot()].
+#' be plotted with [top_features_plot()].
 #'
 #' @param data_matrix Numeric matrix or data frame with patients in rows and features in columns.
 #' @param groups Vector of group labels with length matching `nrow(data_matrix)`.
@@ -65,21 +65,27 @@ wilcox_group_test <- function(data_matrix, groups, p_adjust_method = "fdr") {
   return(result_df)
 }
 
-#' Create a volcano plot from Wilcoxon results
+#' Ranked bar plot of top up/down features from Wilcoxon results
+#'
+#' Shows the top most upregulated and top most downregulated significant
+#' features (by log2 fold change) from [wilcox_group_test()] as a ranked
+#' horizontal bar chart. This scales to features with very long names: each
+#' name is drawn once as an axis label rather than needing to be
+#' positioned/repelled on a scatter plot, so labels never get dropped or
+#' overlap regardless of how many features there are.
 #'
 #' @param wilcox_results Output of [wilcox_group_test()]. If it contains more
 #'   than one `Comparison`, only the first is plotted; subset beforehand to
 #'   plot a specific comparison.
-#' @param top_labels Number of top significant features to label.
-#' @param p_threshold Adjusted p-value threshold used to mark significance.
+#' @param top_n Number of top upregulated and top downregulated features to show.
+#' @param p_threshold Only features with `Adjusted_P_value < p_threshold` are considered.
 #' @param title Plot title.
 #'
 #' @return A `ggplot2` object.
 #' @export
-volcano_plot <- function(wilcox_results, top_labels = 10,
-                                     p_threshold = 0.05, title = "Volcano Plot") {
+top_features_plot <- function(wilcox_results, top_n = 10, p_threshold = 0.05, title = "Top features") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop("Package `ggplot2` is required for `volcano_plot()`. Please install it first.", call. = FALSE)
+    stop("Package `ggplot2` is required for `top_features_plot()`. Please install it first.", call. = FALSE)
   }
 
   if (!all(c("Feature", "Adjusted_P_value", "Log2FC") %in% colnames(wilcox_results))) {
@@ -92,41 +98,27 @@ volcano_plot <- function(wilcox_results, top_labels = 10,
     title <- paste0(title, " (", first_comparison, ")")
   }
 
-  # Build plot dataframe, dropping non-finite fold changes (e.g. a feature
-  # that is all-zero in one of the two groups)
-  plot_df <- data.frame(
-    Feature = wilcox_results$Feature,
-    Effect = wilcox_results$Log2FC,
-    Adj_P_value = wilcox_results$Adjusted_P_value
+  df <- wilcox_results[is.finite(wilcox_results$Log2FC) & wilcox_results$Adjusted_P_value < p_threshold, ]
+
+  # Split by sign first so a feature can never land in both groups (head/tail
+  # of one sorted vector would overlap whenever there are fewer than
+  # 2*top_n significant features in total).
+  up_df <- df[df$Log2FC > 0, ]
+  down_df <- df[df$Log2FC < 0, ]
+  top_up <- utils::head(up_df[order(-up_df$Log2FC), ], top_n)
+  top_down <- utils::head(down_df[order(down_df$Log2FC), ], top_n)
+
+  plot_df <- rbind(
+    data.frame(Feature = top_up$Feature, Log2FC = top_up$Log2FC, Direction = rep("Up", nrow(top_up))),
+    data.frame(Feature = top_down$Feature, Log2FC = top_down$Log2FC, Direction = rep("Down", nrow(top_down)))
   )
-  plot_df <- plot_df[is.finite(plot_df$Effect), ]
+  plot_df$Feature <- factor(plot_df$Feature, levels = unique(plot_df$Feature[order(plot_df$Log2FC)]))
 
-  # Significant features
-  plot_df$Significant <- ifelse(plot_df$Adj_P_value < p_threshold, "Yes", "No")
-
-  # Identify top features by significance
-  top_features <- utils::head(plot_df[plot_df$Significant == "Yes", ][order(plot_df$Adj_P_value), "Feature"], top_labels)
-
-  # Plot
-  ggplot2::ggplot(plot_df, ggplot2::aes(x = Effect, y = -log10(Adj_P_value))) +
-    ggplot2::geom_point(ggplot2::aes(color = Significant), shape = 4, alpha = 0.7) +
-    ggplot2::geom_text(
-      data = subset(plot_df, Feature %in% top_features),
-      ggplot2::aes(label = Feature),
-      size = 3,
-      vjust = -0.5,
-      check_overlap = TRUE
-    ) +
-    ggplot2::geom_hline(yintercept = -log10(p_threshold), color = "red", linetype = "dashed") +
-    ggplot2::scale_color_manual(values = c("No" = "gainsboro", "Yes" = "blue")) +
-    ggplot2::xlim(min(plot_df$Effect) - 1, max(plot_df$Effect) + 1) +
+  ggplot2::ggplot(plot_df, ggplot2::aes(x = Log2FC, y = Feature, fill = Direction)) +
+    ggplot2::geom_col() +
+    ggplot2::scale_fill_manual(values = c("Up" = "firebrick", "Down" = "steelblue")) +
     ggplot2::theme_minimal() +
-    ggplot2::labs(
-      x = "log2(fold change)",
-      y = "-log10(Adjusted P-value)",
-      title = title,
-      color = "Significant"
-    ) +
+    ggplot2::labs(x = "log2(fold change)", y = NULL, title = title, fill = NULL) +
     ggplot2::theme(legend.position = "top")
 }
 

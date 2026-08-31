@@ -111,29 +111,33 @@ createCellTypeDistr <- function(cells, filename) {
   storage.mode(Dtypes) <- "numeric"
   rownames(Dtypes) <- datasets
 
-  # Normalize rows so each dataset sums to 1 (relative fractions) --> ############### Estimates from deconv should be always proportions (this should not be necessary unless there is MCP or XCell)
+  # Normalize rows so each dataset sums to 1 (relative fractions)
   row_sums <- rowSums(Dtypes)
   normalized <- Dtypes / row_sums
-  
+
   # Sort cell types alphabetically
   sp <- sortPermute(celltypes)
   celltypes <- sp$sortlist
   perm <- sp$perm
   Dtypes <- normalized[, perm, drop = FALSE]
-  
-  # Merge M1 and M2 if needed --> This will break for other deconvolution results (need to be fix)
+
+  # Restrict to the cell types that actually appear in Lmatrix/Rmatrix.
+  # ccc_table's expression threshold can leave some cell types with no
+  # ligand/receptor pair at all (they never send or receive anything above
+  # threshold), so `cells` (from Lmatrix) can be a strict subset of the
+  # deconvolution's full cell-type vocabulary. Those cell types contribute
+  # nothing to the network, so they're dropped from Cmatrix here rather than
+  # left in as columns with no matching Lmatrix/Rmatrix row.
   if (length(cells) != length(celltypes)) {
-    idx_M1 <- which(celltypes == "M1")
-    idx_M2 <- which(celltypes == "M2")
-    
-    if (length(idx_M1) > 0 && length(idx_M2) > 0) {
-      Dtypes[, idx_M1] <- Dtypes[, idx_M1] + Dtypes[, idx_M2]
-      Dtypes <- Dtypes[, -idx_M2, drop = FALSE]
-      celltypes[idx_M1] <- "M"
-      celltypes <- celltypes[-idx_M2]
+    if (!all(cells %in% celltypes)) {
+      stop("Cell types in Lmatrix/Rmatrix are not a subset of Cmatrix's cell types -- mismatched input files.")
     }
+    keep <- celltypes %in% cells
+    Dtypes <- Dtypes[, keep, drop = FALSE]
+    celltypes <- celltypes[keep]
+    Dtypes <- Dtypes / rowSums(Dtypes) # re-normalize so each dataset still sums to 1 after dropping cell types with no active ligand/receptor
   }
-  
+
   return(list(Dtypes = Dtypes,
               celltypes = celltypes,
               datasets = datasets))
@@ -224,7 +228,7 @@ Read_Lig_Rec_Interaction <- function(filename) {
               receptor_names = receptor_names))
 }
 
-#' Load RaCInG input matrices from disk
+#' Load RaCInG input matrices from disk --> Is there any normalization done here? I dont see it in the function
 #'
 #' Internal helper called by [prepare_input_files()] to read back the generated
 #' CSV files and assemble the normalised matrices and 3-D tensor.
@@ -285,7 +289,7 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
     receptors = rec_data$receptors
   )
   
-  # -----------------------------
+  # ----------------------------- TO BE CHECK THE IMPLEMENTATION OF THE SIGN MATRIX
   # Optionally read the sign of interactions (+1 stimulating, -1 inhibiting, 0 unknown)
   # If no sign matrix is supplied, fall back to zeros (unknown sign).
   # -----------------------------
@@ -412,27 +416,45 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
 #' @param file_name File stem used when exporting the generated CSV files.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix from `output_folder`.
 #'
+#' @param already_normalized Logical; if `TRUE`, `counts` is treated as
+#'   already TPM-normalized (linear scale, not logged) and the internal
+#'   `ADImpute::NormalizeTPM()` gene-length/library-size normalization is
+#'   skipped. Use this for datasets where only pre-normalized expression is
+#'   available (e.g. public cohorts distributed as log2(TPM+1) matrices with
+#'   no raw counts) -- applying `NormalizeTPM()` to already-normalized data
+#'   would re-apply its gene-length correction on top of the original
+#'   normalization, distorting relative gene expression levels.
+#'
+#' @param expr_threshold Minimum expression value (in `cell_expr_profile`
+#'   units) a ligand or receptor must reach in its sending/receiving cell type
+#'   for that ligand-receptor-celltype triple to be kept in `CC_table`.
+#'
 #' @return A named list with the processed input matrices and their labels:
 #'   `Lmatrix`, `Rmatrix`, `Cmatrix` (normalised), `LRmatrix` (3-D tensor),
 #'   `celltypes`, `ligands`, `receptors`, `Sign_matrix`, and `CC_table`.
 #' @export
-prepare_input_files <- function(counts, output_folder = "Results/", deconv = NULL, cc_network = NULL, fun_LR = min, 
+prepare_input_files <- function(counts, output_folder = "Results/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                 cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol",
                                 deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, file_name = NULL,
-                                signed = FALSE){
-  
+                                signed = FALSE, already_normalized = FALSE, expr_threshold = 10){
+
   if (is.null(file_name)) {
     file_name <- "RaCInG_input"
   }
 
   .check_installed_packages(c("ADImpute", "multideconv"))
-  counts.tpm <- ADImpute::NormalizeTPM(counts)
+  if (already_normalized) {
+    counts.tpm <- as.matrix(counts)
+  } else {
+    counts.tpm <- ADImpute::NormalizeTPM(counts)
+  }
   counts.log.tpm <- log2(counts.tpm + 1)
 
   cat("Calculating deconvolution estimates...\n")
+  
   ## C-matrix
   if (is.null(deconv)) {
-    deconv_raw <- multideconv::compute.deconvolution(
+    deconv <- multideconv::compute.deconvolution(
       counts.tpm,
       normalized = FALSE,
       methods = deconv_method,
@@ -441,20 +463,14 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
       file_name = file_name
     )
 
-    ## Verify patient names match between files before running the (costly) subgroup analysis
-    if (!all(rownames(deconv_raw) %in% colnames(counts))) {
+    ## Verify patient names match between files before running the subgroup analysis
+    if (!all(rownames(deconv) %in% colnames(counts))) {
       stop("Patient names in deconvolution estimates do not match those in the counts matrix.")
     }
 
     cat("Identifying cell type subgroups...\n")
-    subgroups <- multideconv::compute.deconvolution.analysis(deconv_raw)
-    deconv <- multideconv::standardize_celltype_colnames(subgroups[["Deconvolution matrix"]])
-    # standardize_celltype_colnames() only fixes spelling variants of the
-    # cell-type suffix (e.g. "Macrophage_M0" -> "Macrophages.M0"); it
-    # deliberately keeps any leading "{method}_{signature}_" prefix. Strip
-    # that prefix so cell-type labels stay short and method-agnostic, as
-    # expected by the rest of the pipeline (e.g. the M1/M2 merge below).
-    colnames(deconv) <- make.unique(.clean_celltype_names(colnames(deconv)))
+    subgroups <- multideconv::compute.deconvolution.analysis(deconv)
+    deconv = subgroups[["Deconvolution matrix"]]
   } else {
     cat("Using provided deconvolution estimates...\n")
     if (!all(rownames(deconv) %in% colnames(counts))) {
@@ -474,7 +490,7 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   if (is.null(cc_network)) {
     .check_installed_packages(c("OmnipathR", "liana"))
     cc_network <- liana::get_curated_omni() %>%
-      dplyr::filter(category_intercell_source %in% c("cell_surface_ligand", "ligand") &
+      dplyr::filter(category_intercell_source %in% c("cell_surface_ligand", "ligand") & #check why not adhesion also or ecm 
                     category_intercell_target %in% c("receptor", "adhesion")) %>%
       liana::decomplexify(columns = c("source_genesymbol", "target_genesymbol"))
   } else {
@@ -494,24 +510,56 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   cc_interations_sub <- cc_network[keep, , drop = FALSE]
   
   ## Build CC table (Sender x each LR pair x Receiver)
-  ccc_table <- do.call(rbind, lapply(colnames(cell_expr_profile), function(cell_type) {
-    do.call(rbind, lapply(seq_len(nrow(cc_interations_sub)), function(LR_pos) {
-      L <- cc_interations_sub$source_genesymbol[LR_pos]
-      R <- cc_interations_sub$target_genesymbol[LR_pos]
-      data.frame(
-        Sender = cell_type,
-        Ligand = L,
-        Expr_Ligand = as.numeric(cell_expr_profile[L, cell_type]),
-        Receiver = colnames(cell_expr_profile),
-        Receptor = R,
-        Expr_Receptor = as.numeric(cell_expr_profile[R, ])
-      )
-    }))
-  })) %>%
-    dplyr::filter(Expr_Ligand >= 10 & Expr_Receptor >= 10) ## Keep only pairs expressed above threshold (TPM >= 10)
-  
-  receptors <- unique(ccc_table$Receptor)
-  ligands <- unique(ccc_table$Ligand)
+  ## Vectorized and processed one sender at a time: the previous implementation
+  ## built one data.frame per (cell_type, LR pair) via nested
+  ## do.call(rbind, lapply(...)) calls, i.e. O(n_celltypes * n_LR_pairs) tiny
+  ## data.frames rbound together. With many deconvolution features (e.g.
+  ## combining several deconvolution methods) n_celltypes can reach 100+, and
+  ## with a curated LR network of several thousand pairs this produced
+  ## hundreds of thousands of rbind pieces and tens of millions of rows, slow
+  ## enough (tens of minutes) and memory-heavy enough to crash on typical
+  ## machines. A single vectorized pass across the full sender x LR x receiver
+  ## grid fixed the speed but still peaks at O(n_celltypes^2 * n_LR_pairs)
+  ## elements transiently (~15GB observed with 122 cell types, i.e. the
+  ## machine's entire RAM) before the expression-threshold filter shrinks it
+  ## back down. Building one sender's full receiver grid at a time and
+  ## filtering immediately keeps peak memory at O(n_celltypes * n_LR_pairs)
+  ## instead, independent of how many senders there are.
+  celltypes_all <- colnames(cell_expr_profile)
+  n_ct <- length(celltypes_all)
+  n_lr <- nrow(cc_interations_sub)
+  cell_expr_mat <- as.matrix(cell_expr_profile)
+  L_all <- cc_interations_sub$source_genesymbol
+  R_all <- cc_interations_sub$target_genesymbol
+  L_row <- match(L_all, rownames(cell_expr_mat))
+  R_row <- match(R_all, rownames(cell_expr_mat))
+
+  lr_idx_rep       <- rep(seq_len(n_lr), each = n_ct)
+  receiver_idx_rep <- rep(seq_len(n_ct), times = n_lr)
+  R_row_rep        <- R_row[lr_idx_rep]
+
+  ccc_table <- do.call(rbind, lapply(seq_len(n_ct), function(s) {
+    Expr_Ligand   <- cell_expr_mat[L_row[lr_idx_rep], s]
+    Expr_Receptor <- cell_expr_mat[cbind(R_row_rep, receiver_idx_rep)]
+    keep <- Expr_Ligand >= expr_threshold & Expr_Receptor >= expr_threshold ## Keep only pairs expressed above threshold
+    data.frame(
+      Sender = rep(celltypes_all[s], sum(keep)),
+      Ligand = L_all[lr_idx_rep[keep]],
+      Expr_Ligand = Expr_Ligand[keep],
+      Receiver = celltypes_all[receiver_idx_rep[keep]],
+      Receptor = R_all[lr_idx_rep[keep]],
+      Expr_Receptor = Expr_Receptor[keep]
+    )
+  }))
+
+  ## Use the actual matched (Ligand, Receptor) pairs present in ccc_table --
+  ## previously this zipped unique(Ligand) with unique(Receptor) positionally,
+  ## silently mismatching real pairs whenever the two vectors had different
+  ## lengths (recycling warning: "number of columns of result is not a
+  ## multiple of vector length").
+  lr_pairs_df <- unique(ccc_table[, c("Ligand", "Receptor")])
+  ligands <- lr_pairs_df$Ligand
+  receptors <- lr_pairs_df$Receptor
   LR_pairs <- paste0(ligands, "_", receptors)
 
   ## LR-matrix: compute fun(L, R) per sample using counts (rows=genes, cols=samples): Default min(L,R)
@@ -528,7 +576,7 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   colnames(LR_matrix) <- LR_pairs
   rownames(LR_matrix) <- gsub(".", "-", rownames(LR_matrix), fixed = TRUE)
   
-  ## L-matrix: ligands vs cell types compatibility (from filtered cc table)
+  ## L-matrix: ligands vs cell types compatibility (from filtered cc table) ## how do you know which ligand is expressed in which cell type? there is no database?
   cat("Computing L-matrix...\n")
   celltypes <- unique(ccc_table$Sender)
   ligs <- unique(ccc_table$Ligand)

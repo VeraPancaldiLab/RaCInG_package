@@ -26,7 +26,8 @@ compute_racing_montecarlo(
   Ndegree = 20,
   remove_direction = TRUE,
   norm = TRUE,
-  input_data = NULL
+  input_data = NULL,
+  ncores = 1
 )
 }
 \arguments{
@@ -82,6 +83,9 @@ Must contain \code{Lmatrix}, \code{Rmatrix}, \code{Cmatrix}, \code{LRmatrix}, \c
 \code{ligands}, and \code{receptors}.
 When supplied, the \code{counts} argument and all preprocessing parameters
 (\code{deconv}, \code{cc_network}, etc.) are ignored.}
+
+\item{ncores}{Number of cores to compute patients on in parallel. Passed
+through to \code{\link[=runSim]{runSim()}}; see its documentation for details.}
 }
 \value{
 A list with the generated inputs and processed feature matrices.

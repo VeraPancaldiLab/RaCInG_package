@@ -19,10 +19,13 @@ Depends:
     R (>= 4.1)
 Imports:
     data.table,
+    doParallel,
     dplyr,
+    foreach,
     magrittr,
     Matrix,
     nleqslv,
+    parallel,
     rlang,
     stats,
     tibble,

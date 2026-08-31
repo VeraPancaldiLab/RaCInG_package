@@ -7,12 +7,11 @@
 model1(
   N,
   avdeg,
-  cellLigList = NULL,
-  cellRecList = NULL,
-  Dcelltype = NULL,
-  Dligrec = NULL,
-  Signmatrix = NULL,
-  genRandom = TRUE
+  cellLigList,
+  cellRecList,
+  Dcelltype,
+  Dligrec,
+  Signmatrix = NULL
 )
 }
 \arguments{
@@ -29,8 +28,6 @@ model1(
 \item{Dligrec}{Ligand-by-receptor probability matrix.}
 
 \item{Signmatrix}{Optional ligand-receptor sign matrix.}
-
-\item{genRandom}{Logical; if \code{TRUE}, generate random test inputs internally.}
 }
 \value{
 A list with vertex labels, an edge list, and ligand-receptor types.
