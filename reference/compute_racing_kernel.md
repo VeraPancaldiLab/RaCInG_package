@@ -21,7 +21,7 @@ compute_racing_kernel(
   file_name = NULL,
   nPatients = "all",
   communication_type = "W",
-  norm = TRUE,
+  norm = FALSE,
   pt_idx = NULL,
   remove_direction = TRUE,
   input_data = NULL
@@ -97,11 +97,24 @@ compute_racing_kernel(
 
 - communication_type:
 
-  Feature family to compute.
+  Feature family to compute (`"D"`, `"W"`, `"TT"`, or `"GSCC"`), or a
+  character vector of several of these (e.g.
+  `c("D", "W", "TT", "GSCC")`). The kernel
+  ([`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md))
+  is always computed exactly once regardless of how many types are
+  requested – feature extraction from an already-computed kernel is
+  cheap, so there is no need to call `compute_racing_kernel()` again
+  just to get a different `communication_type`; request them all in one
+  call instead. With more than one type, `features` in the return value
+  is a named list (one data frame per type) instead of a single data
+  frame.
 
 - norm:
 
-  Logical; if `TRUE`, compute a normalized baseline kernel.
+  Logical; if `TRUE`, also compute a normalized baseline kernel and
+  express features as an enrichment ratio over it (isolates specificity
+  from abundance/topology). Default `FALSE` returns the raw,
+  abundance-weighted communication magnitude.
 
 - pt_idx:
 
@@ -122,4 +135,6 @@ compute_racing_kernel(
 
 ## Value
 
-A list with the kernel arrays and the derived feature matrix.
+A list with the kernel arrays and the derived feature matrix (or, for
+multiple `communication_type` entries, a named list of feature matrices)
+in `features`.

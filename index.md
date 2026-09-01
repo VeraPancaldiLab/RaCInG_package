@@ -111,6 +111,18 @@ wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 top_features_plot(wilcox_results)
 ```
 
+Both
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+and
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+also accept `communication_type` as a vector
+(e.g. `c("D", "W", "TT", "GSCC")`), extracting every requested feature
+family from the same computed kernel / same simulated graphs in one
+call, instead of repeating the expensive step per type.
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+additionally takes `ncores` to parallelize independent patients across
+cores.
+
 ## Documentation
 
 - 📘 Vignette: [Getting started with

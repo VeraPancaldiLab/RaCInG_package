@@ -111,6 +111,18 @@ wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 top_features_plot(wilcox_results)
 ```
 
+Both
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+and
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+also accept `communication_type` as a vector
+(e.g. `c("D", "W", "TT", "GSCC")`), extracting every requested feature
+family from the same computed kernel / same simulated graphs in one
+call, instead of repeating the expensive step per type.
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+additionally takes `ncores` to parallelize independent patients across
+cores.
+
 ## Documentation
 
 - 📘 Vignette: [Getting started with
@@ -170,6 +182,9 @@ is currently the primary maintainer of the package.
   : Count direct edges across Monte Carlo graph simulations
 - [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)
   : Count GSCC contributions across Monte Carlo graph simulations
+- [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md)
+  : Extract multiple communication feature types from the same simulated
+  graphs
 - [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)
   : Generate a single RaCInG graph realization
 - [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)

@@ -152,6 +152,33 @@ kernel_res <- compute_racing_kernel(
 head(kernel_res$features[, 1:5])
 ```
 
+Feature columns with no possible ligand-receptor pathway in any patient
+(structurally zero for every patient) are dropped automatically, rather
+than returned as dead all-zero columns – so `ncol(kernel_res$features)`
+is usually well below the full combinatorial count of cell-type
+combinations.
+
+`communication_type` also accepts a vector,
+e.g. `c("D", "W", "TT", "GSCC")`. The kernel itself (the expensive
+analytic step) is only ever computed once regardless of how many types
+you request, so if you want more than one feature family there is no
+need to call
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+again – request them all in one call instead:
+
+``` r
+
+kernel_res <- compute_racing_kernel(
+  input_data = input,
+  communication_type = c("D", "W", "TT", "GSCC"),
+  norm = TRUE
+)
+
+# features is now a named list, one data frame per requested type
+names(kernel_res$features)
+head(kernel_res$features$D[, 1:5])
+```
+
 ### 3. Run the Monte Carlo method
 
 Use the Monte Carlo workflow when you want simulation-based summaries or
@@ -189,6 +216,49 @@ mc_res <- compute_racing_montecarlo(
 )
 
 head(mc_res$output$mean[, 1:5])
+```
+
+As with the kernel method, `communication_type` accepts a vector (any
+combination of `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`). Every requested
+type is extracted from the *same* simulated graphs, instead of
+re-simulating a fresh set of graphs per type – graph generation, not
+feature extraction, is the expensive part of a Monte Carlo run:
+
+``` r
+
+mc_res <- compute_racing_montecarlo(
+  input_data = input,
+  communication_type = c("D", "W", "TT", "CT", "GSCC"),
+  Ncells = 100,
+  Ngraphs = 10,
+  Ndegree = 3,
+  norm = TRUE,
+  output_folder = tempdir(),
+  file_name = "mariathasan"
+)
+
+# output is now a named list, one entry per requested type
+names(mc_res$output)
+head(mc_res$output$D$mean[, 1:5])
+```
+
+Patients are independent of each other, so larger runs can be
+parallelized across cores with `ncores` (via
+`parallel`/`doParallel`/`foreach`, so it works the same way on Windows,
+macOS, and Linux):
+
+``` r
+
+mc_res <- compute_racing_montecarlo(
+  input_data = input,
+  communication_type = "D",
+  Ncells = 500,
+  Ngraphs = 100,
+  Ndegree = 20,
+  ncores = 4,
+  output_folder = tempdir(),
+  file_name = "mariathasan"
+)
 ```
 
 ### 4. Compare clinical groups
@@ -258,8 +328,8 @@ table below summarises each component:
 
 | Component | Dimensions | Description |
 |----|----|----|
-| **Lmatrix** | cell types × ligands | Expression weight of each ligand in each cell type. Rows are cell types; columns are ligands. |
-| **Rmatrix** | cell types × receptors | Expression weight of each receptor in each cell type. Same row order as `Lmatrix`. |
+| **Lmatrix** | cell types × ligands | Binary compatibility matrix: `1` if that ligand is expressed above `expr_threshold` in that cell type, `0` otherwise. Rows are cell types; columns are ligands. |
+| **Rmatrix** | cell types × receptors | Binary compatibility matrix: `1` if that receptor is expressed above `expr_threshold` in that cell type, `0` otherwise. Same row order as `Lmatrix`. |
 | **Cmatrix** | patients × cell types | Cell-type fraction for each patient. Each row sums to 1. |
 | **LRmatrix** | ligands × receptors × patients | 3-D tensor of ligand–receptor interaction weights. Each patient slice is normalised to sum to 1. |
 | **celltypes** | character vector | Alphabetically sorted cell-type names (shared across L, R, and C). |
@@ -426,7 +496,7 @@ top_features_plot(wilcox_results, top_n = 10)
 #> data's fill values.
 ```
 
-![](RaCiNG_files/figure-html/unnamed-chunk-17-1.png)
+![](RaCiNG_files/figure-html/unnamed-chunk-20-1.png)
 
 ``` r
 
@@ -443,7 +513,7 @@ head(corr_results)
 correlation_plot(corr_results, top_n = 10)
 ```
 
-![](RaCiNG_files/figure-html/unnamed-chunk-18-1.png)
+![](RaCiNG_files/figure-html/unnamed-chunk-21-1.png)
 
 ### Monte Carlo method on the example data
 

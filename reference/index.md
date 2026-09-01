@@ -33,6 +33,9 @@
   : Count direct edges across Monte Carlo graph simulations
 - [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)
   : Count GSCC contributions across Monte Carlo graph simulations
+- [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md)
+  : Extract multiple communication feature types from the same simulated
+  graphs
 - [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)
   : Generate a single RaCInG graph realization
 - [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)

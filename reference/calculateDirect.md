@@ -5,7 +5,14 @@ Calculate direct communication features from a kernel
 ## Usage
 
 ``` r
-calculateDirect(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
+calculateDirect(
+  kernel,
+  unifKernel = NULL,
+  cells,
+  Dcell = NULL,
+  bundle = TRUE,
+  patient_names = NULL
+)
 ```
 
 ## Arguments
@@ -33,6 +40,17 @@ calculateDirect(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
 
   Logical; if `TRUE`, combine reciprocal directions.
 
+- patient_names:
+
+  Optional character vector of patient labels, matching the patient
+  order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ... when
+  omitted, matching
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)'s
+  output when it is also given real names.
+
 ## Value
 
 A patient-by-feature data frame of direct communication scores.
+Cell-type pairs with no possible ligand-receptor pathway in any patient
+(zero for every patient) are dropped rather than returned as all-zero
+columns.

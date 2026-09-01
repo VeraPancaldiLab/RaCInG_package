@@ -90,11 +90,15 @@ decisions include:
 - **[`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)**:
   Converted from using a class instance to calling standalone functions.
   Parameters use R-style `NULL` defaults instead of Python empty lists
-  `[]`.
-- **Added `generateUniformLRGraph()`**: A new exported function that
-  generates a graph under a uniformized (flat) LR distribution for a
-  specific patient. This function does not exist in the original Python
-  code and is useful for normalization workflows.
+  `[]`. *(0.3.0: the `genRandom = TRUE` demo path – and the 4
+  fabricated-data generators it called, direct ports of Python’s
+  `distribution_generation.py`, itself explicitly documented there as
+  “not used in paper” – were removed as confirmed-unused;
+  [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)
+  now always requires real inputs. See section 4.5 below and
+  `NEWS.md`.)*
+- Added `generateUniformLRGraph()`. *(Removed in 0.3.0 as unused – see
+  section 4.5.)*
 - **1-based indexing**: All vertex and cell-type indices use R’s 1-based
   convention vs. Python’s 0-based.
 
@@ -408,20 +412,38 @@ contribution analysis with Mann-Whitney tests.
 
 #### R Package Changes
 
-- **Generalized approach**: The original’s extensive analysis suite is
-  distilled into two flexible, reusable functions (TO BE COMPLETED WITH
-  ADDITIONAL FUNCTIONS OF demo.py):
+- **Generalized approach**: The original’s extensive,
+  cancer-type-hardcoded analysis suite (~1,800 lines) is distilled into
+  a compact, reusable statistical API that operates on any feature
+  matrix and grouping vector:
   1.  **[`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)**:
       A generic Wilcoxon rank-sum test function that accepts any data
       matrix and group labels. Uses
       [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) for
       multiple testing correction (supports FDR, Bonferroni, and others
       via a parameter). Returns a tidy data frame sorted by adjusted
-      p-value. This generalizes the original’s cancer-specific testing
-      pipeline into a dataset-agnostic tool.
-  2.  **`volcano_plot()`**: A `ggplot2`-based volcano plot that accepts
-      the output of
-      [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md).
+      p-value, with every pairwise comparison run automatically for more
+      than two groups. This generalizes the original’s cancer-specific
+      testing pipeline into a dataset-agnostic tool.
+  2.  **[`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)**:
+      A ranked horizontal bar chart of the top up/down features by
+      `log2(fold change)` from
+      [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)’s
+      output. *(Update: the package initially shipped a `ggplot2`-based
+      `volcano_plot()` here; it was later removed and replaced by
+      [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md),
+      which scales to features with long names – each name is drawn once
+      as an axis label rather than needing to be positioned/repelled on
+      a scatter plot, so labels never get dropped or overlap regardless
+      of feature count.)*
+  3.  **[`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md)** +
+      **[`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md)**:
+      Spearman correlation between every feature and a continuous
+      per-patient score (pooled and, optionally, per-group), with a
+      diverging bar-chart visualization of the top positive/negative
+      correlations – this is the generalized, reusable counterpart of
+      the original’s `computeCorrelation()`, added after this comparison
+      was first written.
 - **Functions not carried over** (with rationale):
   - Data reading functions (`readAllDataExact`, `dataReadExact`,
     `data_read`, `readAllData`): Superseded by the generic input
@@ -436,10 +458,6 @@ contribution analysis with Mann-Whitney tests.
   - `groupPatients()`, `createPanCancerData()`: Study-specific grouping
     logic that users can implement based on their particular study
     design.
-  - `computeCorrelation()`: Correlation analysis is well-supported
-    natively in R via
-    [`cor.test()`](https://rdrr.io/r/stats/cor.test.html) and related
-    functions.
   - `findLargeFold()`, `plot_heatmap()`,
     [`heatmap()`](https://rdrr.io/r/stats/heatmap.html): Mature R
     packages like `ComplexHeatmap` and `pheatmap` offer extensive
@@ -448,8 +466,14 @@ contribution analysis with Mann-Whitney tests.
     implement using
     [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
     output.
-  - `volcanoCross()`, `volcanoPan()`, `volcanoInd()`: Consolidated into
-    the single generic `volcano_plot()`.
+  - `volcanoCross()`, `volcanoPan()`, `volcanoInd()`: Initially
+    consolidated into a single generic `volcano_plot()`, itself since
+    replaced by
+    [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)
+    (see above).
+  - `retrieveLigRecInfo.py`, `Circos.py`: Conditional ligand-receptor
+    pair probability retrieval and Circos-plot export have no R
+    equivalent yet.
 
 ### 3.8 `txt_to_csv.py` → `R/txt_to_csv.R`
 
@@ -543,11 +567,18 @@ available via Monte Carlo simulation in the original Python code. This
 eliminates the need for computationally expensive graph simulations when
 only triangle features are needed.
 
-### 4.5 `generateUniformLRGraph()`
+### 4.5 `generateUniformLRGraph()` *(removed in 0.3.0)*
 
-A new helper function for generating graphs under a uniform
-ligand-receptor distribution. This is useful for normalization studies
-and understanding the null model.
+A helper function for generating graphs under a uniform ligand-receptor
+distribution. It was confirmed unused anywhere in the package, tests, or
+downstream projects – the package’s actual
+null-distribution/normalization logic (the `norm`/`normalize` parameters
+on
+[`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)
+and
+[`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md))
+is built inline elsewhere and never called this function – and was
+removed. See `NEWS.md` (0.3.0).
 
 ### 4.6 pkgdown Documentation Website
 
@@ -686,31 +717,31 @@ simulation size).
 | [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md) | [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md) | Uses [`data.table::fread`](https://rdrr.io/pkg/data.table/man/fread.html) |
 | [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md) | [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md) | Generalized file naming |
 | [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md) | [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md) | Standalone functions instead of class |
-| `genRandomCellTypeDistr()` | `dg.genRandomCellTypeDistr()` | Direct port |
-| `genRandomLigRecDistr()` | `dg.genRandomLigRecDistr()` | Direct port |
-| `genRandomCellLigands()` | `dg.genRandomCellLigands()` | Direct port |
-| `genRandomCellReceptors()` | `dg.genRandomCellReceptors()` | Direct port |
+| ~~`genRandomCellTypeDistr()`~~ *(removed 0.3.0)* | `dg.genRandomCellTypeDistr()` | Direct port; confirmed unused (only reachable via `model1(genRandom = TRUE)`, itself removed) |
+| ~~`genRandomLigRecDistr()`~~ *(removed 0.3.0)* | `dg.genRandomLigRecDistr()` | Direct port; confirmed unused |
+| ~~`genRandomCellLigands()`~~ *(removed 0.3.0)* | `dg.genRandomCellLigands()` | Direct port; confirmed unused |
+| ~~`genRandomCellReceptors()`~~ *(removed 0.3.0)* | `dg.genRandomCellReceptors()` | Direct port; confirmed unused |
 | [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md) | `informationMicroEnv.genRandomCellTypeList()` | Extracted from class |
 | [`genRandomEdgeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomEdgeList.md) | `informationMicroEnv.genRandomEdgeList()` | Extracted from class |
 | [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md) | [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
 | [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md) | [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md) | Uses [`Matrix::sparseMatrix`](https://rdrr.io/pkg/Matrix/man/sparseMatrix.html) |
 | [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md) | [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md) | 1-based indexing |
 | [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md) | [`poiBPFunc()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.md) | Internal; same math |
-| `Find_Number_Trust_Triangles_Unique()` | Same | Dense matrix operations |
-| `Find_Number_Triangles()` | Same | Direct port |
-| `Find_Number_Triangles_Unique()` | Same | Direct port |
-| `Find_Number_2Loops()` | Same | Direct port |
-| `Find_Number_2Loops_Unique()` | Same | Direct port |
-| `Find_Number_Wedges()` | Same | Direct port |
-| `Find_Number_Wedges_Unique()` | Same | Direct port |
+| ~~`Find_Number_Trust_Triangles_Unique()`~~ *(removed 0.3.0)* | Same | Dense matrix operations; confirmed unused (superseded by [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md), which returns the count plus the full motif list) |
+| ~~`Find_Number_Triangles()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_Triangles_Unique()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_2Loops()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_2Loops_Unique()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_Wedges()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_Wedges_Unique()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
 | [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md) | Same | Returns list instead of tuple |
 | [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md) | Same | Returns list instead of tuple |
 | [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md) | Same | Returns list instead of tuple |
-| `BFS()` | Same | Internal; 1-based indexing |
+| ~~`BFS()`~~ *(removed 0.3.0)* | Same | Internal; confirmed unused once `IN()`/`OUT()` (its only callers) were removed |
 | [`TarjanIterative()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/TarjanIterative.md) | Same | Uses R closures |
 | [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md) | Same | Direct port |
-| `IN()` | Same | Direct port |
-| `OUT()` | Same | Direct port |
+| ~~`IN()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused (bow-tie decomposition never wired into [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)/[`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)) |
+| ~~`OUT()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
 | [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md) | Same | Direct port |
 | [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md) | Same | Direct port |
 | [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md) | Same | Direct port |
@@ -722,7 +753,7 @@ simulation size).
 | [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md) | Same | Legacy stub; redirects to computeGSCC() |
 | [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md) | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()` | Unified auto-detecting parser |
 | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) | `wilcoxon()` | Simplified, generic, FDR-corrected |
-| `volcano_plot()` | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
+| [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md) | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Ranked bar chart (originally a unified `volcano_plot()`, later replaced) |
 
 ### New Functions (no Python equivalent):
 
@@ -736,10 +767,58 @@ simulation size).
 | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | End-to-end Monte Carlo workflow |
 | [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md) | Normalize and bundle Monte Carlo results |
 | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Automated input preparation from raw counts |
-| `generateUniformLRGraph()` | Generate graph under uniform LR null model |
+| [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md) | Extract every requested Monte Carlo feature type from one shared set of simulated graphs, instead of resimulating per type |
 | [`.check_installed_packages()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-check_installed_packages.md) | Internal dependency checker |
 
 ------------------------------------------------------------------------
+
+## 8.5 Further evolution since this report was written (0.3.0)
+
+Beyond the R-vs-Python translation documented above, the package has
+since undergone a further round of correctness, performance, and
+API-consistency work, summarized fully in `NEWS.md`:
+
+- **Removed 11 functions** confirmed unused anywhere in the package,
+  tests, vignette, README, or downstream projects (see the strikethrough
+  entries above and in section 4.5) – several were direct ports of
+  Python modules (`distribution_generation.py`) the original authors
+  themselves had already marked as test-only scaffolding, not part of
+  the real analysis pipeline.
+- **Fixed a catastrophic O(n^3) crash/hang** in
+  [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)/[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
+  (the kernel-based Wedge/Triangle features): the original R port built
+  one named-list entry per cell-type combination inside a nested loop,
+  which for realistic cell-type counts (100+) reaches 10⁵⁻¹⁰6+
+  individual list insertions – effectively unusable, unlike Direct
+  communication. Rewritten as vectorized array operations, verified
+  numerically identical to the previous implementation.
+- **Multi-type feature extraction without recomputing**: both
+  [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+  and
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  now accept `communication_type` as a vector, extracting every
+  requested feature family from one already-computed kernel / one shared
+  set of simulated graphs, instead of repeating the expensive step
+  (kernel computation or graph generation) once per type.
+- **Automatic zero-column filtering**: cell-type combinations with no
+  possible ligand-receptor pathway in any patient are dropped from
+  kernel feature output automatically, rather than returned as dead
+  all-zero columns.
+- **Monte Carlo parallelization** (`ncores`, via
+  `parallel`/`doParallel`/`foreach`, portable across platforms) across
+  independent patients, plus a fix for a severe memory-duplication bug
+  where each parallel worker had been receiving a full copy of the
+  entire multi-hundred-MB `LRmatrix` tensor instead of just its own
+  patient’s slice.
+- **Column-naming and patient-ID consistency** between the kernel and
+  Monte Carlo methods, so their outputs are now interchangeable inputs
+  to the same downstream statistical/plotting functions – mirroring how
+  the original Python implementation’s own
+  `dataReadExact()`/`readAllData()` readers fed the same statistical
+  pipeline regardless of which method produced the underlying `.csv`.
+- `volcano_plot()` (see section 3.7/4 above) was itself later removed in
+  favor of
+  [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md).
 
 ## 9. Conclusion
 

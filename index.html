@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>RaCInG • RaCInG</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -23,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -166,6 +171,7 @@
 <span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Responder"</span>, <span class="st">"Responder"</span>, <span class="st">"Non-responder"</span>, <span class="st">"Non-responder"</span><span class="op">)</span></span>
 <span><span class="va">wilcox_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/wilcox_group_test.html">wilcox_group_test</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">grouping</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span><span class="op">)</span></span></code></pre></div>
+<p>Both <code><a href="reference/compute_racing_kernel.html">compute_racing_kernel()</a></code> and <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> also accept <code>communication_type</code> as a vector (e.g. <code>c("D", "W", "TT", "GSCC")</code>), extracting every requested feature family from the same computed kernel / same simulated graphs in one call, instead of repeating the expensive step per type. <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> additionally takes <code>ncores</code> to parallelize independent patients across cores.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>

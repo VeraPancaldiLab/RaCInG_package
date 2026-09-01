@@ -26,7 +26,7 @@ compute_racing_montecarlo(
   Ngraphs = 100,
   Ndegree = 20,
   remove_direction = TRUE,
-  norm = TRUE,
+  norm = FALSE,
   input_data = NULL,
   ncores = 1
 )
@@ -105,7 +105,16 @@ compute_racing_montecarlo(
 
 - communication_type:
 
-  Feature family to simulate.
+  Feature family to simulate: `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`, or
+  a character vector of several of these (e.g.
+  `c("D", "W", "TT", "CT", "GSCC")`). When more than one is given, every
+  requested type is extracted from the same simulated graphs (via
+  [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md))
+  in one pass instead of re-simulating a fresh set of graphs per type –
+  graph generation, not feature extraction, is the expensive part of a
+  Monte Carlo run, so this amortizes that cost across every type
+  requested. `output` in the return value is then a named list (one
+  entry per type) instead of a single result.
 
 - Ncells:
 
@@ -125,8 +134,12 @@ compute_racing_montecarlo(
 
 - norm:
 
-  Logical; if `TRUE`, also run a uniformized baseline simulation for
-  normalization.
+  Logical; if `TRUE`, also run a uniformized baseline simulation and
+  express features as an enrichment ratio over it (isolates specificity
+  from abundance/topology, at the cost of a second, noisier simulation
+  pass – budget a larger `Ngraphs` if enabling this). Default `FALSE`
+  returns the raw, abundance-weighted communication magnitude, which is
+  simpler, cheaper (one pass), and less noisy at a given `Ngraphs`.
 
 - input_data:
 

@@ -5,7 +5,14 @@ Calculate wedge features from a kernel
 ## Usage
 
 ``` r
-calculateWedges(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
+calculateWedges(
+  kernel,
+  unifKernel = NULL,
+  cells,
+  Dcell = NULL,
+  bundle = TRUE,
+  patient_names = NULL
+)
 ```
 
 ## Arguments
@@ -32,6 +39,14 @@ calculateWedges(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
 
   Logical; if `TRUE`, combine directionally equivalent wedges.
 
+- patient_names:
+
+  Optional character vector of patient labels, matching the patient
+  order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ... when
+  omitted.
+
 ## Value
 
-A patient-by-feature data frame of wedge scores.
+A patient-by-feature data frame of wedge scores. Triplets with no
+possible ligand-receptor pathway in any patient (zero for every patient)
+are dropped rather than returned as all-zero columns.

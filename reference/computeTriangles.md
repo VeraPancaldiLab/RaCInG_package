@@ -53,4 +53,6 @@ computeTriangles(
 
 ## Value
 
-A patient-by-feature data frame of triangle scores.
+A patient-by-feature data frame of triangle scores. Triples with no
+possible ligand-receptor pathway in any patient (zero for every patient)
+are dropped rather than returned as all-zero columns.
