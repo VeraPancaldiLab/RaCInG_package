@@ -1,7 +1,7 @@
 Package: RaCInG
 Type: Package
 Title: Reconstruct Cell-Cell Interaction Graphs from Bulk Transcriptomics
-Version: 0.2.0
+Version: 0.3.0
 Authors@R:
     person(given = "Marcelo", family = "Hurtado",
            email = "marcelo.hurt137@gmail.com",

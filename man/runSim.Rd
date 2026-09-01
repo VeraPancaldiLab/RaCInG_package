@@ -33,7 +33,14 @@ runSim(
 
 \item{cells}{Character vector of cell-type names.}
 
-\item{communication_type}{Feature family to simulate (\code{"D"}, \code{"W"}, \code{"TT"}, \code{"CT"}, or \code{"GSCC"}).}
+\item{communication_type}{Feature family to simulate (\code{"D"}, \code{"W"}, \code{"TT"},
+\code{"CT"}, or \code{"GSCC"}), or a character vector of several of these. When more
+than one is given, every requested type is extracted from the \emph{same}
+simulated graphs (via \code{\link[=countAllTypes]{countAllTypes()}}) instead of re-simulating a fresh
+set of graphs per type, and one \code{.out} file per type is written (file
+names suffixed with the type, e.g. \verb{<file.name>_D.out}). With a single
+type, output naming is unchanged from previous versions
+(\verb{<file.name>.out}, no suffix).}
 
 \item{pats}{Number of patients to process, or \code{"all"}.}
 

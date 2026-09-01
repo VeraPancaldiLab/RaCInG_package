@@ -1,22 +1,31 @@
 # RaCInG
 
-# RaCInG
-
-[![R-CMD-check](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml)
-[![pkgdown](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml)
+[![R-CMD-check](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml)
 
 **RaCInG** (**Ra**ndom **C**ell-cell **In**teraction **G**enerator)
 reconstructs patient-specific cell-cell communication networks from bulk
 RNA-seq data and extracts network-level features using either a
 kernel-based or Monte Carlo workflow.
 
-random cell-cell interaction generator \## Installation
+This package is the R implementation of the [original RaCInG Python
+framework](https://github.com/SysBioOncology/RaCInG), as described in
+[van Santvoort et
+al. (2025)](https://pubmed.ncbi.nlm.nih.gov/39954673/), repackaged for
+seamless integration with R/Bioconductor analysis pipelines. It is
+additionally coupled with
+[multideconv](https://github.com/VeraPancaldiLab/multideconv) for
+deconvolution and cell-type subgroup identification, and with
+[OmnipathR](https://omnipathdb.org/)/[liana](https://saezlab.github.io/liana/)
+for ligand-receptor prior knowledge.
+
+## Installation
 
 ### Install from GitHub
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("mhurtado13/racing")
+remotes::install_github("VeraPancaldiLab/RaCInG_package")
 library(RaCInG)
 ```
 
@@ -30,31 +39,37 @@ devtools::install(".")
 ### Optional preprocessing dependencies
 
 If you want to start directly from raw counts with
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md),
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md),
 install the optional helper packages used during deconvolution and
 prior-network construction:
 
 ``` r
-install.packages(c("ggplot2", "OmnipathR"))
-# Additional optional packages used by the full preprocessing workflow:
-# ADImpute, multideconv, liana
+install.packages(c("ggplot2", "nnls"))
+# ADImpute and OmnipathR are available from Bioconductor:
+BiocManager::install(c("ADImpute", "OmnipathR"))
+# liana and multideconv are GitHub-only:
+remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 ```
 
 ## Workflow at a glance
 
-| Goal                                 | Function                                                                                                    | Output                                                  |
-|--------------------------------------|-------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| Build input matrices from raw counts | [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)             | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Run deterministic features           | [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)         | Kernel arrays + feature matrix                          |
-| Run simulation-based features        | [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | Monte Carlo summaries                                   |
-| Compare patient groups               | [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)                 | Statistics table for downstream plots                   |
+| Goal                                 | Function                                                                                                                 | Output                                                  |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)             | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Run deterministic features           | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)         | Kernel arrays + feature matrix                          |
+| Run simulation-based features        | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Monte Carlo summaries                                   |
+| Compare patient groups               | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)                 | Statistics table for downstream plots                   |
 
 ## Quick start
 
 ``` r
 library(RaCInG)
 
-# Build input matrices from raw counts
+# Build input matrices from a real bulk RNA-seq counts matrix
+# (bundled with the optional `multideconv` dependency)
+data(raw_counts, package = "multideconv")
+counts_matrix <- as.matrix(raw_counts)
+
 input <- prepare_input_files(
   counts = counts_matrix,
   output_folder = "Results/",
@@ -85,13 +100,30 @@ mc_res <- compute_racing_montecarlo(
   Ngraphs = 10,
   Ndegree = 3
 )
+
+# Compare clinical groups or correlate features with a continuous score
+grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
+wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
+top_features_plot(wilcox_results)
 ```
+
+Both
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+and
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+also accept `communication_type` as a vector
+(e.g. `c("D", "W", "TT", "GSCC")`), extracting every requested feature
+family from the same computed kernel / same simulated graphs in one
+call, instead of repeating the expensive step per type.
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+additionally takes `ncores` to parallelize independent patients across
+cores.
 
 ## Documentation
 
 - 📘 Vignette: [Getting started with
-  RaCInG](https://mhurtado13.github.io/racing/articles/RaCiNG.html)
-- 🌐 Website: <https://mhurtado13.github.io/racing/>
+  RaCInG](https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.html)
+- 🌐 Website: <https://VeraPancaldiLab.github.io/RaCInG_package/>
 - 🐍 Original Python implementation:
   <https://github.com/SysBioOncology/RaCInG>
 
@@ -103,3 +135,10 @@ If you use this package, please cite the RaCInG publication:
 > van der Hoorn P & Eduati F (2025). *Mathematically mapping the network
 > of cells in the tumor microenvironment.* Cell Reports Methods, 5(2),
 > 100985.
+
+## R Package Development
+
+This R package implementation was developed by [Marcelo
+Hurtado](https://github.com/mhurtado13) from the [Pancaldi
+team](https://github.com/VeraPancaldiLab), led by Vera Pancaldi. Marcelo
+is currently the primary maintainer of the package.

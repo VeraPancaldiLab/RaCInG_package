@@ -38,6 +38,7 @@ reference:
       - countCycleTriangles
       - countDirect
       - countGSCC
+      - countAllTypes
       - model1
       - runSim
       - getGSCCAnalytically

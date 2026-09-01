@@ -20,7 +20,7 @@ compute_racing_kernel(
   file_name = NULL,
   nPatients = "all",
   communication_type = "W",
-  norm = TRUE,
+  norm = FALSE,
   pt_idx = NULL,
   remove_direction = TRUE,
   input_data = NULL
@@ -59,9 +59,20 @@ per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepa
 
 \item{nPatients}{Number of patients to process, or \code{"all"}.}
 
-\item{communication_type}{Feature family to compute.}
+\item{communication_type}{Feature family to compute (\code{"D"}, \code{"W"}, \code{"TT"},
+or \code{"GSCC"}), or a character vector of several of these (e.g.
+\code{c("D", "W", "TT", "GSCC")}). The kernel (\code{compute_kernel()}) is always
+computed exactly once regardless of how many types are requested --
+feature extraction from an already-computed kernel is cheap, so there is
+no need to call \code{compute_racing_kernel()} again just to get a different
+\code{communication_type}; request them all in one call instead. With more
+than one type, \code{features} in the return value is a named list (one data
+frame per type) instead of a single data frame.}
 
-\item{norm}{Logical; if \code{TRUE}, compute a normalized baseline kernel.}
+\item{norm}{Logical; if \code{TRUE}, also compute a normalized baseline kernel and
+express features as an enrichment ratio over it (isolates specificity from
+abundance/topology). Default \code{FALSE} returns the raw, abundance-weighted
+communication magnitude.}
 
 \item{pt_idx}{Optional single patient index to process.}
 
@@ -75,7 +86,9 @@ When supplied, the \code{counts} argument and all preprocessing parameters
 (\code{deconv}, \code{cc_network}, etc.) are ignored.}
 }
 \value{
-A list with the kernel arrays and the derived feature matrix.
+A list with the kernel arrays and the derived feature matrix (or,
+for multiple \code{communication_type} entries, a named list of feature
+matrices) in \code{features}.
 }
 \description{
 Run the full kernel-based RaCInG workflow

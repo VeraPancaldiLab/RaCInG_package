@@ -54,8 +54,8 @@ The entire codebase has been rewritten from Python to R. Key translation decisio
 - **Adapted from class-based to functional design**: The `informationMicroEnv` class is restructured as standalone functions (`genRandomCellTypeDistr()`, `genRandomLigRecDistr()`, `genRandomCellLigands()`, `genRandomCellReceptors()`, `genRandomCellTypeList()`, `genRandomEdgeList()`), each independently documented and exported.
 - **Consolidated `distribution_generation` into the same file**: The separate Python module `distribution_generation.py` (referenced as `import distribution_generation as dg`) is incorporated directly into `network_generation.R`, keeping all network generation logic in one place.
 - **All functions are individually documented** with roxygen2 `@param`, `@return`, and `@export` tags.
-- **`model1()`**: Converted from using a class instance to calling standalone functions. Parameters use R-style `NULL` defaults instead of Python empty lists `[]`.
-- **Added `generateUniformLRGraph()`**: A new exported function that generates a graph under a uniformized (flat) LR distribution for a specific patient. This function does not exist in the original Python code and is useful for normalization workflows.
+- **`model1()`**: Converted from using a class instance to calling standalone functions. Parameters use R-style `NULL` defaults instead of Python empty lists `[]`. *(0.3.0: the `genRandom = TRUE` demo path -- and the 4 fabricated-data generators it called, direct ports of Python's `distribution_generation.py`, itself explicitly documented there as "not used in paper" -- were removed as confirmed-unused; `model1()` now always requires real inputs. See section 4.5 below and `NEWS.md`.)*
+- Added `generateUniformLRGraph()`. *(Removed in 0.3.0 as unused -- see section 4.5.)*
 - **1-based indexing**: All vertex and cell-type indices use R's 1-based convention vs. Python's 0-based.
 
 ### 3.2 `feature_extraction.py` → `R/feature_extraction.R`
@@ -204,9 +204,10 @@ Comprehensive file (~800+ lines) providing a full downstream analysis suite:
 
 #### R Package Changes
 
-- **Generalized approach**: The original's extensive analysis suite is distilled into two flexible, reusable functions (TO BE COMPLETED WITH ADDITIONAL FUNCTIONS OF demo.py):
-  1. **`wilcox_group_test()`**: A generic Wilcoxon rank-sum test function that accepts any data matrix and group labels. Uses `stats::p.adjust()` for multiple testing correction (supports FDR, Bonferroni, and others via a parameter). Returns a tidy data frame sorted by adjusted p-value. This generalizes the original's cancer-specific testing pipeline into a dataset-agnostic tool.
-  2. **`volcano_plot()`**: A `ggplot2`-based volcano plot that accepts the output of `wilcox_group_test()`. 
+- **Generalized approach**: The original's extensive, cancer-type-hardcoded analysis suite (~1,800 lines) is distilled into a compact, reusable statistical API that operates on any feature matrix and grouping vector:
+  1. **`wilcox_group_test()`**: A generic Wilcoxon rank-sum test function that accepts any data matrix and group labels. Uses `stats::p.adjust()` for multiple testing correction (supports FDR, Bonferroni, and others via a parameter). Returns a tidy data frame sorted by adjusted p-value, with every pairwise comparison run automatically for more than two groups. This generalizes the original's cancer-specific testing pipeline into a dataset-agnostic tool.
+  2. **`top_features_plot()`**: A ranked horizontal bar chart of the top up/down features by `log2(fold change)` from `wilcox_group_test()`'s output. *(Update: the package initially shipped a `ggplot2`-based `volcano_plot()` here; it was later removed and replaced by `top_features_plot()`, which scales to features with long names -- each name is drawn once as an axis label rather than needing to be positioned/repelled on a scatter plot, so labels never get dropped or overlap regardless of feature count.)*
+  3. **`correlate_features_with_score()`** + **`correlation_plot()`**: Spearman correlation between every feature and a continuous per-patient score (pooled and, optionally, per-group), with a diverging bar-chart visualization of the top positive/negative correlations -- this is the generalized, reusable counterpart of the original's `computeCorrelation()`, added after this comparison was first written.
 
 - **Functions not carried over** (with rationale):
   - Data reading functions (`readAllDataExact`, `dataReadExact`, `data_read`, `readAllData`): Superseded by the generic input pipeline.
@@ -214,10 +215,10 @@ Comprehensive file (~800+ lines) providing a full downstream analysis suite:
   - `Metadata_csv_read_in()`: Standard CSV reading is natively supported in R via `read.csv()`.
   - `addMetadata()`, `removeOutliers()`: Data cleaning operations well-served by R's existing ecosystem (`dplyr`, `tidyr`).
   - `groupPatients()`, `createPanCancerData()`: Study-specific grouping logic that users can implement based on their particular study design.
-  - `computeCorrelation()`: Correlation analysis is well-supported natively in R via `cor.test()` and related functions.
   - `findLargeFold()`, `plot_heatmap()`, `heatmap()`: Mature R packages like `ComplexHeatmap` and `pheatmap` offer extensive heatmap capabilities.
   - `contributionAnalysisGSCC()`: Study-specific analysis that users can implement using `computeGSCC()` output.
-  - `volcanoCross()`, `volcanoPan()`, `volcanoInd()`: Consolidated into the single generic `volcano_plot()`.
+  - `volcanoCross()`, `volcanoPan()`, `volcanoInd()`: Initially consolidated into a single generic `volcano_plot()`, itself since replaced by `top_features_plot()` (see above).
+  - `retrieveLigRecInfo.py`, `Circos.py`: Conditional ligand-receptor pair probability retrieval and Circos-plot export have no R equivalent yet.
 
 ### 3.8 `txt_to_csv.py` → `R/txt_to_csv.R`
 
@@ -278,9 +279,13 @@ A new function that acts as a single entry point for computing any type of kerne
 
 The function `computeTriangles()` computes triangle features analytically from the kernel, which was only available via Monte Carlo simulation in the original Python code. This eliminates the need for computationally expensive graph simulations when only triangle features are needed.
 
-### 4.5 `generateUniformLRGraph()`
+### 4.5 `generateUniformLRGraph()` *(removed in 0.3.0)*
 
-A new helper function for generating graphs under a uniform ligand-receptor distribution. This is useful for normalization studies and understanding the null model.
+A helper function for generating graphs under a uniform ligand-receptor distribution.
+It was confirmed unused anywhere in the package, tests, or downstream projects -- the
+package's actual null-distribution/normalization logic (the `norm`/`normalize`
+parameters on `compute_kernel()` and `runSim()`) is built inline elsewhere and never
+called this function -- and was removed. See `NEWS.md` (0.3.0).
 
 ### 4.6 pkgdown Documentation Website
 
@@ -399,31 +404,31 @@ File I/O only for Monte Carlo output persistence (necessary due to simulation si
 | `Read_Lig_Rec_Interaction()` | `Read_Lig_Rec_Interaction()` | Uses `data.table::fread` |
 | `generateInput()` | `generateInput()` | Generalized file naming |
 | `model1()` | `model1()` | Standalone functions instead of class |
-| `genRandomCellTypeDistr()` | `dg.genRandomCellTypeDistr()` | Direct port |
-| `genRandomLigRecDistr()` | `dg.genRandomLigRecDistr()` | Direct port |
-| `genRandomCellLigands()` | `dg.genRandomCellLigands()` | Direct port |
-| `genRandomCellReceptors()` | `dg.genRandomCellReceptors()` | Direct port |
+| ~~`genRandomCellTypeDistr()`~~ *(removed 0.3.0)* | `dg.genRandomCellTypeDistr()` | Direct port; confirmed unused (only reachable via `model1(genRandom = TRUE)`, itself removed) |
+| ~~`genRandomLigRecDistr()`~~ *(removed 0.3.0)* | `dg.genRandomLigRecDistr()` | Direct port; confirmed unused |
+| ~~`genRandomCellLigands()`~~ *(removed 0.3.0)* | `dg.genRandomCellLigands()` | Direct port; confirmed unused |
+| ~~`genRandomCellReceptors()`~~ *(removed 0.3.0)* | `dg.genRandomCellReceptors()` | Direct port; confirmed unused |
 | `genRandomCellTypeList()` | `informationMicroEnv.genRandomCellTypeList()` | Extracted from class |
 | `genRandomEdgeList()` | `informationMicroEnv.genRandomEdgeList()` | Extracted from class |
 | `EdgetoAdj()` | `EdgetoAdj()` | Uses `Matrix::sparseMatrix` |
 | `EdgetoAdj_No_loop()` | `EdgetoAdj_No_loop()` | Uses `Matrix::sparseMatrix` |
 | `Count_Types()` | `Count_Types()` | 1-based indexing |
 | `poiBPFunc()` | `poiBPFunc()` | Internal; same math |
-| `Find_Number_Trust_Triangles_Unique()` | Same | Dense matrix operations |
-| `Find_Number_Triangles()` | Same | Direct port |
-| `Find_Number_Triangles_Unique()` | Same | Direct port |
-| `Find_Number_2Loops()` | Same | Direct port |
-| `Find_Number_2Loops_Unique()` | Same | Direct port |
-| `Find_Number_Wedges()` | Same | Direct port |
-| `Find_Number_Wedges_Unique()` | Same | Direct port |
+| ~~`Find_Number_Trust_Triangles_Unique()`~~ *(removed 0.3.0)* | Same | Dense matrix operations; confirmed unused (superseded by `Trust_Triangles()`, which returns the count plus the full motif list) |
+| ~~`Find_Number_Triangles()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_Triangles_Unique()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_2Loops()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_2Loops_Unique()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_Wedges()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
+| ~~`Find_Number_Wedges_Unique()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
 | `Trust_Triangles()` | Same | Returns list instead of tuple |
 | `Cycle_Triangles()` | Same | Returns list instead of tuple |
 | `Wedges()` | Same | Returns list instead of tuple |
-| `BFS()` | Same | Internal; 1-based indexing |
+| ~~`BFS()`~~ *(removed 0.3.0)* | Same | Internal; confirmed unused once `IN()`/`OUT()` (its only callers) were removed |
 | `TarjanIterative()` | Same | Uses R closures |
 | `GSCC()` | Same | Direct port |
-| `IN()` | Same | Direct port |
-| `OUT()` | Same | Direct port |
+| ~~`IN()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused (bow-tie decomposition never wired into `computeGSCC()`/`countGSCC()`) |
+| ~~`OUT()`~~ *(removed 0.3.0)* | Same | Direct port; confirmed unused |
 | `countWedges()` | Same | Direct port |
 | `countTrustTriangles()` | Same | Direct port |
 | `countCycleTriangles()` | Same | Direct port |
@@ -435,7 +440,7 @@ File I/O only for Monte Carlo output persistence (necessary due to simulation si
 | `getGSCCAnalytically()` | Same | Legacy stub; redirects to computeGSCC() |
 | `Read_Sim_Output()` | `Triangle_Prop_Read()` + `Direct_Comm_Read()` + `GSCC_Read()` | Unified auto-detecting parser |
 | `wilcox_group_test()` | `wilcoxon()` | Simplified, generic, FDR-corrected |
-| `volcano_plot()` | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Unified ggplot2 version |
+| `top_features_plot()` | `volcanoPan()` + `volcanoInd()` + `volcanoCross()` | Ranked bar chart (originally a unified `volcano_plot()`, later replaced) |
 
 ### New Functions (no Python equivalent):
 
@@ -449,10 +454,47 @@ File I/O only for Monte Carlo output persistence (necessary due to simulation si
 | `compute_racing_montecarlo()` | End-to-end Monte Carlo workflow |
 | `compute_results_processing()` | Normalize and bundle Monte Carlo results |
 | `prepare_input_files()` | Automated input preparation from raw counts |
-| `generateUniformLRGraph()` | Generate graph under uniform LR null model |
+| `countAllTypes()` | Extract every requested Monte Carlo feature type from one shared set of simulated graphs, instead of resimulating per type |
 | `.check_installed_packages()` | Internal dependency checker |
 
 ---
+
+## 8.5 Further evolution since this report was written (0.3.0)
+
+Beyond the R-vs-Python translation documented above, the package has since undergone a
+further round of correctness, performance, and API-consistency work, summarized fully
+in `NEWS.md`:
+
+- **Removed 11 functions** confirmed unused anywhere in the package, tests, vignette,
+  README, or downstream projects (see the strikethrough entries above and in section
+  4.5) -- several were direct ports of Python modules (`distribution_generation.py`)
+  the original authors themselves had already marked as test-only scaffolding, not
+  part of the real analysis pipeline.
+- **Fixed a catastrophic O(n^3) crash/hang** in `calculateWedges()`/`computeTriangles()`
+  (the kernel-based Wedge/Triangle features): the original R port built one named-list
+  entry per cell-type combination inside a nested loop, which for realistic cell-type
+  counts (100+) reaches 10^5-10^6+ individual list insertions -- effectively unusable,
+  unlike Direct communication. Rewritten as vectorized array operations, verified
+  numerically identical to the previous implementation.
+- **Multi-type feature extraction without recomputing**: both
+  `compute_racing_kernel()` and `compute_racing_montecarlo()` now accept
+  `communication_type` as a vector, extracting every requested feature family from one
+  already-computed kernel / one shared set of simulated graphs, instead of repeating
+  the expensive step (kernel computation or graph generation) once per type.
+- **Automatic zero-column filtering**: cell-type combinations with no possible
+  ligand-receptor pathway in any patient are dropped from kernel feature output
+  automatically, rather than returned as dead all-zero columns.
+- **Monte Carlo parallelization** (`ncores`, via `parallel`/`doParallel`/`foreach`,
+  portable across platforms) across independent patients, plus a fix for a severe
+  memory-duplication bug where each parallel worker had been receiving a full copy of
+  the entire multi-hundred-MB `LRmatrix` tensor instead of just its own patient's slice.
+- **Column-naming and patient-ID consistency** between the kernel and Monte Carlo
+  methods, so their outputs are now interchangeable inputs to the same downstream
+  statistical/plotting functions -- mirroring how the original Python implementation's
+  own `dataReadExact()`/`readAllData()` readers fed the same statistical pipeline
+  regardless of which method produced the underlying `.csv`.
+- `volcano_plot()` (see section 3.7/4 above) was itself later removed in favor of
+  `top_features_plot()`.
 
 ## 9. Conclusion
 

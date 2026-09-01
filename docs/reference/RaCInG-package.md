@@ -8,11 +8,12 @@ Carlo features, and perform downstream statistical analysis.
 
 Useful links:
 
-- <https://github.com/mhurtado13/racing>
+- <https://github.com/VeraPancaldiLab/RaCInG_package>
 
-- <https://mhurtado13.github.io/racing/>
+- <https://VeraPancaldiLab.github.io/RaCInG_package/>
 
-- Report bugs at <https://github.com/mhurtado13/racing/issues>
+- Report bugs at
+  <https://github.com/VeraPancaldiLab/RaCInG_package/issues>
 
 ## Author
 

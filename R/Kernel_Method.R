@@ -113,10 +113,17 @@ compute_kernel <- function(liglist, reclist, Cmatrix, LRmatrix, normalize = FALS
 #'   (unnormalized) scores. Ignored when `unifKernel` is supplied, since the
 #'   abundance weights cancel out of the ratio.
 #' @param bundle Logical; if `TRUE`, combine reciprocal directions.
+#' @param patient_names Optional character vector of patient labels, matching
+#'   the patient order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ...
+#'   when omitted, matching [compute_racing_montecarlo()]'s output when it
+#'   is also given real names.
 #'
 #' @return A patient-by-feature data frame of direct communication scores.
+#'   Cell-type pairs with no possible ligand-receptor pathway in any patient
+#'   (zero for every patient) are dropped rather than returned as all-zero
+#'   columns.
 #' @export
-calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE) {
+calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE, patient_names = NULL) {
   n_celltypes <- length(cells)      # number of cell types
   n_patients <- dim(kernel)[3]      # number of patients
 
@@ -151,7 +158,13 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
   }
 
   df <- as.data.frame(df_list)
-  rownames(df) <- paste0("Patient_", 1:n_patients)
+  rownames(df) <- if (!is.null(patient_names)) patient_names else paste0("Patient_", 1:n_patients)
+
+  # Drop cell-type pairs with no possible ligand-receptor pathway in any
+  # patient (zero for every patient -- both branches above fill the
+  # structurally-impossible NaN case with 0, so a plain all-zero check is a
+  # correct and sufficient test here regardless of raw vs normalized).
+  df <- df[, colSums(df != 0) > 0, drop = FALSE]
 
   return(df)
 }
@@ -164,48 +177,107 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
 #' @param Dcell Patient-by-cell-type abundance matrix, used to weight raw
 #'   (unnormalized) scores. Ignored when `unifKernel` is supplied.
 #' @param bundle Logical; if `TRUE`, combine directionally equivalent wedges.
+#' @param patient_names Optional character vector of patient labels, matching
+#'   the patient order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ...
+#'   when omitted.
 #'
-#' @return A patient-by-feature data frame of wedge scores.
+#' @return A patient-by-feature data frame of wedge scores. Triplets with no
+#'   possible ligand-receptor pathway in any patient (zero for every
+#'   patient) are dropped rather than returned as all-zero columns.
 #' @export
-calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE) {
+calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE, patient_names = NULL) {
   n_celltypes <- length(cells)
   n_patients <- dim(kernel)[3]
 
-  df_list <- list()   # list to collect columns before converting to data frame
+  # Build the full (i, j, k) index grid vectorized, up front, instead of a
+  # triple nested for-loop with a per-triplet df_list[[colname]] <- value
+  # assignment -- that pattern grows an R named list one entry at a time,
+  # which for realistic cell-type counts (e.g. 106) means n^2*(n+1)/2 (~600K,
+  # bundled) or n^3 (~1.2M, unbundled) individual list insertions plus a
+  # final as.data.frame() on all of them: this was the actual crash/hang,
+  # not the underlying arithmetic. A single vectorized computation over the
+  # whole grid does the same math with none of that per-element overhead
+  # (mirrors the fix already applied to compute_results_processing() on the
+  # Monte Carlo side for the same O(n^3) list-growth pattern).
+  if (bundle) {
+    grid <- do.call(rbind, lapply(seq_len(n_celltypes), function(jj) {
+      expand.grid(i = seq_len(n_celltypes), j = jj, k = jj:n_celltypes)
+    }))
+  } else {
+    grid <- expand.grid(i = seq_len(n_celltypes), j = seq_len(n_celltypes), k = seq_len(n_celltypes))
+  }
+  i <- grid$i; j <- grid$j; k <- grid$k
 
-  # Loop over all triplets of cell types (i, j, k): i = sender, j = intermediate, k = receiver
-  for (i in 1:n_celltypes) {
-    for (j in 1:n_celltypes) {
-      for (k in if (bundle) j:n_celltypes else 1:n_celltypes) {
+  # Flatten kernel's [sender, receiver, patient] array to [(sender*receiver), patient]
+  # so kernel[a, b, ] for every (a, b) pair in the grid can be pulled out in
+  # one indexed lookup per patient column, instead of one R-level `kernel[i,j,]`
+  # subset per triplet.
+  kernel_mat <- matrix(kernel, nrow = n_celltypes * n_celltypes, ncol = n_patients)
+  idx2 <- function(a, b) a + (b - 1L) * n_celltypes
+  Kij <- kernel_mat[idx2(i, j), , drop = FALSE]
+  Kjk <- kernel_mat[idx2(j, k), , drop = FALSE]
+  if (bundle) {
+    Kkj0 <- kernel_mat[idx2(k, j), , drop = FALSE]
+    Kji0 <- kernel_mat[idx2(j, i), , drop = FALSE]
+    struct_core <- Kij * Kjk + Kkj0 * Kji0
+  } else {
+    struct_core <- Kij * Kjk
+  }
 
-        colname <- paste0("W_", cells[i], "_", cells[j], "_", cells[k])
+  # Drop triplets with no possible ligand-receptor pathway in any patient
+  # (zero structural kernel product for every patient) before doing any
+  # further (abundance-weighting or ratio) computation on them -- unifKernel
+  # is a rescaling of the same nonzero pattern as kernel (normalization only
+  # rescales already-positive entries, see compute_kernel()), so checking
+  # kernel's pattern alone is correct and sufficient for both raw and
+  # normalized output. This both shrinks the returned feature count and cuts
+  # the working-set size for the (possibly very large, e.g. ~600K rows at
+  # 106 cell types) computation below.
+  possible <- rowSums(struct_core != 0) > 0
+  if (!all(possible)) {
+    i <- i[possible]; j <- j[possible]; k <- k[possible]
+    Kij <- Kij[possible, , drop = FALSE]
+    Kjk <- Kjk[possible, , drop = FALSE]
+    if (bundle) { Kkj0 <- Kkj0[possible, , drop = FALSE]; Kji0 <- Kji0[possible, , drop = FALSE] }
+  }
+  rm(struct_core)
 
-        if (!is.null(unifKernel)) {
-          # normalized wedge score: abundance weights cancel out of the ratio
-          value <- if (bundle) {
-            (kernel[i,j,] * kernel[j,k,] + kernel[k,j,] * kernel[j,i,]) /
-              (unifKernel[i,j,] * unifKernel[j,k,] + unifKernel[k,j,] * unifKernel[j,i,])
-          } else {
-            (kernel[i,j,] * kernel[j,k,]) /
-              (unifKernel[i,j,] * unifKernel[j,k,])
-          }
-          value[is.nan(value)] <- 0 # no possible ligand-receptor pathway through this triplet (0/0): no communication, not undefined
-        } else {
-          # raw wedge: weight explicitly by the abundance of each of the 3 nodes
-          value <- if (bundle) {
-            Dcell[,i] * Dcell[,j] * Dcell[,k] * (kernel[i,j,] * kernel[j,k,] + kernel[k,j,] * kernel[j,i,])
-          } else {
-            Dcell[,i] * Dcell[,j] * Dcell[,k] * (kernel[i,j,] * kernel[j,k,])
-          }
-        }
+  if (!is.null(unifKernel)) {
+    unif_mat <- matrix(unifKernel, nrow = n_celltypes * n_celltypes, ncol = n_patients)
+    UKij <- unif_mat[idx2(i, j), , drop = FALSE]
+    UKjk <- unif_mat[idx2(j, k), , drop = FALSE]
 
-        df_list[[colname]] <- value   # store column for this triplet
-      }
+    if (bundle) {
+      UKkj <- unif_mat[idx2(k, j), , drop = FALSE]
+      UKji <- unif_mat[idx2(j, i), , drop = FALSE]
+      num <- Kij * Kjk + Kkj0 * Kji0
+      den <- UKij * UKjk + UKkj * UKji
+    } else {
+      num <- Kij * Kjk
+      den <- UKij * UKjk
+    }
+    value <- num / den
+    value[is.nan(value)] <- 0 # no possible ligand-receptor pathway through this triplet (0/0): no communication, not undefined
+  } else {
+    # Weight by abundance per patient via a small per-patient loop
+    # (n_patients is typically <=~150) rather than materializing three
+    # separate full [n_combo x n_patients] copies of Dcell (Di, Dj, Dk) --
+    # for n_combo in the hundreds of thousands to over a million (large
+    # cell-type counts), those three extra full-size matrices were the
+    # single biggest avoidable memory cost in this function; Dmat[p, i] for
+    # one patient p is just a cheap n_combo-length index/recycle, not a copy.
+    Dmat <- as.matrix(Dcell)  # [n_patients x n_celltypes]
+    core <- if (bundle) Kij * Kjk + Kkj0 * Kji0 else Kij * Kjk
+    value <- core
+    for (p in seq_len(n_patients)) {
+      value[, p] <- Dmat[p, i] * Dmat[p, j] * Dmat[p, k] * core[, p]
     }
   }
 
-  df <- as.data.frame(df_list)
-  rownames(df) <- paste0("Patient_", 1:n_patients)
+  out <- t(value)  # [n_patients x n_combo]
+  colnames(out) <- paste0("W_", cells[i], "_", cells[j], "_", cells[k])
+  df <- as.data.frame(out)
+  rownames(df) <- if (!is.null(patient_names)) patient_names else paste0("Patient_", 1:n_patients)
 
   return(df)
 }
@@ -332,61 +404,148 @@ computeGSCC <- function(kernel, Dcell, cell_names, patient_names,
 #'   triple: "TT" (trust/transitive triangle, `i->j->k` and `i->k`) and,
 #'   for `i<=j<=k` only, "CT" (cycle triangle, `i->j->k->i`).
 #'
-#' @return A patient-by-feature data frame of triangle scores.
+#' @return A patient-by-feature data frame of triangle scores. Triples with
+#'   no possible ligand-receptor pathway in any patient (zero for every
+#'   patient) are dropped rather than returned as all-zero columns.
 #' @export
 computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
                              unifKernel = NULL, norm = FALSE, bundle = TRUE) {
   n_patients <- dim(kernel)[3]   # number of patients
   n_cells <- length(cell_names)   # number of cell types
 
-  df_list <- list()  # will store triangle values per patient
+  # Build the (i, j, k) index grid(s) vectorized, up front, instead of a
+  # triple nested for-loop with a per-triple df_list[[colname]] <- value
+  # assignment -- for realistic cell-type counts this pattern reaches
+  # n(n+1)(n+2)/6 (bundled) or a full n^3 (unbundled -- what "TT" always
+  # requests via compute_kernel_features()) individual list insertions, which
+  # was the actual crash/hang for larger cohorts (e.g. n=106 gives ~1.2M
+  # triples), not the underlying arithmetic. See the equivalent fix in
+  # calculateWedges() for the same pattern.
+  kernel_mat <- matrix(kernel, nrow = n_cells * n_cells, ncol = n_patients)
+  unif_mat <- if (!is.null(unifKernel)) matrix(unifKernel, nrow = n_cells * n_cells, ncol = n_patients) else NULL
+  idx2 <- function(a, b) a + (b - 1L) * n_cells
+  get_val <- function(mat, a, b) mat[idx2(a, b), , drop = FALSE]
 
-  weight_or_ratio <- function(num_fun, i, j, k) {
-    # num_fun(K) computes the triangle numerator from a kernel array K
+  # Weight by abundance per patient via a small per-patient loop
+  # (n_patients is typically <=~150) rather than materializing three
+  # separate full [n_combo x n_patients] copies of Dcell (Di, Dj, Dk) --
+  # for n_combo in the hundreds of thousands to over a million (large
+  # cell-type counts), those three extra full-size matrices were the
+  # single biggest avoidable memory cost in this function; Dmat[p, idx] for
+  # one patient p is just a cheap n_combo-length index/recycle, not a copy.
+  weight_or_ratio_vec <- function(num_mat, den_mat, i_idx, j_idx, k_idx) {
     if (norm && !is.null(unifKernel)) {
-      value <- num_fun(kernel) / num_fun(unifKernel)
+      value <- num_mat / den_mat
       value[is.nan(value)] <- 1
+      value
     } else {
-      value <- Dcell[, i] * Dcell[, j] * Dcell[, k] * num_fun(kernel)
-    }
-    value
-  }
-
-  for (i in 1:n_cells) {
-    for (j in if (bundle) i:n_cells else 1:n_cells) {
-      for (k in if (bundle) j:n_cells else 1:n_cells) {
-
-        if (bundle) {
-          # Sum all 8 edge-direction combinations of the 3 undirected edges
-          # (2 cyclic + 6 transitive) to remove directionality entirely.
-          triangle_sum <- function(K) {
-            K[i,j,]*K[j,k,]*K[k,i,] + K[i,j,]*K[j,k,]*K[i,k,] +
-            K[i,j,]*K[k,j,]*K[i,k,] + K[i,j,]*K[k,j,]*K[k,i,] +
-            K[j,i,]*K[k,j,]*K[k,i,] + K[j,i,]*K[j,k,]*K[k,i,] +
-            K[j,i,]*K[j,k,]*K[i,k,] + K[j,i,]*K[k,j,]*K[i,k,]
-          }
-          df_list[[paste0("Tr_", cell_names[i], "_", cell_names[j], "_", cell_names[k])]] <-
-            weight_or_ratio(triangle_sum, i, j, k)
-
-        } else {
-          # Trust triangle (transitive): i->j, j->k, i->k
-          trust_triangle <- function(K) K[i,j,] * K[j,k,] * K[i,k,]
-          df_list[[paste0("TT_", cell_names[i], "_", cell_names[j], "_", cell_names[k])]] <-
-            weight_or_ratio(trust_triangle, i, j, k)
-
-          # Cycle triangle: i->j->k->i (only counted once per unordered triple)
-          if (i <= j && j <= k) {
-            cycle_triangle <- function(K) K[i,j,] * K[j,k,] * K[k,i,]
-            df_list[[paste0("CT_", cell_names[i], "_", cell_names[j], "_", cell_names[k])]] <-
-              weight_or_ratio(cycle_triangle, i, j, k)
-          }
-        }
+      Dmat <- as.matrix(Dcell)
+      value <- num_mat
+      for (p in seq_len(n_patients)) {
+        value[, p] <- Dmat[p, i_idx] * Dmat[p, j_idx] * Dmat[p, k_idx] * num_mat[, p]
       }
+      value
     }
   }
 
-  # Convert the list into a dataframe: rows = patients, columns = triangles
-  df <- as.data.frame(df_list)
+  if (bundle) {
+    grid <- do.call(rbind, lapply(seq_len(n_cells), function(ii) {
+      do.call(rbind, lapply(ii:n_cells, function(jj) {
+        expand.grid(i = ii, j = jj, k = jj:n_cells)
+      }))
+    }))
+    i <- grid$i; j <- grid$j; k <- grid$k
+
+    # Sum all 8 edge-direction combinations of the 3 undirected edges
+    # (2 cyclic + 6 transitive) to remove directionality entirely.
+    Kij <- get_val(kernel_mat, i, j); Kjk <- get_val(kernel_mat, j, k); Kki <- get_val(kernel_mat, k, i)
+    Kik <- get_val(kernel_mat, i, k); Kkj <- get_val(kernel_mat, k, j); Kji <- get_val(kernel_mat, j, i)
+    num <- Kij*Kjk*Kki + Kij*Kjk*Kik + Kij*Kkj*Kik + Kij*Kkj*Kki +
+           Kji*Kkj*Kki + Kji*Kjk*Kki + Kji*Kjk*Kik + Kji*Kkj*Kik
+
+    # Drop triples with no possible ligand-receptor pathway in any patient
+    # (zero structural kernel product for every patient), before the
+    # (possibly ratio or abundance-weighting) computation below -- unifKernel
+    # shares kernel's nonzero pattern (see calculateWedges() for why), so
+    # checking the raw structural product alone is correct here too.
+    possible <- rowSums(num != 0) > 0
+    if (!all(possible)) {
+      i <- i[possible]; j <- j[possible]; k <- k[possible]
+      Kij <- Kij[possible,,drop=FALSE]; Kjk <- Kjk[possible,,drop=FALSE]; Kki <- Kki[possible,,drop=FALSE]
+      Kik <- Kik[possible,,drop=FALSE]; Kkj <- Kkj[possible,,drop=FALSE]; Kji <- Kji[possible,,drop=FALSE]
+      num <- num[possible,,drop=FALSE]
+    }
+
+    den <- NULL
+    if (norm && !is.null(unifKernel)) {
+      UKij <- get_val(unif_mat, i, j); UKjk <- get_val(unif_mat, j, k); UKki <- get_val(unif_mat, k, i)
+      UKik <- get_val(unif_mat, i, k); UKkj <- get_val(unif_mat, k, j); UKji <- get_val(unif_mat, j, i)
+      den <- UKij*UKjk*UKki + UKij*UKjk*UKik + UKij*UKkj*UKik + UKij*UKkj*UKki +
+             UKji*UKkj*UKki + UKji*UKjk*UKki + UKji*UKjk*UKik + UKji*UKkj*UKik
+    }
+
+    value <- weight_or_ratio_vec(num, den, i, j, k)
+    out <- t(value)
+    colnames(out) <- paste0("Tr_", cell_names[i], "_", cell_names[j], "_", cell_names[k])
+
+  } else {
+    grid <- expand.grid(i = seq_len(n_cells), j = seq_len(n_cells), k = seq_len(n_cells))
+    i_full <- grid$i; j_full <- grid$j; k_full <- grid$k
+
+    # Kij/Kjk (and their unifKernel counterparts) are shared by both TT and
+    # CT below, so computed once and reused; Kik/Kki are each used by only
+    # one of the two and freed (rm + gc) right after, since at up to ~1.2M
+    # combinations x n_patients each of these full-size matrices is itself a
+    # substantial allocation.
+    Kij <- get_val(kernel_mat, i_full, j_full)
+    Kjk <- get_val(kernel_mat, j_full, k_full)
+    UKij <- if (norm && !is.null(unifKernel)) get_val(unif_mat, i_full, j_full) else NULL
+    UKjk <- if (norm && !is.null(unifKernel)) get_val(unif_mat, j_full, k_full) else NULL
+
+    # --- Trust triangle (transitive): i->j, j->k, i->k -- every (i,j,k) triple ---
+    Kik <- get_val(kernel_mat, i_full, k_full)
+    num_tt <- Kij * Kjk * Kik
+    rm(Kik)
+
+    # Drop triples with no possible pathway in any patient (zero structural
+    # kernel product for every patient), before the (possibly ratio or
+    # abundance-weighting) computation -- unifKernel shares kernel's nonzero
+    # pattern (see calculateWedges()), so checking the raw structural
+    # product alone is correct here too.
+    possible_tt <- rowSums(num_tt != 0) > 0
+    i_tt <- i_full[possible_tt]; j_tt <- j_full[possible_tt]; k_tt <- k_full[possible_tt]
+    num_tt <- num_tt[possible_tt, , drop = FALSE]
+    den_tt <- if (norm && !is.null(unifKernel)) {
+      (UKij * UKjk * get_val(unif_mat, i_full, k_full))[possible_tt, , drop = FALSE]
+    } else NULL
+    value_tt <- weight_or_ratio_vec(num_tt, den_tt, i_tt, j_tt, k_tt)
+    rm(num_tt, den_tt); gc(FALSE)
+    colnames_tt <- paste0("TT_", cell_names[i_tt], "_", cell_names[j_tt], "_", cell_names[k_tt])
+
+    # --- Cycle triangle: i->j->k->i (only counted once per unordered triple, i<=j<=k) ---
+    keep_ct <- i_full <= j_full & j_full <= k_full
+    i_ct0 <- i_full[keep_ct]; j_ct0 <- j_full[keep_ct]; k_ct0 <- k_full[keep_ct]
+    Kki <- get_val(kernel_mat, k_full, i_full)
+    num_ct <- (Kij * Kjk * Kki)[keep_ct, , drop = FALSE]
+    den_ct_full <- if (norm && !is.null(unifKernel)) {
+      (UKij * UKjk * get_val(unif_mat, k_full, i_full))[keep_ct, , drop = FALSE]
+    } else NULL
+    rm(Kki, Kij, Kjk, UKij, UKjk)
+
+    possible_ct <- rowSums(num_ct != 0) > 0
+    i_ct <- i_ct0[possible_ct]; j_ct <- j_ct0[possible_ct]; k_ct <- k_ct0[possible_ct]
+    num_ct <- num_ct[possible_ct, , drop = FALSE]
+    den_ct <- if (!is.null(den_ct_full)) den_ct_full[possible_ct, , drop = FALSE] else NULL
+    value_ct <- weight_or_ratio_vec(num_ct, den_ct, i_ct, j_ct, k_ct)
+    rm(num_ct, den_ct); gc(FALSE)
+    colnames_ct <- paste0("CT_", cell_names[i_ct], "_", cell_names[j_ct], "_", cell_names[k_ct])
+
+    out <- t(rbind(value_tt, value_ct))
+    colnames(out) <- c(colnames_tt, colnames_ct)
+  }
+
+  # Convert to a dataframe: rows = patients, columns = triangles
+  df <- as.data.frame(out)
   rownames(df) <- patient_names
 
   return(df)
@@ -397,7 +556,14 @@ computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
 #' @param kernel Kernel array from [compute_kernel()].
 #' @param unifKernel Optional normalized baseline kernel.
 #' @param celltypes Character vector of cell-type labels.
-#' @param communication_type Feature family to compute (`"D"`, `"W"`, `"TT"`, or `"GSCC"`).
+#' @param communication_type Feature family to compute (`"D"`, `"W"`, `"TT"`,
+#'   or `"GSCC"`; `"TT"` returns both trust- and cycle-triangle columns
+#'   together, see [computeTriangles()]), or a character vector of several of
+#'   these. Since the kernel itself (`kernel`/`unifKernel`) is passed in
+#'   already computed, requesting multiple types here costs nothing extra to
+#'   compute per type beyond that one kernel -- no re-derivation happens for
+#'   any of them. With more than one type, the return value is a named list
+#'   (one data frame per type) instead of a single data frame.
 #' @param bundle Logical; if `TRUE`, merge directionally equivalent features where appropriate.
 #' @param patient_names Optional patient labels.
 #' @param Dcell Patient-by-cell-type abundance matrix. Always required for
@@ -406,7 +572,9 @@ computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
 #' @param norm Logical; if `TRUE`, compute normalized features when a baseline is supplied.
 #' @param patient_idx Optional patient index subset.
 #'
-#' @return A data frame of feature values for the selected patients.
+#' @return A data frame of feature values for the selected patients, or (when
+#'   `communication_type` has more than one entry) a named list of such data
+#'   frames, one per requested type.
 #' @export
 compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, communication_type = "D", bundle = TRUE,
                                     patient_names = NULL, Dcell = NULL, norm = FALSE, patient_idx = NULL) {
@@ -419,38 +587,45 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
     if (!is.null(Dcell)) Dcell <- Dcell[patient_idx, , drop = FALSE]
   }
 
-  comm <- toupper(communication_type)
+  .compute_one_type <- function(comm) {
+    comm <- toupper(comm)
 
-  if (comm %in% c("D", "W", "TT") && is.null(Dcell) && is.null(unifKernel)) {
-    stop("Dcell (cell abundance matrix) is required to compute raw (unnormalized) ", comm, " features.")
+    if (comm %in% c("D", "W", "TT") && is.null(Dcell) && is.null(unifKernel)) {
+      stop("Dcell (cell abundance matrix) is required to compute raw (unnormalized) ", comm, " features.")
+    }
+
+    if (comm == "D") {
+      calculateDirect(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle, patient_names = patient_names)
+
+    } else if (comm == "W") {
+      calculateWedges(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle, patient_names = patient_names)
+
+    } else if (comm == "TT") {
+      # trust/cycle triangles (directed): use bundle = FALSE in computeTriangles
+      computeTriangles(kernel = kernel, cell_names = celltypes, Dcell = Dcell,
+                       patient_names = if (!is.null(patient_names)) patient_names else paste0("Patient_", seq_len(dim(kernel)[3])),
+                       unifKernel = unifKernel, norm = norm, bundle = FALSE)
+
+    } else if (comm == "GSCC") {
+      if (is.null(Dcell)) stop("Dcell (cell abundance matrix) is required for GSCC computation.")
+      # computeGSCC expects patient_names and Dcell rows == patients
+      computeGSCC(kernel = kernel, Dcell = Dcell,
+                 cell_names = celltypes,
+                 patient_names = if (!is.null(patient_names)) patient_names else paste0("Patient_", seq_len(nrow(Dcell))),
+                 unifKernel = unifKernel, norm = norm)
+
+    } else {
+      stop("Unsupported communication_type. Use D, W, TT, or GSCC.")
+    }
   }
 
-  if (comm == "D") {
-    df <- calculateDirect(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle)
-
-  } else if (comm == "W") {
-    df <- calculateWedges(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle)
-
-  } else if (comm == "TT") {
-    # trust/cycle triangles (directed): use bundle = FALSE in computeTriangles
-    df <- computeTriangles(kernel = kernel, cell_names = celltypes, Dcell = Dcell,
-                           patient_names = if (!is.null(patient_names)) patient_names else paste0("Patient_", seq_len(dim(kernel)[3])),
-                           unifKernel = unifKernel, norm = norm, bundle = FALSE)
-
-  } else if (comm == "GSCC") {
-    if (is.null(Dcell)) stop("Dcell (cell abundance matrix) is required for GSCC computation.")
-    # computeGSCC expects patient_names and Dcell rows == patients
-    df <- computeGSCC(kernel = kernel, Dcell = Dcell,
-                      cell_names = celltypes,
-                      patient_names = if (!is.null(patient_names)) patient_names else paste0("Patient_", seq_len(nrow(Dcell))),
-                      unifKernel = unifKernel, norm = norm)
-
-  } else {
-    stop("Unsupported communication_type. Use D, W, TT, or GSCC.")
+  if (length(communication_type) > 1) {
+    out <- lapply(communication_type, .compute_one_type)
+    names(out) <- communication_type
+    return(out)
   }
 
-  return(df)
-
+  return(.compute_one_type(communication_type))
 }
 
 #' Run the full kernel-based RaCInG workflow
@@ -475,8 +650,19 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
 #' @param cbsx.name,cbsx.token Optional credentials for the deconvolution workflow.
 #' @param file_name File stem used for intermediate input files.
 #' @param nPatients Number of patients to process, or `"all"`.
-#' @param communication_type Feature family to compute.
-#' @param norm Logical; if `TRUE`, compute a normalized baseline kernel.
+#' @param communication_type Feature family to compute (`"D"`, `"W"`, `"TT"`,
+#'   or `"GSCC"`), or a character vector of several of these (e.g.
+#'   `c("D", "W", "TT", "GSCC")`). The kernel (`compute_kernel()`) is always
+#'   computed exactly once regardless of how many types are requested --
+#'   feature extraction from an already-computed kernel is cheap, so there is
+#'   no need to call `compute_racing_kernel()` again just to get a different
+#'   `communication_type`; request them all in one call instead. With more
+#'   than one type, `features` in the return value is a named list (one data
+#'   frame per type) instead of a single data frame.
+#' @param norm Logical; if `TRUE`, also compute a normalized baseline kernel and
+#'   express features as an enrichment ratio over it (isolates specificity from
+#'   abundance/topology). Default `FALSE` returns the raw, abundance-weighted
+#'   communication magnitude.
 #' @param pt_idx Optional single patient index to process.
 #' @param remove_direction Logical; if `TRUE`, merge directionally equivalent features.
 #' @param input_data Optional named list of pre-computed input matrices as returned
@@ -486,12 +672,14 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
 #'   When supplied, the `counts` argument and all preprocessing parameters
 #'   (`deconv`, `cc_network`, etc.) are ignored.
 #'
-#' @return A list with the kernel arrays and the derived feature matrix.
+#' @return A list with the kernel arrays and the derived feature matrix (or,
+#'   for multiple `communication_type` entries, a named list of feature
+#'   matrices) in `features`.
 #' @export
 compute_racing_kernel = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min, 
                                  cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol", signed = FALSE,
                                  deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, file_name = NULL, nPatients = "all", 
-                                 communication_type = "W", norm = TRUE, pt_idx = NULL, remove_direction = TRUE,
+                                 communication_type = "W", norm = FALSE, pt_idx = NULL, remove_direction = TRUE,
                                  input_data = NULL) {
 
   if (is.null(file_name)) {

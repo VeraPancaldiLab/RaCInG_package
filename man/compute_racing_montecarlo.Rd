@@ -25,7 +25,7 @@ compute_racing_montecarlo(
   Ngraphs = 100,
   Ndegree = 20,
   remove_direction = TRUE,
-  norm = TRUE,
+  norm = FALSE,
   input_data = NULL,
   ncores = 1
 )
@@ -65,7 +65,15 @@ per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepa
 
 \item{nPatients}{Number of patients to process, or \code{"all"}.}
 
-\item{communication_type}{Feature family to simulate.}
+\item{communication_type}{Feature family to simulate: \code{"D"}, \code{"W"},
+\code{"TT"}, \code{"CT"}, \code{"GSCC"}, or a character vector of several of these
+(e.g. \code{c("D", "W", "TT", "CT", "GSCC")}). When more than one is given,
+every requested type is extracted from the same simulated graphs (via
+\code{\link[=countAllTypes]{countAllTypes()}}) in one pass instead of re-simulating a fresh set of
+graphs per type -- graph generation, not feature extraction, is the
+expensive part of a Monte Carlo run, so this amortizes that cost across
+every type requested. \code{output} in the return value is then a named list
+(one entry per type) instead of a single result.}
 
 \item{Ncells}{Number of cells per simulated graph.}
 
@@ -75,7 +83,12 @@ per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepa
 
 \item{remove_direction}{Logical; if \code{TRUE}, merge directionally equivalent features.}
 
-\item{norm}{Logical; if \code{TRUE}, also run a uniformized baseline simulation for normalization.}
+\item{norm}{Logical; if \code{TRUE}, also run a uniformized baseline simulation and
+express features as an enrichment ratio over it (isolates specificity from
+abundance/topology, at the cost of a second, noisier simulation pass -- budget
+a larger \code{Ngraphs} if enabling this). Default \code{FALSE} returns the raw,
+abundance-weighted communication magnitude, which is simpler, cheaper (one
+pass), and less noisy at a given \code{Ngraphs}.}
 
 \item{input_data}{Optional named list of pre-computed input matrices as returned
 by \code{\link[=prepare_input_files]{prepare_input_files()}}.

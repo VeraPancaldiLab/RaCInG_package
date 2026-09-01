@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 462" width="400" height="462"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><defs>
+    <radialGradient id="cell1" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#7ecbf5"></stop>
+      <stop offset="100%" stop-color="#2e86c1"></stop>
+    </radialGradient>
+    <radialGradient id="cell2" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#a9dfbf"></stop>
+      <stop offset="100%" stop-color="#27ae60"></stop>
+    </radialGradient>
+    <radialGradient id="cell3" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#f5b7b1"></stop>
+      <stop offset="100%" stop-color="#cb4335"></stop>
+    </radialGradient>
+    <radialGradient id="cell4" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#d7bde2"></stop>
+      <stop offset="100%" stop-color="#8e44ad"></stop>
+    </radialGradient>
+    <radialGradient id="cell5" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#fad7a0"></stop>
+      <stop offset="100%" stop-color="#e67e22"></stop>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="blur"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#f39c12" opacity="0.8"></path>
+    </marker>
+    <clipPath id="hexClip">
+      <polygon points="200,6 388,114.5 388,347.5 200,456 12,347.5 12,114.5"></polygon>
+    </clipPath>
+  </defs><polygon points="200,6 388,114.5 388,347.5 200,456 12,347.5 12,114.5" fill="#1a1a2e" stroke="#2e86c1" stroke-width="4"></polygon><g clip-path="url(#hexClip)">
+
+    <!-- Communication arrows -->
+    <path d="M145,175 Q200,130 260,180" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.6" marker-end="url(#arrowhead)"></path>
+    <path d="M300,215 Q340,275 305,320" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.6" marker-end="url(#arrowhead)"></path>
+    <path d="M110,210 Q70,275 105,325" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.6" marker-end="url(#arrowhead)"></path>
+    <path d="M145,355 Q185,385 220,365" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.6" marker-end="url(#arrowhead)"></path>
+    <path d="M265,350 Q285,325 285,320" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.6" marker-end="url(#arrowhead)"></path>
+    <path d="M275,295 Q210,245 150,210" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.5" marker-end="url(#arrowhead)"></path>
+    <path d="M255,345 Q295,275 285,225" fill="none" stroke="#f39c12" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.5" marker-end="url(#arrowhead)"></path>
+
+    <!-- Signal particles -->
+    <circle r="3" fill="#f1c40f" filter="url(#glow)">
+      <animateMotion dur="3s" repeatCount="indefinite" path="M145,175 Q200,130 260,180"></animateMotion>
+    </circle>
+    <circle r="3" fill="#f1c40f" filter="url(#glow)">
+      <animateMotion dur="3.5s" repeatCount="indefinite" path="M300,215 Q340,275 305,320"></animateMotion>
+    </circle>
+    <circle r="2.5" fill="#f1c40f" filter="url(#glow)">
+      <animateMotion dur="4s" repeatCount="indefinite" path="M110,210 Q70,275 105,325"></animateMotion>
+    </circle>
+    <circle r="2.5" fill="#f1c40f" filter="url(#glow)">
+      <animateMotion dur="3.2s" repeatCount="indefinite" path="M145,355 Q185,385 220,365"></animateMotion>
+    </circle>
+    <circle r="3" fill="#f1c40f" filter="url(#glow)">
+      <animateMotion dur="2.8s" repeatCount="indefinite" path="M275,295 Q210,245 150,210"></animateMotion>
+    </circle>
+
+    <!-- Cell 1 - Blue -->
+    <g transform="translate(120,185)">
+      <ellipse cx="0" cy="0" rx="38" ry="34" fill="url(#cell1)" opacity="0.9" transform="rotate(-10)"></ellipse>
+      <ellipse cx="2" cy="-2" rx="14" ry="12" fill="#1a1a2e" opacity="0.25"></ellipse>
+    </g>
+
+    <!-- Cell 2 - Green -->
+    <g transform="translate(280,195)">
+      <ellipse cx="0" cy="0" rx="35" ry="32" fill="url(#cell2)" opacity="0.9" transform="rotate(15)"></ellipse>
+      <ellipse cx="-3" cy="-1" rx="12" ry="11" fill="#1a1a2e" opacity="0.25"></ellipse>
+    </g>
+
+    <!-- Cell 3 - Red -->
+    <g transform="translate(290,315)">
+      <ellipse cx="0" cy="0" rx="32" ry="36" fill="url(#cell3)" opacity="0.9" transform="rotate(-5)"></ellipse>
+      <ellipse cx="1" cy="-3" rx="11" ry="13" fill="#1a1a2e" opacity="0.25"></ellipse>
+    </g>
+
+    <!-- Cell 4 - Purple -->
+    <g transform="translate(110,340)">
+      <ellipse cx="0" cy="0" rx="36" ry="33" fill="url(#cell4)" opacity="0.9" transform="rotate(8)"></ellipse>
+      <ellipse cx="-2" cy="0" rx="13" ry="11" fill="#1a1a2e" opacity="0.25"></ellipse>
+    </g>
+
+    <!-- Cell 5 - Orange -->
+    <g transform="translate(205,360)">
+      <ellipse cx="0" cy="0" rx="33" ry="30" fill="url(#cell5)" opacity="0.9" transform="rotate(-12)"></ellipse>
+      <ellipse cx="2" cy="-2" rx="11" ry="10" fill="#1a1a2e" opacity="0.25"></ellipse>
+    </g>
+
+    <!-- Receptor dots -->
+    <circle cx="155" cy="175" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="85" cy="195" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="245" cy="190" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="315" cy="205" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="320" cy="310" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="265" cy="345" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="78" cy="335" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="140" cy="360" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="175" cy="355" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+    <circle cx="235" cy="365" r="3" fill="#f7dc6f" opacity="0.7"></circle>
+
+    <!-- Title -->
+    <text x="200" y="105" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="48" font-weight="bold" fill="#ecf0f1" letter-spacing="4">
+      RaCInG
+    </text>
+
+  </g></svg>

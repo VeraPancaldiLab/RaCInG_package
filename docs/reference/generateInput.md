@@ -1,10 +1,10 @@
-# Load RaCInG input matrices from disk
+# Load RaCInG input matrices from disk –\> Is there any normalization done here? I dont see it in the function
 
 Internal helper called by
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 to read back the generated CSV files and assemble the normalised
 matrices and 3-D tensor. Users should call
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 instead.
 
 ## Usage

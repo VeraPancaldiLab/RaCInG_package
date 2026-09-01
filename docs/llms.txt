@@ -1,22 +1,31 @@
 # RaCInG
 
-# RaCInG
-
-[![R-CMD-check](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml)
-[![pkgdown](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml)
+[![R-CMD-check](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml)
 
 **RaCInG** (**Ra**ndom **C**ell-cell **In**teraction **G**enerator)
 reconstructs patient-specific cell-cell communication networks from bulk
 RNA-seq data and extracts network-level features using either a
 kernel-based or Monte Carlo workflow.
 
-random cell-cell interaction generator \## Installation
+This package is the R implementation of the [original RaCInG Python
+framework](https://github.com/SysBioOncology/RaCInG), as described in
+[van Santvoort et
+al. (2025)](https://pubmed.ncbi.nlm.nih.gov/39954673/), repackaged for
+seamless integration with R/Bioconductor analysis pipelines. It is
+additionally coupled with
+[multideconv](https://github.com/VeraPancaldiLab/multideconv) for
+deconvolution and cell-type subgroup identification, and with
+[OmnipathR](https://omnipathdb.org/)/[liana](https://saezlab.github.io/liana/)
+for ligand-receptor prior knowledge.
+
+## Installation
 
 ### Install from GitHub
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("mhurtado13/racing")
+remotes::install_github("VeraPancaldiLab/RaCInG_package")
 library(RaCInG)
 ```
 
@@ -30,31 +39,37 @@ devtools::install(".")
 ### Optional preprocessing dependencies
 
 If you want to start directly from raw counts with
-[`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md),
+[`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md),
 install the optional helper packages used during deconvolution and
 prior-network construction:
 
 ``` r
-install.packages(c("ggplot2", "OmnipathR"))
-# Additional optional packages used by the full preprocessing workflow:
-# ADImpute, multideconv, liana
+install.packages(c("ggplot2", "nnls"))
+# ADImpute and OmnipathR are available from Bioconductor:
+BiocManager::install(c("ADImpute", "OmnipathR"))
+# liana and multideconv are GitHub-only:
+remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 ```
 
 ## Workflow at a glance
 
-| Goal                                 | Function                                                                                                    | Output                                                  |
-|--------------------------------------|-------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| Build input matrices from raw counts | [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)             | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Run deterministic features           | [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)         | Kernel arrays + feature matrix                          |
-| Run simulation-based features        | [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md) | Monte Carlo summaries                                   |
-| Compare patient groups               | [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)                 | Statistics table for downstream plots                   |
+| Goal                                 | Function                                                                                                                 | Output                                                  |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)             | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Run deterministic features           | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)         | Kernel arrays + feature matrix                          |
+| Run simulation-based features        | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Monte Carlo summaries                                   |
+| Compare patient groups               | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)                 | Statistics table for downstream plots                   |
 
 ## Quick start
 
 ``` r
 library(RaCInG)
 
-# Build input matrices from raw counts
+# Build input matrices from a real bulk RNA-seq counts matrix
+# (bundled with the optional `multideconv` dependency)
+data(raw_counts, package = "multideconv")
+counts_matrix <- as.matrix(raw_counts)
+
 input <- prepare_input_files(
   counts = counts_matrix,
   output_folder = "Results/",
@@ -85,13 +100,30 @@ mc_res <- compute_racing_montecarlo(
   Ngraphs = 10,
   Ndegree = 3
 )
+
+# Compare clinical groups or correlate features with a continuous score
+grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
+wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
+top_features_plot(wilcox_results)
 ```
+
+Both
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+and
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+also accept `communication_type` as a vector
+(e.g. `c("D", "W", "TT", "GSCC")`), extracting every requested feature
+family from the same computed kernel / same simulated graphs in one
+call, instead of repeating the expensive step per type.
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+additionally takes `ncores` to parallelize independent patients across
+cores.
 
 ## Documentation
 
 - 📘 Vignette: [Getting started with
-  RaCInG](https://mhurtado13.github.io/racing/articles/RaCiNG.html)
-- 🌐 Website: <https://mhurtado13.github.io/racing/>
+  RaCInG](https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.html)
+- 🌐 Website: <https://VeraPancaldiLab.github.io/RaCInG_package/>
 - 🐍 Original Python implementation:
   <https://github.com/SysBioOncology/RaCInG>
 
@@ -104,122 +136,108 @@ If you use this package, please cite the RaCInG publication:
 > of cells in the tumor microenvironment.* Cell Reports Methods, 5(2),
 > 100985.
 
+## R Package Development
+
+This R package implementation was developed by [Marcelo
+Hurtado](https://github.com/mhurtado13) from the [Pancaldi
+team](https://github.com/VeraPancaldiLab), led by Vera Pancaldi. Marcelo
+is currently the primary maintainer of the package.
+
 # Package index
 
 ## Main workflows
 
-- [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md)
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
   : Build RaCInG input files from raw count data
-- [`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)
+- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
   : Run the full kernel-based RaCInG workflow
-- [`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)
+- [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
   : Run the full Monte Carlo RaCInG workflow
 
 ## Kernel and Monte Carlo methods
 
-- [`compute_kernel()`](https://mhurtado13.github.io/racing/reference/compute_kernel.md)
+- [`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)
   : Compute the RaCInG kernel for one or more patients
-- [`compute_kernel_features()`](https://mhurtado13.github.io/racing/reference/compute_kernel_features.md)
+- [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md)
   : Derive communication features from a kernel
-- [`calculateDirect()`](https://mhurtado13.github.io/racing/reference/calculateDirect.md)
+- [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)
   : Calculate direct communication features from a kernel
-- [`calculateWedges()`](https://mhurtado13.github.io/racing/reference/calculateWedges.md)
+- [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)
   : Calculate wedge features from a kernel
-- [`computeTriangles()`](https://mhurtado13.github.io/racing/reference/computeTriangles.md)
+- [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
   : Compute triangle features from kernel matrices
-- [`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)
+- [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
   : Compute GSCC features from kernel matrices
-- [`countWedges()`](https://mhurtado13.github.io/racing/reference/countWedges.md)
+- [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md)
   : Count wedges across Monte Carlo graph simulations
-- [`countTrustTriangles()`](https://mhurtado13.github.io/racing/reference/countTrustTriangles.md)
+- [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md)
   : Count trust triangles across Monte Carlo graph simulations
-- [`countCycleTriangles()`](https://mhurtado13.github.io/racing/reference/countCycleTriangles.md)
+- [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md)
   : Count cycle triangles across Monte Carlo graph simulations
-- [`countDirect()`](https://mhurtado13.github.io/racing/reference/countDirect.md)
+- [`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md)
   : Count direct edges across Monte Carlo graph simulations
-- [`countGSCC()`](https://mhurtado13.github.io/racing/reference/countGSCC.md)
+- [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)
   : Count GSCC contributions across Monte Carlo graph simulations
-- [`model1()`](https://mhurtado13.github.io/racing/reference/model1.md)
+- [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md)
+  : Extract multiple communication feature types from the same simulated
+  graphs
+- [`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)
   : Generate a single RaCInG graph realization
-- [`runSim()`](https://mhurtado13.github.io/racing/reference/runSim.md)
+- [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
   : Run Monte Carlo simulations for one or more patients
-- [`getGSCCAnalytically()`](https://mhurtado13.github.io/racing/reference/getGSCCAnalytically.md)
+- [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md)
   : Legacy GSCC helper
 
 ## Input generation
 
-- [`createCellLigList()`](https://mhurtado13.github.io/racing/reference/createCellLigList.md)
+- [`createCellLigList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellLigList.md)
   : Read a cell-to-ligand compatibility matrix
-- [`createCellRecList()`](https://mhurtado13.github.io/racing/reference/createCellRecList.md)
+- [`createCellRecList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellRecList.md)
   : Read a cell-to-receptor compatibility matrix
-- [`createCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/createCellTypeDistr.md)
+- [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md)
   : Read and normalize cell-type abundance estimates
-- [`createInteractionDistr()`](https://mhurtado13.github.io/racing/reference/createInteractionDistr.md)
+- [`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md)
   : Read ligand-receptor interaction probabilities
-- [`Read_Lig_Rec_Interaction()`](https://mhurtado13.github.io/racing/reference/Read_Lig_Rec_Interaction.md)
+- [`Read_Lig_Rec_Interaction()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Lig_Rec_Interaction.md)
   : Read a ligand-receptor sign matrix
-- [`genRandomCellTypeDistr()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeDistr.md)
-  : Generate a random cell-type distribution
-- [`genRandomLigRecDistr()`](https://mhurtado13.github.io/racing/reference/genRandomLigRecDistr.md)
-  : Generate a random ligand-receptor distribution
-- [`genRandomCellLigands()`](https://mhurtado13.github.io/racing/reference/genRandomCellLigands.md)
-  : Generate a random cell-to-ligand compatibility matrix
-- [`genRandomCellReceptors()`](https://mhurtado13.github.io/racing/reference/genRandomCellReceptors.md)
-  : Generate a random cell-to-receptor compatibility matrix
-- [`genRandomCellTypeList()`](https://mhurtado13.github.io/racing/reference/genRandomCellTypeList.md)
+- [`genRandomCellTypeList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/genRandomCellTypeList.md)
   : Sample cell-type labels for graph vertices
-- [`generateUniformLRGraph()`](https://mhurtado13.github.io/racing/reference/generateUniformLRGraph.md)
-  : Generate a graph under a uniformized ligand-receptor baseline
 
 ## Graph utilities
 
-- [`EdgetoAdj()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj.md)
+- [`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md)
   : Convert an edge list to a sparse adjacency matrix
-- [`EdgetoAdj_No_loop()`](https://mhurtado13.github.io/racing/reference/EdgetoAdj_No_loop.md)
+- [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md)
   : Convert an edge list to a sparse adjacency matrix without self-loops
-- [`Count_Types()`](https://mhurtado13.github.io/racing/reference/Count_Types.md)
+- [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md)
   : Count graph motifs by cell-type combination
-- [`Trust_Triangles()`](https://mhurtado13.github.io/racing/reference/Trust_Triangles.md)
+- [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md)
   : Enumerate outward trust triangles
-- [`Cycle_Triangles()`](https://mhurtado13.github.io/racing/reference/Cycle_Triangles.md)
+- [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)
   : Enumerate directed cycle triangles
-- [`Wedges()`](https://mhurtado13.github.io/racing/reference/Wedges.md)
+- [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md)
   : Enumerate wedges in a directed graph
-- [`Find_Number_Trust_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Trust_Triangles_Unique.md)
-  : Count unique trust triangles in a directed graph
-- [`Find_Number_Triangles()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles.md)
-  : Count triangles allowing multi-edges
-- [`Find_Number_Triangles_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Triangles_Unique.md)
-  : Count unique triangles in a directed graph
-- [`Find_Number_2Loops()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops.md)
-  : Count reciprocal 2-loops allowing multi-edges
-- [`Find_Number_2Loops_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_2Loops_Unique.md)
-  : Count unique reciprocal 2-loops
-- [`Find_Number_Wedges()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges.md)
-  : Count wedges allowing multi-edges
-- [`Find_Number_Wedges_Unique()`](https://mhurtado13.github.io/racing/reference/Find_Number_Wedges_Unique.md)
-  : Count unique wedges in a directed graph
-- [`GSCC()`](https://mhurtado13.github.io/racing/reference/GSCC.md) :
-  Extract the giant strongly connected component
-- [`IN()`](https://mhurtado13.github.io/racing/reference/IN.md) :
-  Compute the IN component of a directed graph
-- [`OUT()`](https://mhurtado13.github.io/racing/reference/OUT.md) :
-  Compute the OUT component of a directed graph
+- [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md)
+  : Extract the giant strongly connected component
 
 ## Example data
 
-- [`skcm_example`](https://mhurtado13.github.io/racing/reference/skcm_example.md)
+- [`skcm_example`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/skcm_example.md)
   : SKCM melanoma example input for RaCInG
 
 ## Statistics and I/O
 
-- [`wilcox_group_test()`](https://mhurtado13.github.io/racing/reference/wilcox_group_test.md)
+- [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)
   : Run Wilcoxon tests across network features
-- [`volcano_plot()`](https://mhurtado13.github.io/racing/reference/volcano_plot.md)
-  : Create a volcano plot from Wilcoxon results
-- [`Read_Sim_Output()`](https://mhurtado13.github.io/racing/reference/Read_Sim_Output.md)
+- [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)
+  : Ranked bar plot of top up/down features from Wilcoxon results
+- [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md)
+  : Correlate network features with an external score
+- [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md)
+  : Rainfall plot of feature-score correlations
+- [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md)
   : Read a RaCInG simulation output file
-- [`compute_results_processing()`](https://mhurtado13.github.io/racing/reference/compute_results_processing.md)
+- [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md)
   : Convert raw simulation outputs into feature matrices
 
 # Articles
@@ -227,4 +245,4 @@ If you use this package, please cite the RaCInG publication:
 ### Vignettes
 
 - [Getting started with
-  RaCInG](https://mhurtado13.github.io/racing/articles/RaCiNG.md):
+  RaCInG](https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.md):

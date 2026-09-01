@@ -19,7 +19,8 @@ runSim(
   output_folder = NULL,
   file.name = NULL,
   norm = FALSE,
-  patient_idx = NULL
+  patient_idx = NULL,
+  ncores = 1
 )
 ```
 
@@ -48,7 +49,14 @@ runSim(
 - communication_type:
 
   Feature family to simulate (`"D"`, `"W"`, `"TT"`, `"CT"`, or
-  `"GSCC"`).
+  `"GSCC"`), or a character vector of several of these. When more than
+  one is given, every requested type is extracted from the *same*
+  simulated graphs (via
+  [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md))
+  instead of re-simulating a fresh set of graphs per type, and one
+  `.out` file per type is written (file names suffixed with the type,
+  e.g. `<file.name>_D.out`). With a single type, output naming is
+  unchanged from previous versions (`<file.name>.out`, no suffix).
 
 - pats:
 
@@ -81,6 +89,25 @@ runSim(
 - patient_idx:
 
   Optional single patient index to simulate.
+
+- ncores:
+
+  Number of cores to compute patients on in parallel, via
+  [`parallel::makeCluster()`](https://rdrr.io/r/parallel/makeCluster.html) +
+  [`doParallel::registerDoParallel()`](https://rdrr.io/pkg/doParallel/man/registerDoParallel.html) +
+  `foreach::foreach(...) %dopar% {...}` (the same backend used
+  throughout `pipeML`), so it works identically on Windows/macOS/Unix.
+  `ncores = 1` (the default) runs sequentially via
+  [`lapply()`](https://rdrr.io/r/base/lapply.html) and skips cluster
+  setup entirely. Patients are independent of each other, so this
+  parallelizes near-linearly. File writing always happens sequentially
+  afterward, in patient order, to keep the on-disk format unchanged.
+  Because cluster workers are separate R processes (not forks), each one
+  loads the installed `RaCInG` package rather than inheriting the
+  calling session's state – if you are iterating on package source via
+  [`source()`](https://rdrr.io/r/base/source.html) instead of
+  [`library(RaCInG)`](https://github.com/VeraPancaldiLab/RaCInG_package),
+  reinstall the package first so workers see your latest changes.
 
 ## Value
 

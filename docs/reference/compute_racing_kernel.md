@@ -41,11 +41,23 @@ compute_racing_kernel(
 
 - deconv:
 
-  Optional deconvolution matrix.
+  Optional patient-by-cell-type abundance matrix. If omitted, it is
+  computed via
+  [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html)
+  followed by
+  [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
+  (which identifies and collapses correlated cell-type subgroups) and
+  [`multideconv::standardize_celltype_colnames()`](https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html).
+  See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - cc_network:
 
-  Optional ligand-receptor prior network.
+  Optional ligand-receptor prior network. If omitted, it is retrieved
+  via
+  [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html).
+  See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - fun_LR:
 
@@ -53,7 +65,10 @@ compute_racing_kernel(
 
 - cell_expr_profile:
 
-  Optional cell-type expression profile matrix.
+  Optional gene-by-cell-type expression profile matrix. If omitted, it
+  is estimated from `counts` and `deconv` via per-gene non-negative
+  least squares. See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - source, target:
 
@@ -66,7 +81,7 @@ compute_racing_kernel(
 
 - deconv_method:
 
-  Deconvolution method used when `deconv` is not supplied.
+  Deconvolution method(s) used when `deconv` is not supplied.
 
 - cbsx.name, cbsx.token:
 
@@ -82,7 +97,17 @@ compute_racing_kernel(
 
 - communication_type:
 
-  Feature family to compute.
+  Feature family to compute (`"D"`, `"W"`, `"TT"`, or `"GSCC"`), or a
+  character vector of several of these (e.g.
+  `c("D", "W", "TT", "GSCC")`). The kernel
+  ([`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md))
+  is always computed exactly once regardless of how many types are
+  requested – feature extraction from an already-computed kernel is
+  cheap, so there is no need to call `compute_racing_kernel()` again
+  just to get a different `communication_type`; request them all in one
+  call instead. With more than one type, `features` in the return value
+  is a named list (one data frame per type) instead of a single data
+  frame.
 
 - norm:
 
@@ -99,7 +124,7 @@ compute_racing_kernel(
 - input_data:
 
   Optional named list of pre-computed input matrices as returned by
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
   Must contain `Lmatrix`, `Rmatrix`, `Cmatrix`, `LRmatrix`, `celltypes`,
   `ligands`, and `receptors`. When supplied, the `counts` argument and
   all preprocessing parameters (`deconv`, `cc_network`, etc.) are
@@ -107,4 +132,6 @@ compute_racing_kernel(
 
 ## Value
 
-A list with the kernel arrays and the derived feature matrix.
+A list with the kernel arrays and the derived feature matrix (or, for
+multiple `communication_type` entries, a named list of feature matrices)
+in `features`.

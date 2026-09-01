@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting started with RaCInG • RaCInG</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
@@ -20,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +38,7 @@
 <li class="active nav-item"><a class="nav-link" href="../articles/RaCiNG.html">Get Started</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/mhurtado13/racing" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/VeraPancaldiLab/RaCInG_package" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
 
@@ -46,11 +51,10 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Getting started with RaCInG</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Getting started with RaCInG</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/mhurtado13/racing/blob/HEAD/vignettes/RaCiNG.Rmd" class="external-link"><code>vignettes/RaCiNG.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/VeraPancaldiLab/RaCInG_package/blob/HEAD/vignettes/RaCiNG.Rmd" class="external-link"><code>vignettes/RaCiNG.Rmd</code></a></small>
       <div class="d-none name"><code>RaCiNG.Rmd</code></div>
     </div>
 
@@ -69,7 +73,9 @@ feature extraction, and</li>
 summaries.</li>
 </ul>
 <p>This vignette shows the recommended workflow and the most important
-entry points for new users.</p>
+entry points for new users, using both the bundled, ready-made example
+data and a real bulk RNA-seq counts matrix run through the full
+preprocessing pipeline.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -79,8 +85,8 @@ entry points for new users.</p>
 </h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mhurtado13/racing"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mhurtado13/racing" class="external-link">RaCInG</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"VeraPancaldiLab/RaCInG_package"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">RaCInG</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="install-from-a-local-checkout">Install from a local checkout<a class="anchor" aria-label="anchor" href="#install-from-a-local-checkout"></a>
@@ -88,13 +94,16 @@ entry points for new users.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"."</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mhurtado13/racing" class="external-link">RaCInG</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">RaCInG</a></span><span class="op">)</span></span></code></pre></div>
 <p>If you want to build the RaCInG input matrices directly from raw
 counts, install the optional preprocessing dependencies used by
 <code><a href="../reference/prepare_input_files.html">prepare_input_files()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, <span class="st">"OmnipathR"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># Additional optional packages: ADImpute, multideconv, liana</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, <span class="st">"nnls"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># ADImpute and OmnipathR are available from Bioconductor:</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ADImpute"</span>, <span class="st">"OmnipathR"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># liana and multideconv are GitHub-only:</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"saezlab/liana"</span>, <span class="st">"VeraPancaldiLab/multideconv"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -130,28 +139,95 @@ counts, install the optional preprocessing dependencies used by
 </tr>
 <tr class="even">
 <td>Compare clinical groups</td>
-<td><code><a href="../reference/wilcox_group_test.html">wilcox_group_test()</a></code></td>
-<td>Statistics table and volcano plot</td>
+<td>
+<code><a href="../reference/wilcox_group_test.html">wilcox_group_test()</a></code> +
+<code><a href="../reference/top_features_plot.html">top_features_plot()</a></code>
+</td>
+<td>Statistics table and ranked bar plot</td>
+</tr>
+<tr class="odd">
+<td>Relate features to a continuous score</td>
+<td>
+<code><a href="../reference/correlate_features_with_score.html">correlate_features_with_score()</a></code> +
+<code><a href="../reference/correlation_plot.html">correlation_plot()</a></code>
+</td>
+<td>Correlation table and rainfall plot</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section level2">
-<h2 id="recommended-workflow">Recommended workflow<a class="anchor" aria-label="anchor" href="#recommended-workflow"></a>
+<h2 id="how-prepare_input_files-builds-its-inputs">How <code>prepare_input_files()</code> builds its inputs<a class="anchor" aria-label="anchor" href="#how-prepare_input_files-builds-its-inputs"></a>
 </h2>
+<p>Starting from a raw gene-by-sample counts matrix,
+<code><a href="../reference/prepare_input_files.html">prepare_input_files()</a></code> chains together several packages so
+you never have to run them by hand:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Normalization</strong>: counts are converted to TPM with
+<code><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">ADImpute::NormalizeTPM()</a></code>.</li>
+<li>
+<strong>Deconvolution</strong>: cell-type fractions are estimated
+with <code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> (defaults to the
+Quantiseq method, but any method(s) supported by multideconv can be
+passed via <code>deconv_method</code>).</li>
+<li>
+<strong>Subgroup analysis</strong>:
+<code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html" class="external-link">multideconv::compute.deconvolution.analysis()</a></code> identifies
+groups of highly correlated deconvolution features (e.g. several methods
+agreeing on the same cell type) and collapses them into a single column
+per resolved cell type, discarding low-quality/high-zero features along
+the way. Column names are then standardized and stripped of any
+method/signature prefix, giving short, consistent cell-type labels
+(e.g. <code>"B.cells"</code>, <code>"CD4.regulatory"</code>).</li>
+<li>
+<strong>Cell-type expression profiles</strong>: for every gene, a
+non-negative least squares fit of bulk expression against the cell-type
+fractions gives one expression value per gene per resolved cell
+type.</li>
+<li>
+<strong>Ligand-receptor prior knowledge</strong>: a curated,
+OmniPath-backed consensus network is retrieved with
+<code><a href="https://saezlab.github.io/liana/reference/get_curated_omni.html" class="external-link">liana::get_curated_omni()</a></code> and restricted to ligand/receptor
+roles, then decomplexified into single-gene subunits.</li>
+<li>
+<strong>Filtering and assembly</strong>: ligand-receptor pairs are
+kept only where both genes are expressed above 10 TPM in the relevant
+cell types, and the <code>Lmatrix</code>, <code>Rmatrix</code>,
+<code>Cmatrix</code>, and <code>LRmatrix</code> inputs (see below) are
+assembled and written to <code>output_folder</code>.</li>
+</ol>
+<p>You can skip any of steps 2-5 by supplying your own
+<code>deconv</code>, <code>cell_expr_profile</code>, or
+<code>cc_network</code> directly.</p>
+</div>
+<div class="section level2">
+<h2 id="recommended-workflow-with-a-real-bulk-rna-seq-dataset">Recommended workflow with a real bulk RNA-seq dataset<a class="anchor" aria-label="anchor" href="#recommended-workflow-with-a-real-bulk-rna-seq-dataset"></a>
+</h2>
+<p>The examples below use the raw bulk RNA-seq counts matrix bundled
+with the <code>multideconv</code> package (<code>raw_counts</code>, from
+Mariathasan et al. 2018, a urothelial/bladder cancer cohort profiled for
+anti-PD-L1 response) to exercise the full pipeline end to end, from raw
+counts to features to statistics. These chunks call out to the network
+(OmniPath/LIANA) and run real deconvolution, so they are shown but not
+evaluated when the vignette is built; run them interactively to try the
+full pipeline yourself.</p>
 <div class="section level3">
 <h3 id="build-input-matrices-from-raw-counts">1. Build input matrices from raw counts<a class="anchor" aria-label="anchor" href="#build-input-matrices-from-raw-counts"></a>
 </h3>
-<p>Use <code><a href="../reference/prepare_input_files.html">prepare_input_files()</a></code> to generate, save, and load
-the input matrices in a single call.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_input_files.html">prepare_input_files</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">raw_counts</span>, package <span class="op">=</span> <span class="st">"multideconv"</span><span class="op">)</span></span>
+<span><span class="va">counts_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">raw_counts</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_input_files.html">prepare_input_files</a></span><span class="op">(</span></span>
 <span>  counts <span class="op">=</span> <span class="va">counts_matrix</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="st">"Results/"</span>,</span>
-<span>  file_name <span class="op">=</span> <span class="st">"SKCM"</span></span>
+<span>  file_name <span class="op">=</span> <span class="st">"mariathasan"</span>,</span>
+<span>  deconv_method <span class="op">=</span> <span class="st">"Quantiseq"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">input</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">input</span><span class="op">$</span><span class="va">celltypes</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="run-the-kernel-method">2. Run the kernel method<a class="anchor" aria-label="anchor" href="#run-the-kernel-method"></a>
@@ -165,7 +241,7 @@ supply previously computed matrices via <code>input_data</code>.</p>
 <span><span class="va">kernel_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_kernel.html">compute_racing_kernel</a></span><span class="op">(</span></span>
 <span>  counts <span class="op">=</span> <span class="va">counts_matrix</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  file_name <span class="op">=</span> <span class="st">"SKCM"</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"mariathasan"</span>,</span>
 <span>  communication_type <span class="op">=</span> <span class="st">"W"</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
@@ -178,20 +254,43 @@ supply previously computed matrices via <code>input_data</code>.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>Feature columns with no possible ligand-receptor pathway in any
+patient (structurally zero for every patient) are dropped automatically,
+rather than returned as dead all-zero columns – so
+<code>ncol(kernel_res$features)</code> is usually well below the full
+combinatorial count of cell-type combinations.</p>
+<p><code>communication_type</code> also accepts a vector,
+e.g. <code>c("D", "W", "TT", "GSCC")</code>. The kernel itself (the
+expensive analytic step) is only ever computed once regardless of how
+many types you request, so if you want more than one feature family
+there is no need to call <code><a href="../reference/compute_racing_kernel.html">compute_racing_kernel()</a></code> again –
+request them all in one call instead:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">kernel_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_kernel.html">compute_racing_kernel</a></span><span class="op">(</span></span>
+<span>  input_data <span class="op">=</span> <span class="va">input</span>,</span>
+<span>  communication_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="st">"W"</span>, <span class="st">"TT"</span>, <span class="st">"GSCC"</span><span class="op">)</span>,</span>
+<span>  norm <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># features is now a named list, one data frame per requested type</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">$</span><span class="va">D</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="run-the-monte-carlo-method">3. Run the Monte Carlo method<a class="anchor" aria-label="anchor" href="#run-the-monte-carlo-method"></a>
 </h3>
 <p>Use the Monte Carlo workflow when you want simulation-based summaries
 or uncertainty estimates from repeated graph realizations. The same
-<code>input_data</code> shortcut is available here.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code>input_data</code> shortcut is available here. Simulation cost
+scales with <code>Ncells</code> and <code>Ngraphs</code>; the values
+below are kept small for a quick illustration.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">mc_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_montecarlo.html">compute_racing_montecarlo</a></span><span class="op">(</span></span>
 <span>  counts <span class="op">=</span> <span class="va">counts_matrix</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  deconv_method <span class="op">=</span> <span class="st">"Quantiseq"</span>,</span>
-<span>  file_name <span class="op">=</span> <span class="st">"SKCM"</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"mariathasan"</span>,</span>
 <span>  nPatients <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  communication_type <span class="op">=</span> <span class="st">"W"</span>,</span>
 <span>  Ncells <span class="op">=</span> <span class="fl">100</span>,</span>
@@ -204,7 +303,7 @@ or uncertainty estimates from repeated graph realizations. The same
 <span><span class="va">mc_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_montecarlo.html">compute_racing_montecarlo</a></span><span class="op">(</span></span>
 <span>  input_data <span class="op">=</span> <span class="va">input</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  file_name <span class="op">=</span> <span class="st">"SKCM"</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"mariathasan"</span>,</span>
 <span>  communication_type <span class="op">=</span> <span class="st">"W"</span>,</span>
 <span>  Ncells <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  Ngraphs <span class="op">=</span> <span class="fl">10</span>,</span>
@@ -213,17 +312,77 @@ or uncertainty estimates from repeated graph realizations. The same
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mc_res</span><span class="op">$</span><span class="va">output</span><span class="op">$</span><span class="va">mean</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>As with the kernel method, <code>communication_type</code> accepts a
+vector (any combination of <code>"D"</code>, <code>"W"</code>,
+<code>"TT"</code>, <code>"CT"</code>, <code>"GSCC"</code>). Every
+requested type is extracted from the <em>same</em> simulated graphs,
+instead of re-simulating a fresh set of graphs per type – graph
+generation, not feature extraction, is the expensive part of a Monte
+Carlo run:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mc_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_montecarlo.html">compute_racing_montecarlo</a></span><span class="op">(</span></span>
+<span>  input_data <span class="op">=</span> <span class="va">input</span>,</span>
+<span>  communication_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="st">"W"</span>, <span class="st">"TT"</span>, <span class="st">"CT"</span>, <span class="st">"GSCC"</span><span class="op">)</span>,</span>
+<span>  Ncells <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  Ngraphs <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  Ndegree <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  norm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"mariathasan"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># output is now a named list, one entry per requested type</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mc_res</span><span class="op">$</span><span class="va">output</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mc_res</span><span class="op">$</span><span class="va">output</span><span class="op">$</span><span class="va">D</span><span class="op">$</span><span class="va">mean</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>Patients are independent of each other, so larger runs can be
+parallelized across cores with <code>ncores</code> (via
+<code>parallel</code>/<code>doParallel</code>/<code>foreach</code>, so
+it works the same way on Windows, macOS, and Linux):</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mc_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_montecarlo.html">compute_racing_montecarlo</a></span><span class="op">(</span></span>
+<span>  input_data <span class="op">=</span> <span class="va">input</span>,</span>
+<span>  communication_type <span class="op">=</span> <span class="st">"D"</span>,</span>
+<span>  Ncells <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  Ngraphs <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  Ndegree <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  ncores <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  file_name <span class="op">=</span> <span class="st">"mariathasan"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="perform-statistical-testing">4. Perform statistical testing<a class="anchor" aria-label="anchor" href="#perform-statistical-testing"></a>
+<h3 id="compare-clinical-groups">4. Compare clinical groups<a class="anchor" aria-label="anchor" href="#compare-clinical-groups"></a>
 </h3>
 <p>Once features are available in a patient-by-feature matrix, use the
-built-in Wilcoxon workflow to compare groups.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+built-in Wilcoxon workflow to compare groups.
+<code><a href="../reference/wilcox_group_test.html">wilcox_group_test()</a></code> reports, per feature and per pair of
+groups, the Wilcoxon statistic, fold change, and (jointly) FDR-adjusted
+p-value; <code><a href="../reference/top_features_plot.html">top_features_plot()</a></code> shows the top up/down features
+by <code>log2(fold change)</code> as a ranked bar chart.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Responder"</span>, <span class="st">"Responder"</span>, <span class="st">"Non-responder"</span>, <span class="st">"Non-responder"</span><span class="op">)</span></span>
 <span><span class="va">wilcox_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/wilcox_group_test.html">wilcox_group_test</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">grouping</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">wilcox_results</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/volcano_plot.html">volcano_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_labels <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_n <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
+<p>With more than two groups, every pairwise comparison is run
+automatically; subset <code>wilcox_results</code> by
+<code>Comparison</code> (or pass a two-group subset to
+<code><a href="../reference/top_features_plot.html">top_features_plot()</a></code>) to inspect one pair at a time.</p>
+</div>
+<div class="section level3">
+<h3 id="correlate-features-with-a-continuous-score">5. Correlate features with a continuous score<a class="anchor" aria-label="anchor" href="#correlate-features-with-a-continuous-score"></a>
+</h3>
+<p>If you have a continuous per-patient score (e.g. an immune response
+or survival score), <code><a href="../reference/correlate_features_with_score.html">correlate_features_with_score()</a></code> reports
+the Spearman correlation between every feature and the score, pooled
+across all patients and, optionally, within groups.
+<code><a href="../reference/correlation_plot.html">correlation_plot()</a></code> shows the top positive and negative
+correlations.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">response_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">corr_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/correlate_features_with_score.html">correlate_features_with_score</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">response_score</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">corr_results</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/correlation_plot.html">correlation_plot</a></span><span class="op">(</span><span class="va">corr_results</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -237,8 +396,9 @@ built-in Wilcoxon workflow to compare groups.</p>
 matrices (as returned by <code><a href="../reference/prepare_input_files.html">prepare_input_files()</a></code>), which
 skips all preprocessing.</li>
 <li>
-<code><a href="../reference/prepare_input_files.html">prepare_input_files()</a></code> requires extra packages for
-deconvolution and prior-network assembly.</li>
+<code><a href="../reference/prepare_input_files.html">prepare_input_files()</a></code> requires the optional packages
+listed under Installation for deconvolution and prior-network
+assembly.</li>
 <li>The original Python implementation is available at <a href="https://github.com/SysBioOncology/RaCInG" class="external-link uri">https://github.com/SysBioOncology/RaCInG</a>.</li>
 </ul>
 </div>
@@ -263,14 +423,16 @@ The table below summarises each component:</p>
 <tr class="odd">
 <td><strong>Lmatrix</strong></td>
 <td>cell types × ligands</td>
-<td>Expression weight of each ligand in each cell type. Rows are cell
-types; columns are ligands.</td>
+<td>Binary compatibility matrix: <code>1</code> if that ligand is
+expressed above <code>expr_threshold</code> in that cell type,
+<code>0</code> otherwise. Rows are cell types; columns are ligands.</td>
 </tr>
 <tr class="even">
 <td><strong>Rmatrix</strong></td>
 <td>cell types × receptors</td>
-<td>Expression weight of each receptor in each cell type. Same row order
-as <code>Lmatrix</code>.</td>
+<td>Binary compatibility matrix: <code>1</code> if that receptor is
+expressed above <code>expr_threshold</code> in that cell type,
+<code>0</code> otherwise. Same row order as <code>Lmatrix</code>.</td>
 </tr>
 <tr class="odd">
 <td><strong>Cmatrix</strong></td>
@@ -317,8 +479,8 @@ ready-made example of this structure.</p>
 <div class="section level3">
 <h3 id="inspecting-the-example-inputs">Inspecting the example inputs<a class="anchor" aria-label="anchor" href="#inspecting-the-example-inputs"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mhurtado13/racing" class="external-link">RaCInG</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">RaCInG</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Overall structure</span></span>
@@ -335,7 +497,7 @@ ready-made example of this structure.</p>
 <span><span class="co">#&gt;  $ ligands    : chr [1:276] "LGALS9" "ADAM10" "TNFSF12" "ICOSLG" ...</span></span>
 <span><span class="co">#&gt;  $ receptors  : chr [1:298] "PTPRC" "MET" "CD44" "LRP1" ...</span></span>
 <span><span class="co">#&gt;  $ Sign_matrix: num [1:276, 1:298] 0 0 0 0 0 0 0 0 0 0 ...</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Lmatrix: 9 cell types × 276 ligands</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">$</span><span class="va">Lmatrix</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]   9 276</span></span>
@@ -345,7 +507,7 @@ ready-made example of this structure.</p>
 <span><span class="co">#&gt; [2,]      0      1       1      0   0</span></span>
 <span><span class="co">#&gt; [3,]      1      1       1      0   1</span></span>
 <span><span class="co">#&gt; [4,]      1      1       1      1   1</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Rmatrix: 9 cell types × 298 receptors</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">$</span><span class="va">Rmatrix</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]   9 298</span></span>
@@ -355,7 +517,7 @@ ready-made example of this structure.</p>
 <span><span class="co">#&gt; [2,]     0   1    1    1    1</span></span>
 <span><span class="co">#&gt; [3,]     1   0    1    0    1</span></span>
 <span><span class="co">#&gt; [4,]     1   0    1    1    1</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Cmatrix: 10 patients × 9 cell types (rows sum to 1)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">$</span><span class="va">Cmatrix</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 10  9</span></span>
@@ -370,7 +532,7 @@ ready-made example of this structure.</p>
 <span><span class="co">#&gt; [2,] 6.783486e-04 0.02023155 0.7184143</span></span>
 <span><span class="co">#&gt; [3,] 6.351805e-04 0.00000000 0.8929780</span></span>
 <span><span class="co">#&gt; [4,] 4.680075e-09 0.00000000 0.9121171</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LRmatrix: 276 ligands × 298 receptors × 10 patients (3-D tensor)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">$</span><span class="va">LRmatrix</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 276 298  10</span></span>
@@ -381,7 +543,7 @@ ready-made example of this structure.</p>
 <span><span class="co">#&gt; [2,] 0.0000000000 0.001269455 0.003174809 0.000000000</span></span>
 <span><span class="co">#&gt; [3,] 0.0000000000 0.000000000 0.000000000 0.000000000</span></span>
 <span><span class="co">#&gt; [4,] 0.0000000000 0.000000000 0.000000000 0.000000000</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Label vectors</span></span>
 <span><span class="va">skcm_example</span><span class="op">$</span><span class="va">celltypes</span></span>
 <span><span class="co">#&gt; [1] "B"      "CAF"    "CD8+ T" "DC"     "Endo"   "M"      "NK"     "Treg"  </span></span>
@@ -399,24 +561,76 @@ ready-made example of this structure.</p>
 </h2>
 <p>The <code>skcm_example</code> list shown above can be passed directly
 to the kernel or Monte Carlo workflows via the <code>input_data</code>
-parameter.</p>
+parameter, and to the statistical analysis functions once features have
+been computed.</p>
 <div class="section level3">
 <h3 id="kernel-method-on-the-example-data">Kernel method on the example data<a class="anchor" aria-label="anchor" href="#kernel-method-on-the-example-data"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">kernel_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_kernel.html">compute_racing_kernel</a></span><span class="op">(</span></span>
 <span>  input_data   <span class="op">=</span> <span class="va">skcm_example</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  communication_type <span class="op">=</span> <span class="st">"W"</span>,</span>
+<span>  communication_type <span class="op">=</span> <span class="st">"D"</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Using pre-computed input matrices; skipping input generation.</span></span>
+<span><span class="co">#&gt; Computing kernel for  10  patients</span></span>
+<span><span class="co">#&gt; Calculating kernel...</span></span>
+<span><span class="co">#&gt; Calculating features...</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             Dir_B_B Dir_B_CAF Dir_B_CD8..T   Dir_B_DC Dir_B_Endo</span></span>
+<span><span class="co">#&gt; Patient_1 0.3655633 0.6472004    0.2193690 0.33179690  0.6839505</span></span>
+<span><span class="co">#&gt; Patient_2 0.7127917 0.5965352    1.0316271 0.84989477  0.6860757</span></span>
+<span><span class="co">#&gt; Patient_3 1.1609442 0.7959182    0.8781016 0.92070117  0.8362820</span></span>
+<span><span class="co">#&gt; Patient_4 0.4675364 0.4900159    0.1068774 0.09173062  0.3913845</span></span>
+<span><span class="co">#&gt; Patient_5 0.2765913 0.5799559    0.1661719 0.37846202  0.4973818</span></span>
+<span><span class="co">#&gt; Patient_6 0.4209898 0.5559673    0.7787024 0.51126999  0.6621874</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="statistical-analysis-on-the-example-data">Statistical analysis on the example data<a class="anchor" aria-label="anchor" href="#statistical-analysis-on-the-example-data"></a>
+</h3>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GroupA"</span>, <span class="st">"GroupB"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">wilcox_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/wilcox_group_test.html">wilcox_group_test</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">grouping</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">wilcox_results</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         Comparison      Feature Wilcox_statistic Fold_change      Log2FC</span></span>
+<span><span class="co">#&gt; 1 GroupA_vs_GroupB      Dir_B_B               15   1.2465145  0.31789965</span></span>
+<span><span class="co">#&gt; 2 GroupA_vs_GroupB    Dir_B_CAF               17   1.2144863  0.28034627</span></span>
+<span><span class="co">#&gt; 3 GroupA_vs_GroupB Dir_B_CD8..T               13   1.2607549  0.33428785</span></span>
+<span><span class="co">#&gt; 4 GroupA_vs_GroupB     Dir_B_DC               12   0.9837813 -0.02359046</span></span>
+<span><span class="co">#&gt; 5 GroupA_vs_GroupB   Dir_B_Endo               17   1.2748348  0.35031028</span></span>
+<span><span class="co">#&gt; 6 GroupA_vs_GroupB      Dir_B_M               15   1.0120194  0.01723701</span></span>
+<span><span class="co">#&gt;     P_value Adjusted_P_value</span></span>
+<span><span class="co">#&gt; 1 0.6095238                1</span></span>
+<span><span class="co">#&gt; 2 0.3523810                1</span></span>
+<span><span class="co">#&gt; 3 0.9142857                1</span></span>
+<span><span class="co">#&gt; 4 1.0000000                1</span></span>
+<span><span class="co">#&gt; 5 0.3523810                1</span></span>
+<span><span class="co">#&gt; 6 0.6095238                1</span></span>
+<span><span class="fu"><a href="../reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: No shared levels found between `names(values)` of the manual scale and the</span></span>
+<span><span class="co">#&gt; data's <span style="color: #00BB00;">fill</span> values.</span></span></code></pre></div>
+<p><img src="RaCiNG_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" width="672"></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">response_score</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">corr_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/correlate_features_with_score.html">correlate_features_with_score</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">response_score</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">corr_results</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Group      Feature       Rho   P_value Adjusted_P_value</span></span>
+<span><span class="co">#&gt; 1   All    Dir_B_CAF 0.1272727 0.7328868        0.9699973</span></span>
+<span><span class="co">#&gt; 2   All Dir_B_CD8..T 0.3333333 0.3488462        0.9699973</span></span>
+<span><span class="co">#&gt; 3   All   Dir_B_Endo 0.2363636 0.5138983        0.9699973</span></span>
+<span><span class="co">#&gt; 4   All      Dir_B_M 0.1272727 0.7328868        0.9699973</span></span>
+<span><span class="co">#&gt; 5   All     Dir_B_NK 0.1393939 0.7072038        0.9699973</span></span>
+<span><span class="co">#&gt; 6   All   Dir_B_Treg 0.2484848 0.4915555        0.9699973</span></span>
+<span><span class="fu"><a href="../reference/correlation_plot.html">correlation_plot</a></span><span class="op">(</span><span class="va">corr_results</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p><img src="RaCiNG_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="monte-carlo-method-on-the-example-data">Monte Carlo method on the example data<a class="anchor" aria-label="anchor" href="#monte-carlo-method-on-the-example-data"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">mc_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_racing_montecarlo.html">compute_racing_montecarlo</a></span><span class="op">(</span></span>
 <span>  input_data   <span class="op">=</span> <span class="va">skcm_example</span>,</span>

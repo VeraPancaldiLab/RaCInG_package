@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>RaCInG • RaCInG</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
@@ -13,6 +18,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="RaCInG">
 <meta name="description" content="R Analysis of Cell Interactions and Graphs">
 <meta property="og:description" content="R Analysis of Cell Interactions and Graphs">
+<meta property="og:image" content="https://VeraPancaldiLab.github.io/RaCInG_package/logo.svg">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +41,7 @@
 <li class="nav-item"><a class="nav-link" href="articles/RaCiNG.html">Get Started</a></li>
       </ul>
 <ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/mhurtado13/racing" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/VeraPancaldiLab/RaCInG_package" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
 
@@ -44,22 +50,23 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="racing">RaCInG<a class="anchor" aria-label="anchor" href="#racing"></a>
-</h1></div>
-</div>
-<div class="section level1">
-<h1 id="racing-1">RaCInG<a class="anchor" aria-label="anchor" href="#racing-1"></a>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="racing-">RaCInG <a class="anchor" aria-label="anchor" href="#racing-"></a>
 </h1>
-<p><a href="https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/mhurtado13/racing/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/mhurtado13/racing/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></p>
+</div>
+<p><a href="https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/VeraPancaldiLab/RaCInG_package/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></p>
 <p><strong>RaCInG</strong> (<strong>Ra</strong>ndom <strong>C</strong>ell-cell <strong>In</strong>teraction <strong>G</strong>enerator) reconstructs patient-specific cell-cell communication networks from bulk RNA-seq data and extracts network-level features using either a kernel-based or Monte Carlo workflow.</p>
-<p>random cell-cell interaction generator ## Installation</p>
+<p>This package is the R implementation of the <a href="https://github.com/SysBioOncology/RaCInG" class="external-link">original RaCInG Python framework</a>, as described in <a href="https://pubmed.ncbi.nlm.nih.gov/39954673/" class="external-link">van Santvoort et al. (2025)</a>, repackaged for seamless integration with R/Bioconductor analysis pipelines. It is additionally coupled with <a href="https://github.com/VeraPancaldiLab/multideconv" class="external-link">multideconv</a> for deconvolution and cell-type subgroup identification, and with <a href="https://omnipathdb.org/" class="external-link">OmnipathR</a>/<a href="https://saezlab.github.io/liana/" class="external-link">liana</a> for ligand-receptor prior knowledge.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <div class="section level3">
 <h3 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
 </h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mhurtado13/racing"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mhurtado13/racing" class="external-link">RaCInG</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"VeraPancaldiLab/RaCInG_package"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">RaCInG</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="install-from-a-local-clone">Install from a local clone<a class="anchor" aria-label="anchor" href="#install-from-a-local-clone"></a>
@@ -73,9 +80,12 @@
 </h3>
 <p>If you want to start directly from raw counts with <code><a href="reference/prepare_input_files.html">prepare_input_files()</a></code>, install the optional helper packages used during deconvolution and prior-network construction:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, <span class="st">"OmnipathR"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># Additional optional packages used by the full preprocessing workflow:</span></span>
-<span><span class="co"># ADImpute, multideconv, liana</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, <span class="st">"nnls"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># ADImpute and OmnipathR are available from Bioconductor:</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ADImpute"</span>, <span class="st">"OmnipathR"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># liana and multideconv are GitHub-only:</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"saezlab/liana"</span>, <span class="st">"VeraPancaldiLab/multideconv"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="workflow-at-a-glance">Workflow at a glance<a class="anchor" aria-label="anchor" href="#workflow-at-a-glance"></a>
@@ -119,9 +129,13 @@
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mhurtado13/racing" class="external-link">RaCInG</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">RaCInG</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Build input matrices from raw counts</span></span>
+<span><span class="co"># Build input matrices from a real bulk RNA-seq counts matrix</span></span>
+<span><span class="co"># (bundled with the optional `multideconv` dependency)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">raw_counts</span>, package <span class="op">=</span> <span class="st">"multideconv"</span><span class="op">)</span></span>
+<span><span class="va">counts_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">raw_counts</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prepare_input_files.html">prepare_input_files</a></span><span class="op">(</span></span>
 <span>  counts <span class="op">=</span> <span class="va">counts_matrix</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="st">"Results/"</span>,</span>
@@ -151,15 +165,21 @@
 <span>  Ncells <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  Ngraphs <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  Ndegree <span class="op">=</span> <span class="fl">3</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compare clinical groups or correlate features with a continuous score</span></span>
+<span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Responder"</span>, <span class="st">"Responder"</span>, <span class="st">"Non-responder"</span>, <span class="st">"Non-responder"</span><span class="op">)</span></span>
+<span><span class="va">wilcox_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/wilcox_group_test.html">wilcox_group_test</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">grouping</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span><span class="op">)</span></span></code></pre></div>
+<p>Both <code><a href="reference/compute_racing_kernel.html">compute_racing_kernel()</a></code> and <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> also accept <code>communication_type</code> as a vector (e.g. <code>c("D", "W", "TT", "GSCC")</code>), extracting every requested feature family from the same computed kernel / same simulated graphs in one call, instead of repeating the expensive step per type. <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> additionally takes <code>ncores</code> to parallelize independent patients across cores.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <ul>
-<li>📘 Vignette: <a href="https://mhurtado13.github.io/racing/articles/RaCiNG.html">Getting started with RaCInG</a>
+<li>📘 Vignette: <a href="https://VeraPancaldiLab.github.io/RaCInG_package/articles/RaCiNG.html">Getting started with RaCInG</a>
 </li>
-<li>🌐 Website: <a href="https://mhurtado13.github.io/racing/" class="uri">https://mhurtado13.github.io/racing/</a>
+<li>🌐 Website: <a href="https://VeraPancaldiLab.github.io/RaCInG_package/" class="uri">https://VeraPancaldiLab.github.io/RaCInG_package/</a>
 </li>
 <li>🐍 Original Python implementation: <a href="https://github.com/SysBioOncology/RaCInG" class="external-link uri">https://github.com/SysBioOncology/RaCInG</a>
 </li>
@@ -173,13 +193,17 @@
 <p>van Santvoort M, Lapuente-Santana Ó, Zopoglou M, Zackl C, Finotello F, van der Hoorn P &amp; Eduati F (2025). <em>Mathematically mapping the network of cells in the tumor microenvironment.</em> Cell Reports Methods, 5(2), 100985.</p>
 </blockquote>
 </div>
+<div class="section level2">
+<h2 id="r-package-development">R Package Development<a class="anchor" aria-label="anchor" href="#r-package-development"></a>
+</h2>
+<p>This R package implementation was developed by <a href="https://github.com/mhurtado13" class="external-link">Marcelo Hurtado</a> from the <a href="https://github.com/VeraPancaldiLab" class="external-link">Pancaldi team</a>, led by Vera Pancaldi. Marcelo is currently the primary maintainer of the package.</p>
 </div>
-
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/mhurtado13/racing/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/mhurtado13/racing/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/VeraPancaldiLab/RaCInG_package/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/VeraPancaldiLab/RaCInG_package/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 

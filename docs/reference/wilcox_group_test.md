@@ -1,6 +1,9 @@
 # Run Wilcoxon tests across network features
 
-Run Wilcoxon tests across network features
+Runs a Wilcoxon rank-sum test per feature (column) between every pair of
+groups. Also reports the fold change (ratio of group means) so results
+can be plotted with
+[`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md).
 
 ## Usage
 
@@ -17,7 +20,8 @@ wilcox_group_test(data_matrix, groups, p_adjust_method = "fdr")
 
 - groups:
 
-  Vector of group labels with length matching `nrow(data_matrix)`.
+  Vector of group labels with length matching `nrow(data_matrix)`. When
+  more than two groups are present, every pairwise comparison is run.
 
 - p_adjust_method:
 
@@ -26,4 +30,6 @@ wilcox_group_test(data_matrix, groups, p_adjust_method = "fdr")
 
 ## Value
 
-A data frame with test statistics and adjusted p-values.
+A data frame with one row per feature per group comparison, including
+`Comparison`, `Wilcox_statistic`, `Fold_change`, `Log2FC`, `P_value`,
+and `Adjusted_P_value` (adjusted jointly across all comparisons).

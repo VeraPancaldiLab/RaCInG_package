@@ -7,15 +7,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/mhurtado13/racing/blob/HEAD/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/VeraPancaldiLab/RaCInG_package/blob/HEAD/DESCRIPTION)
 
 Hurtado M (2026). *RaCInG: Reconstruct Cell-Cell Interaction Graphs from
-Bulk Transcriptomics*. https://github.com/mhurtado13/racing,
-https://mhurtado13.github.io/racing/.
+Bulk Transcriptomics*.
+https://github.com/VeraPancaldiLab/RaCInG_package,
+https://VeraPancaldiLab.github.io/RaCInG_package/.
 
     @Manual{,
       title = {RaCInG: Reconstruct Cell-Cell Interaction Graphs from Bulk Transcriptomics},
       author = {Marcelo Hurtado},
       year = {2026},
-      note = {https://github.com/mhurtado13/racing, https://mhurtado13.github.io/racing/},
+      note = {https://github.com/VeraPancaldiLab/RaCInG_package, https://VeraPancaldiLab.github.io/RaCInG_package/},
     }

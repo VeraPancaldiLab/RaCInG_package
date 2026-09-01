@@ -98,7 +98,18 @@ top_features_plot <- function(wilcox_results, top_n = 10, p_threshold = 0.05, ti
     title <- paste0(title, " (", first_comparison, ")")
   }
 
-  df <- wilcox_results[is.finite(wilcox_results$Log2FC) & wilcox_results$Adjusted_P_value < p_threshold, ]
+  # NA-safe filter: wilcox.test() can return an NA p-value for a feature
+  # that's (near-)constant within one or both groups (e.g. many patients
+  # sharing the same 0/0-fallback value after normalization). `cond` would
+  # then be NA (TRUE & NA == NA) at that row, and R's `[` does NOT drop NA
+  # positions from a logical index the way it drops FALSE ones -- it inserts
+  # an all-NA row instead, which then propagates through every downstream
+  # step (up_df/down_df/top_up/top_down) as untitled, valueless "features"
+  # that render as blank bars. Coercing NA to FALSE here excludes those rows
+  # outright, matching the intent of the filter.
+  cond <- is.finite(wilcox_results$Log2FC) & wilcox_results$Adjusted_P_value < p_threshold
+  cond[is.na(cond)] <- FALSE
+  df <- wilcox_results[cond, ]
 
   # Split by sign first so a feature can never land in both groups (head/tail
   # of one sorted vector would overlap whenever there are fewer than
@@ -196,6 +207,12 @@ correlation_plot <- function(correlation_results, group = NULL, top_n = 10, titl
 
   if (is.null(group)) group <- correlation_results$Group[1]
   df <- correlation_results[correlation_results$Group == group, ]
+  # cor.test() can return an NA Rho for a feature that's constant within the
+  # group (undefined correlation); drop those explicitly rather than letting
+  # them surface via order()'s NA-goes-last default whenever there are fewer
+  # than top_n valid entries -- same failure mode as top_features_plot()'s
+  # fix above, just via a different path (order() vs. logical-index subsetting).
+  df <- df[!is.na(df$Rho), ]
 
   top_pos <- utils::head(df[order(-df$Rho), ], top_n)
   top_neg <- utils::head(df[order(df$Rho), ], top_n)

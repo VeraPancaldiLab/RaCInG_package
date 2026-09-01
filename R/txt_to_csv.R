@@ -352,6 +352,11 @@ compute_results_processing <- function(celltypes,
   # then converting to a data.frame -- for Triangles (nCells^3 interactions,
   # ~18.4 million at 264 cell types) the list/data.frame version takes
   # minutes; a reshape is instantaneous regardless of nCells.
+  #
+  # Labels are plain cell-type combinations here (no type prefix) so the
+  # remove_direction merging below keeps working unchanged; the "Dir_"/"W_"/
+  # etc. prefix that makes these columns match compute_racing_kernel()'s
+  # feature names is added once, at the very end, after bundling/normalization.
   .array_to_labeled_matrix <- function(arr, celltypes) {
     d <- dim(arr)
     dim_type <- length(d) - 1
@@ -368,6 +373,17 @@ compute_results_processing <- function(celltypes,
     out
   }
 
+  # The index grid driving column order in .array_to_labeled_matrix() above
+  # (needed again below to group columns for remove_direction by *index*,
+  # not by parsing back the pasted labels -- cell-type names can themselves
+  # contain "_", e.g. multideconv's method-tagged names like
+  # "CBSX_CBSX.HNSCC.scRNAseq_B.cells", so splitting a label such as
+  # "A_B_CBSX_CBSX.HNSCC.scRNAseq_B.cells" on "_" cannot tell which
+  # underscores separate cell types from underscores inside one cell-type's
+  # own name -- silently scrambling which columns get merged together).
+  dim_type <- length(dim(av)) - 1
+  index_grid <- if (dim_type > 1) do.call(expand.grid, rep(list(seq_len(nCells)), dim_type)) else NULL
+
   av    <- .array_to_labeled_matrix(av, celltypes)
   av_sd <- .array_to_labeled_matrix(av_sd, celltypes)
   if (normalized) {
@@ -379,20 +395,21 @@ compute_results_processing <- function(celltypes,
   # Remove direction (merge labels)
   # -----------------------------
   # Some triangle types (like W) are directional; this step merges counts for
-  # interactions that are equivalent when ignoring direction. Uses rowsum()
-  # (a single vectorized grouped-sum) instead of a per-column accumulation
-  # loop, which was the same nCells^3-scale bottleneck as above.
-  if (remove_direction) {
-    parts_list <- strsplit(colnames(av), "_")
-
-    new_labels <- vapply(parts_list, function(parts) {
-      if (triangle_type == "W" && length(parts) == 3) {
+  # interactions that are equivalent when ignoring direction. Grouping is
+  # computed from index_grid's integer columns (never ambiguous, unlike
+  # re-splitting the pasted string labels -- see note above), then rowsum()
+  # (a single vectorized grouped-sum) does the actual merge, replacing what
+  # was previously the same nCells^3-scale bottleneck as above.
+  if (remove_direction && dim_type > 1) {
+    new_labels <- vapply(seq_len(nrow(index_grid)), function(r) {
+      idx <- as.integer(index_grid[r, ])
+      if (triangle_type == "W" && length(idx) == 3) {
         # Sort only first and last cell for W triangles
-        sorted_parts <- sort(c(parts[1], parts[3]))
-        paste(sorted_parts[1], parts[2], sorted_parts[2], sep = "_")
+        sorted_idx <- sort(c(idx[1], idx[3]))
+        paste(sorted_idx[1], idx[2], sorted_idx[2], sep = "_")
       } else {
-        # Sort all parts for other types (fully direction-agnostic)
-        paste(sort(parts), collapse = "_")
+        # Sort all indices for other types (fully direction-agnostic)
+        paste(sort(idx), collapse = "_")
       }
     }, character(1))
 
@@ -401,6 +418,24 @@ compute_results_processing <- function(celltypes,
     # merge variances (sum variances when summing counts), then convert back to sd
     av_sd <- sqrt(t(rowsum(t(av_sd^2), group = new_labels)))
     if (normalized) avN_sd <- sqrt(t(rowsum(t(avN_sd^2), group = new_labels)))
+
+    # rowsum() leaves the index-based group keys (e.g. "1_2_3") as column
+    # names; convert back to real cell-type-name labels now that grouping is
+    # done -- safe to split on "_" here since these keys are our own
+    # small-integer strings, never real (possibly "_"-containing) cell-type names.
+    .relabel_from_index_keys <- function(mat) {
+      idx_keys <- strsplit(colnames(mat), "_")
+      colnames(mat) <- vapply(idx_keys, function(idx) {
+        paste(celltypes[as.integer(idx)], collapse = "_")
+      }, character(1))
+      mat
+    }
+    av    <- .relabel_from_index_keys(av)
+    av_sd <- .relabel_from_index_keys(av_sd)
+    if (normalized) {
+      avN    <- .relabel_from_index_keys(avN)
+      avN_sd <- .relabel_from_index_keys(avN_sd)
+    }
   }
 
   # -----------------------------
@@ -463,6 +498,15 @@ compute_results_processing <- function(celltypes,
   # -----------------------------
   # Convert normalized data to dataframe (means + sd)
   # -----------------------------
+  # Prefix columns to match compute_racing_kernel()'s feature naming exactly
+  # ("Dir_A_B", "W_A_B_C", "TT_A_B_C", "CT_A_B_C", "GSCC_A") so kernel- and
+  # Monte-Carlo-derived feature matrices use identical column names for the
+  # same cell-type combination and can be fed into the same downstream
+  # statistical/plotting functions interchangeably.
+  feature_prefix <- if (triangle_type == "D") "Dir" else triangle_type
+  colnames(Norm_mean) <- paste0(feature_prefix, "_", colnames(Norm_mean))
+  colnames(Norm_sd)   <- paste0(feature_prefix, "_", colnames(Norm_sd))
+
   df_mean <- as.data.frame(Norm_mean)
   rownames(df_mean) <- patients
   df_sd_out <- as.data.frame(Norm_sd)

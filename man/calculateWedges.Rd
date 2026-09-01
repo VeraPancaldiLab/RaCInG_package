@@ -4,7 +4,14 @@
 \alias{calculateWedges}
 \title{Calculate wedge features from a kernel}
 \usage{
-calculateWedges(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
+calculateWedges(
+  kernel,
+  unifKernel = NULL,
+  cells,
+  Dcell = NULL,
+  bundle = TRUE,
+  patient_names = NULL
+)
 }
 \arguments{
 \item{kernel}{Kernel array returned by \code{\link[=compute_kernel]{compute_kernel()}}.}
@@ -17,9 +24,15 @@ calculateWedges(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
 (unnormalized) scores. Ignored when \code{unifKernel} is supplied.}
 
 \item{bundle}{Logical; if \code{TRUE}, combine directionally equivalent wedges.}
+
+\item{patient_names}{Optional character vector of patient labels, matching
+the patient order in \code{kernel}. Defaults to \code{Patient_1}, \code{Patient_2}, ...
+when omitted.}
 }
 \value{
-A patient-by-feature data frame of wedge scores.
+A patient-by-feature data frame of wedge scores. Triplets with no
+possible ligand-receptor pathway in any patient (zero for every
+patient) are dropped rather than returned as all-zero columns.
 }
 \description{
 Calculate wedge features from a kernel

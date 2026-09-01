@@ -27,7 +27,8 @@ compute_racing_montecarlo(
   Ndegree = 20,
   remove_direction = TRUE,
   norm = TRUE,
-  input_data = NULL
+  input_data = NULL,
+  ncores = 1
 )
 ```
 
@@ -44,11 +45,23 @@ compute_racing_montecarlo(
 
 - deconv:
 
-  Optional deconvolution matrix.
+  Optional patient-by-cell-type abundance matrix. If omitted, it is
+  computed via
+  [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html)
+  followed by
+  [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
+  (which identifies and collapses correlated cell-type subgroups) and
+  [`multideconv::standardize_celltype_colnames()`](https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html).
+  See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - cc_network:
 
-  Optional ligand-receptor prior network.
+  Optional ligand-receptor prior network. If omitted, it is retrieved
+  via
+  [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html).
+  See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - fun_LR:
 
@@ -56,7 +69,10 @@ compute_racing_montecarlo(
 
 - cell_expr_profile:
 
-  Optional cell-type expression profile matrix.
+  Optional gene-by-cell-type expression profile matrix. If omitted, it
+  is estimated from `counts` and `deconv` via per-gene non-negative
+  least squares. See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 - source, target:
 
@@ -69,7 +85,7 @@ compute_racing_montecarlo(
 
 - deconv_method:
 
-  Deconvolution method used when `deconv` is not supplied.
+  Deconvolution method(s) used when `deconv` is not supplied.
 
 - cbsx.name, cbsx.token:
 
@@ -89,7 +105,16 @@ compute_racing_montecarlo(
 
 - communication_type:
 
-  Feature family to simulate.
+  Feature family to simulate: `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`, or
+  a character vector of several of these (e.g.
+  `c("D", "W", "TT", "CT", "GSCC")`). When more than one is given, every
+  requested type is extracted from the same simulated graphs (via
+  [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md))
+  in one pass instead of re-simulating a fresh set of graphs per type –
+  graph generation, not feature extraction, is the expensive part of a
+  Monte Carlo run, so this amortizes that cost across every type
+  requested. `output` in the return value is then a named list (one
+  entry per type) instead of a single result.
 
 - Ncells:
 
@@ -115,11 +140,17 @@ compute_racing_montecarlo(
 - input_data:
 
   Optional named list of pre-computed input matrices as returned by
-  [`prepare_input_files()`](https://mhurtado13.github.io/racing/reference/prepare_input_files.md).
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
   Must contain `Lmatrix`, `Rmatrix`, `Cmatrix`, `LRmatrix`, `celltypes`,
   `ligands`, and `receptors`. When supplied, the `counts` argument and
   all preprocessing parameters (`deconv`, `cc_network`, etc.) are
   ignored.
+
+- ncores:
+
+  Number of cores to compute patients on in parallel. Passed through to
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md);
+  see its documentation for details.
 
 ## Value
 

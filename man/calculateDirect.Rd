@@ -4,7 +4,14 @@
 \alias{calculateDirect}
 \title{Calculate direct communication features from a kernel}
 \usage{
-calculateDirect(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
+calculateDirect(
+  kernel,
+  unifKernel = NULL,
+  cells,
+  Dcell = NULL,
+  bundle = TRUE,
+  patient_names = NULL
+)
 }
 \arguments{
 \item{kernel}{Kernel array returned by \code{\link[=compute_kernel]{compute_kernel()}}.}
@@ -18,9 +25,17 @@ calculateDirect(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE)
 abundance weights cancel out of the ratio.}
 
 \item{bundle}{Logical; if \code{TRUE}, combine reciprocal directions.}
+
+\item{patient_names}{Optional character vector of patient labels, matching
+the patient order in \code{kernel}. Defaults to \code{Patient_1}, \code{Patient_2}, ...
+when omitted, matching \code{\link[=compute_racing_montecarlo]{compute_racing_montecarlo()}}'s output when it
+is also given real names.}
 }
 \value{
 A patient-by-feature data frame of direct communication scores.
+Cell-type pairs with no possible ligand-receptor pathway in any patient
+(zero for every patient) are dropped rather than returned as all-zero
+columns.
 }
 \description{
 Calculate direct communication features from a kernel

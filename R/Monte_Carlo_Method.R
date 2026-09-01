@@ -223,16 +223,20 @@ countDirect <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
 
     # Total number of edges in this iteration (matches Python: includes self-loops)
     directCount[i] <- nrow(E)
-    
-    # Count edges between each pair of cell types
-    for (t in 1:nCells) {          # Source cell type
-      for (s in 1:nCells) {        # Target cell type
-        # Extract rows corresponding to source type t
-        temp <- Adj[V == t, , drop=FALSE]
-        # Count how many edges go to target type s
-        directtensor[t, s, i] <- sum(temp[, V == s, drop=FALSE])
-      }
-    }
+
+    # Count edges between each pair of cell types via a one-hot cell-type
+    # indicator matrix instead of a nCells^2 loop that re-slices Adj (an
+    # N x N sparse matrix) from scratch for every (source type, target type)
+    # pair -- redundant even across the inner loop, since Adj[V == t, ] only
+    # depends on t, yet was recomputed once per s too. For type_indicator
+    # (N x nCells, one-hot: type_indicator[v, k] == 1 iff V[v] == k),
+    # t(type_indicator) %*% Adj %*% type_indicator directly gives the full
+    # nCells x nCells edge-count matrix in one pass: entry (t, s) sums
+    # Adj[v, w] over exactly the vertices v of type t and w of type s.
+    type_indicator <- Matrix::sparseMatrix(
+      i = seq_along(V), j = V, x = 1, dims = c(length(V), nCells)
+    )
+    directtensor[,,i] <- as.matrix(Matrix::t(type_indicator) %*% Adj %*% type_indicator)
   }
   
   # Compute average edges between cell types across iterations
@@ -317,6 +321,114 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
   ))
 }
 
+#' Extract multiple communication feature types from the same simulated graphs
+#'
+#' Generates the requested number of Monte Carlo graph realizations *once*
+#' per patient and extracts every requested feature family from each
+#' realization, instead of the alternative of calling `countDirect()`,
+#' `countWedges()`, etc. separately -- which would independently re-simulate
+#' a brand new set of random graphs per feature type. Graph generation
+#' (`model1()`'s vertex/edge sampling), not feature extraction, is the
+#' expensive part of a Monte Carlo run, and it does not depend on which
+#' feature you eventually want -- so sharing one set of realizations across
+#' every requested type avoids paying that cost once per type.
+#'
+#' @inheritParams countWedges
+#' @param types Character vector of feature families to extract from each
+#'   simulated graph: any combination of `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`.
+#'
+#' @return A named list, one element per requested entry in `types`, each
+#'   with the same structure the corresponding single-type `count*()`
+#'   function returns (e.g. `out$D` matches [countDirect()]'s return value).
+#' @export
+countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
+                          types = c("D", "W", "TT", "CT", "GSCC")) {
+  nCells <- length(cellnames)
+  want <- function(t) t %in% types
+
+  if (want("D"))    directtensor <- array(0, dim = c(nCells, nCells, itNo))
+  if (want("W"))    wedgetensor  <- array(0, dim = c(nCells, nCells, nCells, itNo))
+  if (want("TT"))   trusttensor  <- array(0, dim = c(nCells, nCells, nCells, itNo))
+  if (want("CT"))   cycletensor  <- array(0, dim = c(nCells, nCells, nCells, itNo))
+  if (want("GSCC")) gscctensor   <- array(0, dim = c(nCells, itNo))
+
+  directCount <- if (want("D")) numeric(itNo) else NULL
+  wedgeCount  <- if (want("W")) numeric(itNo) else NULL
+  trustCount  <- if (want("TT")) numeric(itNo) else NULL
+  cycleCount  <- if (want("CT")) numeric(itNo) else NULL
+  gsccCount   <- if (want("GSCC")) numeric(itNo) else NULL
+
+  for (i in 1:itNo) {
+    # Generate ONE random graph for this iteration, shared across every
+    # requested feature type below -- this is the step being amortized.
+    graph <- model1(N, av, lig, rec, Dcell, Dconn)
+    V <- graph$V
+    E <- graph$E
+    Adj <- EdgetoAdj_No_loop(E, length(V))
+
+    if (want("D")) {
+      directCount[i] <- nrow(E)
+      for (t in 1:nCells) {
+        temp <- Adj[V == t, , drop = FALSE]
+        for (s in 1:nCells) {
+          directtensor[t, s, i] <- sum(temp[, V == s, drop = FALSE])
+        }
+      }
+    }
+    if (want("W")) {
+      wedge_result <- Wedges(Adj)
+      wedgeCount[i] <- wedge_result$NoWedges
+      wedgetensor[,,,i] <- Count_Types(wedge_result$Wedge_list, V, maxTypes = nCells)
+    }
+    if (want("TT")) {
+      tri_result <- Trust_Triangles(Adj)
+      trustCount[i] <- tri_result$NoTriangles
+      trusttensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
+    }
+    if (want("CT")) {
+      tri_result <- Cycle_Triangles(Adj)
+      cycleCount[i] <- tri_result$NoTriangles
+      cycletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
+    }
+    if (want("GSCC")) {
+      gscc <- GSCC(Adj)
+      gsccCount[i] <- length(gscc) / length(V)
+      for (t in 1:nCells) {
+        gscctensor[t, i] <- sum(V[gscc] == t) / length(V)
+      }
+    }
+  }
+
+  out <- list()
+  if (want("D")) {
+    out$D <- list(
+      av_dir = apply(directtensor, c(1, 2), mean),
+      std_dir = apply(directtensor, c(1, 2), stats::sd),
+      av_count = mean(directCount), std_count = stats::sd(directCount)
+    )
+  }
+  if (want("W")) {
+    agg <- .mean_sd_last_dim(wedgetensor)
+    out$W <- list(av_triag = agg$mean, std_triag = agg$sd, av_count = mean(wedgeCount), std_count = stats::sd(wedgeCount))
+  }
+  if (want("TT")) {
+    agg <- .mean_sd_last_dim(trusttensor)
+    out$TT <- list(av_triag = agg$mean, std_triag = agg$sd, av_count = mean(trustCount), std_count = stats::sd(trustCount))
+  }
+  if (want("CT")) {
+    agg <- .mean_sd_last_dim(cycletensor)
+    out$CT <- list(av_triag = agg$mean, std_triag = agg$sd, av_count = mean(cycleCount), std_count = stats::sd(cycleCount))
+  }
+  if (want("GSCC")) {
+    out$GSCC <- list(
+      av_GSCC = apply(gscctensor, 1, mean), std_GSCC = apply(gscctensor, 1, stats::sd),
+      av_count = mean(gsccCount), std_count = stats::sd(gsccCount)
+    )
+  }
+
+  out
+}
+
 #' Reset foreach backend to sequential
 #'
 #' Internal helper that unregisters any active parallel backend used by
@@ -340,7 +452,14 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
 #' @param Cmatrix Patient-by-cell-type abundance matrix.
 #' @param LRmatrix Ligand-receptor-by-patient tensor.
 #' @param cells Character vector of cell-type names.
-#' @param communication_type Feature family to simulate (`"D"`, `"W"`, `"TT"`, `"CT"`, or `"GSCC"`).
+#' @param communication_type Feature family to simulate (`"D"`, `"W"`, `"TT"`,
+#'   `"CT"`, or `"GSCC"`), or a character vector of several of these. When more
+#'   than one is given, every requested type is extracted from the *same*
+#'   simulated graphs (via [countAllTypes()]) instead of re-simulating a fresh
+#'   set of graphs per type, and one `.out` file per type is written (file
+#'   names suffixed with the type, e.g. `<file.name>_D.out`). With a single
+#'   type, output naming is unchanged from previous versions
+#'   (`<file.name>.out`, no suffix).
 #' @param pats Number of patients to process, or `"all"`.
 #' @param N Number of cells per graph.
 #' @param itNo Number of Monte Carlo iterations.
@@ -381,9 +500,14 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
     for (i in 1:dim(LRmatrix)[3]) {
       LRmatrix[,,i][LRmatrix[,,i] != 0] <- normvec[i]
     }
-    filename <- paste0(output_folder, "/", file.name, "_norm.out")
-  } else {
-    filename <- paste0(output_folder, "/", file.name, ".out")
+  }
+
+  # One filename per requested type; single-type naming is unchanged from
+  # previous versions (no type suffix) so existing callers/tests still find
+  # the same file.
+  filename_for_type <- function(type) {
+    suffix <- if (length(communication_type) > 1) paste0("_", type) else ""
+    paste0(output_folder, "/", file.name, suffix, if (norm) "_norm" else "", ".out")
   }
 
   # Determine which patient(s) to process.
@@ -400,22 +524,15 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
   }
 
   # ------------------------------------------------------------
-  # Compute each patient's feature (independent of every other patient, so
+  # Compute each patient's feature(s) (independent of every other patient, so
   # this is done in parallel when ncores > 1). Only computation happens here;
-  # writing is kept separate and sequential below.
-  # ------------------------------------------------------------
+  # writing is kept separate and sequential below. Always goes through
+  # countAllTypes() -- even for a single requested type -- so every
+  # requested feature is extracted from the same simulated graphs and there
+  # is exactly one code path (results are always a list keyed by type,
+  # e.g. results[[idx]]$D) rather than two subtly different ones.
   compute_one <- function(CellD, IntD) {
-    if (communication_type == "D") {
-      countDirect(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    } else if (communication_type == "W") {
-      countWedges(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    } else if (communication_type == "TT") {
-      countTrustTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    } else if (communication_type == "GSCC") {
-      countGSCC(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    } else {
-      countCycleTriangles(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo)
-    }
+    countAllTypes(CellD, IntD, Lmatrix, Rmatrix, cells, N, av, itNo, types = communication_type)
   }
 
   if (ncores > 1) {
@@ -447,73 +564,75 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
     results <- lapply(pat_seq, function(pat) compute_one(Cmatrix[pat, ], LRmatrix[,,pat]))
   }
 
-  con <- file(filename, open = "w")
-
-  # Header
-  writeLines(communication_type, con)
-  writeLines(paste(nrow(Cmatrix), N, itNo, av, sep=","), con)
-
   # ------------------------------------------------------------
-  # Write each patient's precomputed result, in order (sequential, since it's
-  # a single file). Composition blocks are written via one vectorized
-  # paste()+writeLines() call each instead of one writeLines() call per cell
-  # -- for a [264,264,264] matrix that's ~18.4 million individual writeLines()
-  # calls per block versus one; confirmed the vectorized form produces
-  # byte-identical output.
+  # Write one .out file per requested type, in patient order (sequential,
+  # since each is a single file). Composition blocks are written via one
+  # vectorized paste()+writeLines() call each instead of one writeLines()
+  # call per cell -- for a [264,264,264] matrix that's ~18.4 million
+  # individual writeLines() calls per block versus one; confirmed the
+  # vectorized form produces byte-identical output.
   # ------------------------------------------------------------
-  for (idx in seq_along(pat_seq)) {
-    pat <- pat_seq[idx]
-    res <- results[[idx]]
+  for (type in communication_type) {
+    con <- file(filename_for_type(type), open = "w")
 
-    writeLines(paste(pat, N, av, sep=","), con)
-    writeLines(cellstring, con)
+    # Header
+    writeLines(type, con)
+    writeLines(paste(nrow(Cmatrix), N, itNo, av, sep=","), con)
 
-    if (communication_type == "D") {
-      av_mat <- res$av_dir
-      std_mat <- res$std_dir
-    } else if (communication_type == "GSCC") {
-      av_vec <- res$av_GSCC
-      std_vec <- res$std_GSCC
-    } else {
-      av_mat <- res$av_triag
-      std_mat <- res$std_triag
+    for (idx in seq_along(pat_seq)) {
+      pat <- pat_seq[idx]
+      res <- results[[idx]][[type]]
+
+      writeLines(paste(pat, N, av, sep=","), con)
+      writeLines(cellstring, con)
+
+      if (type == "D") {
+        av_mat <- res$av_dir
+        std_mat <- res$std_dir
+      } else if (type == "GSCC") {
+        av_vec <- res$av_GSCC
+        std_vec <- res$std_GSCC
+      } else {
+        av_mat <- res$av_triag
+        std_mat <- res$std_triag
+      }
+
+      # Write counts
+      writeLines(paste("Count", res$av_count, res$std_count, sep=","), con)
+
+      # ------------------------------------------------------------
+      # Write composition
+      # ------------------------------------------------------------
+      if (type == "D") {
+
+        grid <- expand.grid(j = 1:ncol(av_mat), i = 1:nrow(av_mat)) # j fastest, matching the original inner loop
+        writeLines("Composition - Average:", con)
+        writeLines(paste(grid$i, grid$j, av_mat[cbind(grid$i, grid$j)], sep=","), con)
+
+        writeLines("Composition - Std:", con)
+        writeLines(paste(grid$i, grid$j, std_mat[cbind(grid$i, grid$j)], sep=","), con)
+
+      } else if (type == "GSCC") {
+
+        writeLines("Composition - Average:", con)
+        writeLines(paste(seq_along(av_vec), av_vec, sep=","), con)
+
+        writeLines("Composition - Std:", con)
+        writeLines(paste(seq_along(std_vec), std_vec, sep=","), con)
+
+      } else {
+
+        grid <- expand.grid(k = 1:dim(av_mat)[3], j = 1:dim(av_mat)[2], i = 1:dim(av_mat)[1]) # k fastest, matching the original innermost loop
+        writeLines("Composition - Average:", con)
+        writeLines(paste(grid$i, grid$j, grid$k, av_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
+
+        writeLines("Composition - Std:", con)
+        writeLines(paste(grid$i, grid$j, grid$k, std_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
+      }
     }
 
-    # Write counts
-    writeLines(paste("Count", res$av_count, res$std_count, sep=","), con)
-
-    # ------------------------------------------------------------
-    # Write composition
-    # ------------------------------------------------------------
-    if (communication_type == "D") {
-
-      grid <- expand.grid(j = 1:ncol(av_mat), i = 1:nrow(av_mat)) # j fastest, matching the original inner loop
-      writeLines("Composition - Average:", con)
-      writeLines(paste(grid$i, grid$j, av_mat[cbind(grid$i, grid$j)], sep=","), con)
-
-      writeLines("Composition - Std:", con)
-      writeLines(paste(grid$i, grid$j, std_mat[cbind(grid$i, grid$j)], sep=","), con)
-
-    } else if (communication_type == "GSCC") {
-
-      writeLines("Composition - Average:", con)
-      writeLines(paste(seq_along(av_vec), av_vec, sep=","), con)
-
-      writeLines("Composition - Std:", con)
-      writeLines(paste(seq_along(std_vec), std_vec, sep=","), con)
-
-    } else {
-
-      grid <- expand.grid(k = 1:dim(av_mat)[3], j = 1:dim(av_mat)[2], i = 1:dim(av_mat)[1]) # k fastest, matching the original innermost loop
-      writeLines("Composition - Average:", con)
-      writeLines(paste(grid$i, grid$j, grid$k, av_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
-
-      writeLines("Composition - Std:", con)
-      writeLines(paste(grid$i, grid$j, grid$k, std_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
-    }
+    close(con)
   }
-
-  close(con)
 }
 
 #' Run the full Monte Carlo RaCInG workflow
@@ -539,12 +658,25 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' @param pt_idx Optional single patient index to simulate.
 #' @param file_name File stem used for intermediate files.
 #' @param nPatients Number of patients to process, or `"all"`.
-#' @param communication_type Feature family to simulate.
+#' @param communication_type Feature family to simulate: `"D"`, `"W"`,
+#'   `"TT"`, `"CT"`, `"GSCC"`, or a character vector of several of these
+#'   (e.g. `c("D", "W", "TT", "CT", "GSCC")`). When more than one is given,
+#'   every requested type is extracted from the same simulated graphs (via
+#'   [countAllTypes()]) in one pass instead of re-simulating a fresh set of
+#'   graphs per type -- graph generation, not feature extraction, is the
+#'   expensive part of a Monte Carlo run, so this amortizes that cost across
+#'   every type requested. `output` in the return value is then a named list
+#'   (one entry per type) instead of a single result.
 #' @param Ncells Number of cells per simulated graph.
 #' @param Ngraphs Number of Monte Carlo iterations.
 #' @param Ndegree Target average degree.
 #' @param remove_direction Logical; if `TRUE`, merge directionally equivalent features.
-#' @param norm Logical; if `TRUE`, also run a uniformized baseline simulation for normalization.
+#' @param norm Logical; if `TRUE`, also run a uniformized baseline simulation and
+#'   express features as an enrichment ratio over it (isolates specificity from
+#'   abundance/topology, at the cost of a second, noisier simulation pass -- budget
+#'   a larger `Ngraphs` if enabling this). Default `FALSE` returns the raw,
+#'   abundance-weighted communication magnitude, which is simpler, cheaper (one
+#'   pass), and less noisy at a given `Ngraphs`.
 #' @param input_data Optional named list of pre-computed input matrices as returned
 #'   by [prepare_input_files()].
 #'   Must contain `Lmatrix`, `Rmatrix`, `Cmatrix`, `LRmatrix`, `celltypes`,
@@ -559,7 +691,7 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                      cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol", signed = FALSE,
                                      deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, pt_idx = NULL, file_name = NULL,
-                                     nPatients = "all", communication_type = "W", Ncells = 10000, Ngraphs = 100, Ndegree = 20, remove_direction = TRUE, norm = TRUE,
+                                     nPatients = "all", communication_type = "W", Ncells = 10000, Ngraphs = 100, Ndegree = 20, remove_direction = TRUE, norm = FALSE,
                                      input_data = NULL, ncores = 1) {
   
   if (is.null(file_name)) {
@@ -635,18 +767,33 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
   
   cat("Processing interaction distribution and generating CSV output...\n")
 
-  res = compute_results_processing(
-    celltypes = cellTypes,
-    patient_names = rownames(Cmatrix), 
-    triangle_type = communication_type,
-    sim_raw_file = paste0(output_folder, "/", file_name, ".out"),
-    sim_norm_file = if(norm) paste0(output_folder, "/", file_name, "_norm.out") else NULL,
-    remove_direction = remove_direction,
-    normalized = norm,
-    output_folder = output_folder,
-    file.name = paste0(file_name, ".csv")
-  )
-  
+  # One .out file was written per requested type above (suffixed by type
+  # when more than one was requested; unsuffixed for a single type, matching
+  # previous file naming), so process each type's file separately here too.
+  # File-name suffixing mirrors filename_for_type() inside runSim().
+  file_suffix_for <- function(type) if (length(communication_type) > 1) paste0("_", type) else ""
+
+  outputs <- lapply(communication_type, function(type) {
+    suffix <- file_suffix_for(type)
+    compute_results_processing(
+      celltypes = cellTypes,
+      patient_names = rownames(Cmatrix),
+      triangle_type = type,
+      sim_raw_file = paste0(output_folder, "/", file_name, suffix, ".out"),
+      sim_norm_file = if (norm) paste0(output_folder, "/", file_name, suffix, "_norm.out") else NULL,
+      remove_direction = remove_direction,
+      normalized = norm,
+      output_folder = output_folder,
+      file.name = paste0(file_name, suffix, ".csv")
+    )
+  })
+  names(outputs) <- communication_type
+
+  # Single type: return the one result directly (unchanged from previous
+  # versions). Multiple types: return the named list, one entry per type,
+  # all sharing the same underlying simulated graphs.
+  res <- if (length(communication_type) == 1) outputs[[1]] else outputs
+
   return(list(input = list(LRmatrix = LRmatrix, Lmatrix = Lmatrix, Rmatrix = Rmatrix, Cmatrix = Cmatrix, cellTypes = cellTypes, ligs = ligs, recs = recs), output = res))
 
 }

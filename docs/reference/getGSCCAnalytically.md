@@ -2,7 +2,7 @@
 
 This helper depended on project-specific files from the original
 development workflow. The packaged interface now recommends using
-[`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md)
+[`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
 directly.
 
 ## Usage
@@ -32,4 +32,4 @@ getGSCCAnalytically(cancer, lab = 1, norm = TRUE, test = FALSE)
 ## Value
 
 This function stops with a message directing users to
-[`computeGSCC()`](https://mhurtado13.github.io/racing/reference/computeGSCC.md).
+[`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md).

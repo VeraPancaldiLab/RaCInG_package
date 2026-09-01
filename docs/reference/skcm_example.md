@@ -3,9 +3,9 @@
 Pre-processed input matrices derived from TCGA skin cutaneous melanoma
 (SKCM) bulk RNA-seq data. The object is a named list that can be passed
 directly to
-[`compute_racing_kernel()`](https://mhurtado13.github.io/racing/reference/compute_racing_kernel.md)
+[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
 or
-[`compute_racing_montecarlo()`](https://mhurtado13.github.io/racing/reference/compute_racing_montecarlo.md)
+[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
 via the `input_data` parameter.
 
 ## Usage

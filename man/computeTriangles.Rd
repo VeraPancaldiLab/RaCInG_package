@@ -34,7 +34,9 @@ triple: "TT" (trust/transitive triangle, \code{i->j->k} and \code{i->k}) and,
 for \verb{i<=j<=k} only, "CT" (cycle triangle, \code{i->j->k->i}).}
 }
 \value{
-A patient-by-feature data frame of triangle scores.
+A patient-by-feature data frame of triangle scores. Triples with
+no possible ligand-receptor pathway in any patient (zero for every
+patient) are dropped rather than returned as all-zero columns.
 }
 \description{
 Compute triangle features from kernel matrices

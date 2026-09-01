@@ -23,7 +23,14 @@ compute_kernel_features(
 
 \item{celltypes}{Character vector of cell-type labels.}
 
-\item{communication_type}{Feature family to compute (\code{"D"}, \code{"W"}, \code{"TT"}, or \code{"GSCC"}).}
+\item{communication_type}{Feature family to compute (\code{"D"}, \code{"W"}, \code{"TT"},
+or \code{"GSCC"}; \code{"TT"} returns both trust- and cycle-triangle columns
+together, see \code{\link[=computeTriangles]{computeTriangles()}}), or a character vector of several of
+these. Since the kernel itself (\code{kernel}/\code{unifKernel}) is passed in
+already computed, requesting multiple types here costs nothing extra to
+compute per type beyond that one kernel -- no re-derivation happens for
+any of them. With more than one type, the return value is a named list
+(one data frame per type) instead of a single data frame.}
 
 \item{bundle}{Logical; if \code{TRUE}, merge directionally equivalent features where appropriate.}
 
@@ -38,7 +45,9 @@ supplied (raw, unnormalized features).}
 \item{patient_idx}{Optional patient index subset.}
 }
 \value{
-A data frame of feature values for the selected patients.
+A data frame of feature values for the selected patients, or (when
+\code{communication_type} has more than one entry) a named list of such data
+frames, one per requested type.
 }
 \description{
 Derive communication features from a kernel
