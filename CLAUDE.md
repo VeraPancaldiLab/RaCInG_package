@@ -155,6 +155,42 @@ normalizes against a uniform random baseline - Results written to
 cutaneous melanoma data: 10 patients × 9 cell types × 276 ligands × 298
 receptors. Use it for testing and examples.
 
+### Verified Against the Original Python Implementation
+
+The companion project at `~/Documents/Racing_paper`
+(`scripts/Melanoma_RaCInG_R_portcheck.qmd`,
+`scripts/RaCInG_original_melanoma.ipynb`,
+`scripts/Compare_RaCInG_R_vs_original.qmd`) verified that
+[`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)/[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)/[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
+reproduce the original, unmodified Python implementation’s math exactly
+on the full 336-patient melanoma cohort — Pearson r = 1 and relative
+differences at machine precision for all three feature families. Two
+real (non-bug) differences to be aware of when comparing outputs against
+the original Python code: - The original’s
+[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)/`calculateTriangles()`
+internally truncate `"CD8+ T"` → `"CD8"` before building column labels;
+this R port does not. -
+[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)
+here labels columns `"W_{free}_{hub}_{k}"`; the original Python labels
+the same triple (identical values) `"W_{hub}_{free}_{k}"` — a
+naming-convention difference only, not a math difference.
+
+### Known Design Gap: Feature Column Identity
+
+[`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)/[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
+return sender/receiver cell-type identity only baked into a glued
+column-name string (`"Dir_A_B"`, `"W_A_B_C"`) — never as structured
+columns (e.g. `CellA`/`CellB`) alongside the values. Every downstream
+caller that needs the identity separately (e.g. “does this pair involve
+cell type X, in either position”) has to reconstruct it by rebuilding
+the same name in the same internal iteration order and matching against
+[`colnames()`](https://rdrr.io/r/base/colnames.html) — this exact
+reconstruction has been independently reimplemented at least three times
+in the companion `Racing_paper` project. Consider having these functions
+return the pair identity as real columns (or an attached attribute)
+directly, so callers don’t need to reverse-engineer a string this
+package itself constructed.
+
 ## Documentation
 
 - Add/edit roxygen2 comments in `R/` files, then run

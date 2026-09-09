@@ -492,11 +492,8 @@ head(wilcox_results)
 #> 5 0.3523810                1
 #> 6 0.6095238                1
 top_features_plot(wilcox_results, top_n = 10)
-#> Warning: No shared levels found between `names(values)` of the manual scale and the
-#> data's fill values.
+#> top_features_plot(): no features passed Adjusted_P_value < 0.05 (smallest Adjusted_P_value observed: 1). Nothing to plot.
 ```
-
-![](RaCiNG_files/figure-html/unnamed-chunk-20-1.png)
 
 ``` r
 
