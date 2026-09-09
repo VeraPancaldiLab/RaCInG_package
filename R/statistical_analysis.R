@@ -81,7 +81,9 @@ wilcox_group_test <- function(data_matrix, groups, p_adjust_method = "fdr") {
 #' @param p_threshold Only features with `Adjusted_P_value < p_threshold` are considered.
 #' @param title Plot title.
 #'
-#' @return A `ggplot2` object.
+#' @return A `ggplot2` object, or, if no feature passes `p_threshold`,
+#'   `invisible(NULL)` after emitting a message stating this (rather than
+#'   silently drawing an empty plot).
 #' @export
 top_features_plot <- function(wilcox_results, top_n = 10, p_threshold = 0.05, title = "Top features") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
@@ -110,6 +112,16 @@ top_features_plot <- function(wilcox_results, top_n = 10, p_threshold = 0.05, ti
   cond <- is.finite(wilcox_results$Log2FC) & wilcox_results$Adjusted_P_value < p_threshold
   cond[is.na(cond)] <- FALSE
   df <- wilcox_results[cond, ]
+
+  if (nrow(df) == 0) {
+    message(
+      "top_features_plot(): no features passed Adjusted_P_value < ", p_threshold,
+      " (smallest Adjusted_P_value observed: ",
+      signif(suppressWarnings(min(wilcox_results$Adjusted_P_value, na.rm = TRUE)), 3),
+      "). Nothing to plot."
+    )
+    return(invisible(NULL))
+  }
 
   # Split by sign first so a feature can never land in both groups (head/tail
   # of one sorted vector would overlap whenever there are fewer than

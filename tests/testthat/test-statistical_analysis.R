@@ -27,6 +27,16 @@ test_that("top_features_plot() requires a Log2FC column and ranks top up/down fe
   expect_false(any(duplicated(p$data$Feature)))
 })
 
+test_that("top_features_plot() messages and returns NULL instead of an empty plot when nothing is significant", {
+  no_sig_input <- data.frame(
+    Feature = c("f1", "f2", "f3"),
+    Adjusted_P_value = c(0.2, 0.5, 0.99),
+    Log2FC = c(1.5, -2, 0.5)
+  )
+  expect_message(result <- top_features_plot(no_sig_input), "no features passed")
+  expect_null(result)
+})
+
 test_that("correlate_features_with_score() aligns patients by name and supports groups", {
   set.seed(1)
   feat <- matrix(1:20, nrow = 5, ncol = 4, dimnames = list(paste0("P", 1:5), paste0("F", 1:4)))
