@@ -87,11 +87,20 @@ collapses correlated cell-type subgroups) and
 <dt id="arg-cc-network">cc_network<a class="anchor" aria-label="anchor" href="#arg-cc-network"></a></dt>
 <dd><p>Optional ligand-receptor prior network. If omitted, it is
 retrieved via <code><a href="https://saezlab.github.io/liana/reference/get_curated_omni.html" class="external-link">liana::get_curated_omni()</a></code> (a curated, OmniPath-backed
-consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).</p></dd>
+consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB)
+the first time this is called, then cached indefinitely as an RDS file
+under <code>tools::R_user_dir("RaCInG", "cache")</code> and loaded from there on every
+subsequent call – avoiding a live network round-trip (and its associated
+transient-failure risk) on every invocation. Delete that cache file to
+force a refresh from OmniPath.</p></dd>
 
 
 <dt id="arg-fun-lr">fun_LR<a class="anchor" aria-label="anchor" href="#arg-fun-lr"></a></dt>
-<dd><p>Function used to combine ligand and receptor expression values.</p></dd>
+<dd><p>Function combining a ligand's and receptor's expression
+values (as a length-2 vector) into one interaction strength. Default
+<code>min</code>: the weaker-expressed partner limits the interaction. Any function
+collapsing 2 values to 1 works, e.g. <code>prod</code> for the product of the two
+instead.</p></dd>
 
 
 <dt id="arg-cell-expr-profile">cell_expr_profile<a class="anchor" aria-label="anchor" href="#arg-cell-expr-profile"></a></dt>
@@ -122,19 +131,24 @@ per-gene non-negative least squares (see <code><a href="dot-estimate_expression_
 
 <dt id="arg-already-normalized">already_normalized<a class="anchor" aria-label="anchor" href="#arg-already-normalized"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, <code>counts</code> is treated as
-already TPM-normalized (linear scale, not logged) and the internal
+already TPM-normalized, <strong>linear scale, not logged</strong>, and the internal
 <code><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">ADImpute::NormalizeTPM()</a></code> gene-length/library-size normalization is
 skipped. Use this for datasets where only pre-normalized expression is
 available (e.g. public cohorts distributed as log2(TPM+1) matrices with
-no raw counts) – applying <code>NormalizeTPM()</code> to already-normalized data
-would re-apply its gene-length correction on top of the original
-normalization, distorting relative gene expression levels.</p></dd>
+no raw counts – convert those back to linear scale, e.g. <code>2^x - 1</code>,
+before passing them here) – applying <code>NormalizeTPM()</code> to already-
+normalized data would re-apply its gene-length correction on top of the
+original normalization, distorting relative gene expression levels.
+Emits a warning, since <code>expr_threshold</code> below is only meaningful if this
+linear-scale assumption holds – comparing a log-scale value against it
+would silently apply the wrong cutoff.</p></dd>
 
 
 <dt id="arg-expr-threshold">expr_threshold<a class="anchor" aria-label="anchor" href="#arg-expr-threshold"></a></dt>
-<dd><p>Minimum expression value (in <code>cell_expr_profile</code>
-units) a ligand or receptor must reach in its sending/receiving cell type
-for that ligand-receptor-celltype triple to be kept in <code>CC_table</code>.</p></dd>
+<dd><p>Minimum expression value, in linear-scale TPM (in
+<code>cell_expr_profile</code> units), a ligand or receptor must reach in its
+sending/receiving cell type for that ligand-receptor-celltype triple to
+be kept in <code>CC_table</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -43,7 +43,8 @@
 <span>  Dcell <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unifKernel <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  bundle <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  bundle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -81,6 +82,13 @@
 "Tr" triangle score per triple. If <code>FALSE</code>, two scores are returned per
 triple: "TT" (trust/transitive triangle, <code>i-&gt;j-&gt;k</code> and <code>i-&gt;k</code>) and,
 for <code>i&lt;=j&lt;=k</code> only, "CT" (cycle triangle, <code>i-&gt;j-&gt;k-&gt;i</code>).</p></dd>
+
+
+<dt id="arg-zero-threshold">zero_threshold<a class="anchor" aria-label="anchor" href="#arg-zero-threshold"></a></dt>
+<dd><p>Drop a triangle once its fraction of zero-valued
+patients reaches this threshold. Default <code>1</code> only drops triangles that
+are zero for every patient (the original behavior); lower it (e.g.
+<code>0.9</code>) to also drop merely zero-inflated triangles.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -11,7 +11,8 @@ calculateWedges(
   cells,
   Dcell = NULL,
   bundle = TRUE,
-  patient_names = NULL
+  patient_names = NULL,
+  zero_threshold = 1
 )
 ```
 
@@ -44,6 +45,13 @@ calculateWedges(
   Optional character vector of patient labels, matching the patient
   order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ... when
   omitted.
+
+- zero_threshold:
+
+  Drop a wedge once its fraction of zero-valued patients reaches this
+  threshold. Default `1` only drops wedges that are zero for every
+  patient (the original behavior); lower it (e.g. `0.9`) to also drop
+  merely zero-inflated wedges.
 
 ## Value
 

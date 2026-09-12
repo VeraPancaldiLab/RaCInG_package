@@ -12,7 +12,8 @@ computeTriangles(
   Dcell = NULL,
   unifKernel = NULL,
   norm = FALSE,
-  bundle = TRUE
+  bundle = TRUE,
+  zero_threshold = 1
 )
 ```
 
@@ -50,6 +51,13 @@ computeTriangles(
   triangle score per triple. If `FALSE`, two scores are returned per
   triple: "TT" (trust/transitive triangle, `i->j->k` and `i->k`) and,
   for `i<=j<=k` only, "CT" (cycle triangle, `i->j->k->i`).
+
+- zero_threshold:
+
+  Drop a triangle once its fraction of zero-valued patients reaches this
+  threshold. Default `1` only drops triangles that are zero for every
+  patient (the original behavior); lower it (e.g. `0.9`) to also drop
+  merely zero-inflated triangles.
 
 ## Value
 

@@ -42,4 +42,6 @@ top_features_plot(
 
 ## Value
 
-A `ggplot2` object.
+A `ggplot2` object, or, if no feature passes `p_threshold`,
+`invisible(NULL)` after emitting a message stating this (rather than
+silently drawing an empty plot).

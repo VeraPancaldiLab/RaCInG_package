@@ -11,7 +11,8 @@ calculateDirect(
   cells,
   Dcell = NULL,
   bundle = TRUE,
-  patient_names = NULL
+  patient_names = NULL,
+  zero_threshold = 1
 )
 ```
 
@@ -47,6 +48,13 @@ calculateDirect(
   omitted, matching
   [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)'s
   output when it is also given real names.
+
+- zero_threshold:
+
+  Drop a cell-type pair once its fraction of zero-valued patients
+  reaches this threshold. Default `1` only drops pairs that are zero for
+  every patient (the original behavior); lower it (e.g. `0.9`) to also
+  drop merely zero-inflated pairs.
 
 ## Value
 

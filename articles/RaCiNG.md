@@ -55,6 +55,7 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 | Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md) | Named list with `L`, `R`, `C`, `LR` matrices and labels |
 | Compute deterministic features | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md) | Kernel arrays + feature matrix |
 | Compute simulation summaries | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Processed Monte Carlo results |
+| Decompose a score into ligand-receptor pairs | [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md) / [`computeWedgeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeWedgeLRContributions.md) / [`computeTriangleLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangleLRContributions.md) + [`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md) | Ranked contributions and a LIANA-style dot plot |
 | Compare clinical groups | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md) | Statistics table and ranked bar plot |
 | Relate features to a continuous score | [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md) | Correlation table and rainfall plot |
 
@@ -469,6 +470,59 @@ head(kernel_res$features[, 1:5])
 #> Patient_6 0.4209898 0.5559673    0.7787024 0.51126999  0.6621874
 ```
 
+### Decomposing a score into ligand-receptor pairs
+
+[`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)
+sums over every ligand-receptor pair to produce one score per cell-type
+pair, so that score alone can’t tell you which ligand-receptor pairs
+drove it.
+[`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md)
+recovers that breakdown for one sender-receiver pair (exploiting that
+the kernel formula is linear in `LRmatrix`, so each pair’s contribution
+can be computed directly and sums back exactly to the original score),
+and
+[`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)
+shows the top contributors as a LIANA-style dot plot (dot size = share
+of that pair’s total score, color = raw contribution).
+
+``` r
+
+lr_contrib <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+)
+head(lr_contrib)
+#>     Patient             Edge Sender Receiver Ligand Receptor Contribution
+#> 1 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  TGFB1   TGFBR3 0.0010444341
+#> 2 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.E    KLRK1 0.0005353052
+#> 3 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T    ADM    VIPR1 0.0002670687
+#> 4 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.F     CD8A 0.0001695168
+#> 5 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.A     CD8A 0.0001652873
+#> 6 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.C     CD8A 0.0001652873
+#>   PctOfTotal
+#> 1  21.519765
+#> 2  11.029554
+#> 3   5.502746
+#> 4   3.492763
+#> 5   3.405619
+#> 6   3.405619
+plotLRContributions(lr_contrib, top_n = 10)
+```
+
+![](RaCiNG_files/figure-html/unnamed-chunk-20-1.png)
+
+The same decomposition extends to Wedges
+([`computeWedgeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeWedgeLRContributions.md))
+and Triangles
+([`computeTriangleLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangleLRContributions.md)):
+since those motifs multiply their edges together rather than sum them,
+each function instead decomposes every individual edge of the motif
+separately (`PctOfTotal` is then relative to that edge’s own score, not
+the whole motif), which
+[`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)
+shows faceted by edge.
+
 ### Statistical analysis on the example data
 
 ``` r
@@ -510,7 +564,7 @@ head(corr_results)
 correlation_plot(corr_results, top_n = 10)
 ```
 
-![](RaCiNG_files/figure-html/unnamed-chunk-21-1.png)
+![](RaCiNG_files/figure-html/unnamed-chunk-22-1.png)
 
 ### Monte Carlo method on the example data
 

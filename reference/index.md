@@ -43,6 +43,20 @@
 - [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md)
   : Legacy GSCC helper
 
+## Ligand-receptor contribution analysis
+
+- [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md)
+  : Decompose a Direct communication score into per-ligand-receptor-pair
+  contributions
+- [`computeWedgeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeWedgeLRContributions.md)
+  : Decompose a Wedge's two hub paths into per-edge ligand-receptor
+  contributions
+- [`computeTriangleLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangleLRContributions.md)
+  : Decompose a Triangle's edges into per-edge ligand-receptor
+  contributions
+- [`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)
+  : Dot plot of top ligand-receptor pair contributions (LIANA-style)
+
 ## Input generation
 
 - [`createCellLigList()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellLigList.md)

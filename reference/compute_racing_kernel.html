@@ -55,7 +55,9 @@
 <span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  pt_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remove_direction <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  input_data <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  input_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  expr_threshold <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -86,7 +88,11 @@ retrieved via <code><a href="https://saezlab.github.io/liana/reference/get_curat
 
 
 <dt id="arg-fun-lr">fun_LR<a class="anchor" aria-label="anchor" href="#arg-fun-lr"></a></dt>
-<dd><p>Function used to combine ligand and receptor expression values.</p></dd>
+<dd><p>Function combining a ligand's and receptor's expression
+values (as a length-2 vector) into one interaction strength. Default
+<code>min</code>: the weaker-expressed partner limits the interaction. Any function
+collapsing 2 values to 1 works, e.g. <code>prod</code> for the product of the two
+instead.</p></dd>
 
 
 <dt id="arg-cell-expr-profile">cell_expr_profile<a class="anchor" aria-label="anchor" href="#arg-cell-expr-profile"></a></dt>
@@ -153,6 +159,20 @@ Must contain <code>Lmatrix</code>, <code>Rmatrix</code>, <code>Cmatrix</code>, <
 <code>ligands</code>, and <code>receptors</code>.
 When supplied, the <code>counts</code> argument and all preprocessing parameters
 (<code>deconv</code>, <code>cc_network</code>, etc.) are ignored.</p></dd>
+
+
+<dt id="arg-zero-threshold">zero_threshold<a class="anchor" aria-label="anchor" href="#arg-zero-threshold"></a></dt>
+<dd><p>Drop a feature once its fraction of zero-valued
+patients reaches this threshold. Default <code>1</code> only drops features that
+are zero for every patient (the original behavior); lower it (e.g.
+<code>0.9</code>) to also drop merely zero-inflated features. See
+<code><a href="compute_kernel_features.html">compute_kernel_features()</a></code>.</p></dd>
+
+
+<dt id="arg-expr-threshold">expr_threshold<a class="anchor" aria-label="anchor" href="#arg-expr-threshold"></a></dt>
+<dd><p>Minimum expression (in linear TPM, not log-scale)
+a ligand or receptor must reach in its sending/receiving cell type to be
+kept. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

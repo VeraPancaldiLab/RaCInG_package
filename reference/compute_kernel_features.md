@@ -14,7 +14,8 @@ compute_kernel_features(
   patient_names = NULL,
   Dcell = NULL,
   norm = FALSE,
-  patient_idx = NULL
+  patient_idx = NULL,
+  zero_threshold = 1
 )
 ```
 
@@ -68,6 +69,15 @@ compute_kernel_features(
 - patient_idx:
 
   Optional patient index subset.
+
+- zero_threshold:
+
+  Drop a feature once its fraction of zero-valued patients reaches this
+  threshold. Default `1` only drops features that are zero for every
+  patient (the original behavior); lower it (e.g. `0.9`) to also drop
+  merely zero-inflated features. Passed through to
+  [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)/[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md);
+  ignored for `"GSCC"`.
 
 ## Value
 

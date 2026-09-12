@@ -45,7 +45,8 @@
 <span>  patient_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  Dcell <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  patient_idx <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  patient_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,6 +97,14 @@ supplied (raw, unnormalized features).</p></dd>
 
 <dt id="arg-patient-idx">patient_idx<a class="anchor" aria-label="anchor" href="#arg-patient-idx"></a></dt>
 <dd><p>Optional patient index subset.</p></dd>
+
+
+<dt id="arg-zero-threshold">zero_threshold<a class="anchor" aria-label="anchor" href="#arg-zero-threshold"></a></dt>
+<dd><p>Drop a feature once its fraction of zero-valued
+patients reaches this threshold. Default <code>1</code> only drops features that
+are zero for every patient (the original behavior); lower it (e.g.
+<code>0.9</code>) to also drop merely zero-inflated features. Passed through to
+<code><a href="calculateDirect.html">calculateDirect()</a></code>/<code><a href="calculateWedges.html">calculateWedges()</a></code>/<code><a href="computeTriangles.html">computeTriangles()</a></code>; ignored for <code>"GSCC"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

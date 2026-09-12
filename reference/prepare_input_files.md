@@ -54,11 +54,20 @@ prepare_input_files(
   via
   [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html)
   (a curated, OmniPath-backed consensus of
-  CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).
+  CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB) the first
+  time this is called, then cached indefinitely as an RDS file under
+  `tools::R_user_dir("RaCInG", "cache")` and loaded from there on every
+  subsequent call – avoiding a live network round-trip (and its
+  associated transient-failure risk) on every invocation. Delete that
+  cache file to force a refresh from OmniPath.
 
 - fun_LR:
 
-  Function used to combine ligand and receptor expression values.
+  Function combining a ligand's and receptor's expression values (as a
+  length-2 vector) into one interaction strength. Default `min`: the
+  weaker-expressed partner limits the interaction. Any function
+  collapsing 2 values to 1 works, e.g. `prod` for the product of the two
+  instead.
 
 - cell_expr_profile:
 
@@ -92,21 +101,26 @@ prepare_input_files(
 
 - already_normalized:
 
-  Logical; if `TRUE`, `counts` is treated as already TPM-normalized
-  (linear scale, not logged) and the internal
+  Logical; if `TRUE`, `counts` is treated as already TPM-normalized,
+  **linear scale, not logged**, and the internal
   [`ADImpute::NormalizeTPM()`](https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html)
   gene-length/library-size normalization is skipped. Use this for
   datasets where only pre-normalized expression is available (e.g.
-  public cohorts distributed as log2(TPM+1) matrices with no raw counts)
-  – applying `NormalizeTPM()` to already-normalized data would re-apply
-  its gene-length correction on top of the original normalization,
-  distorting relative gene expression levels.
+  public cohorts distributed as log2(TPM+1) matrices with no raw counts
+  – convert those back to linear scale, e.g. `2^x - 1`, before passing
+  them here) – applying `NormalizeTPM()` to already- normalized data
+  would re-apply its gene-length correction on top of the original
+  normalization, distorting relative gene expression levels. Emits a
+  warning, since `expr_threshold` below is only meaningful if this
+  linear-scale assumption holds – comparing a log-scale value against it
+  would silently apply the wrong cutoff.
 
 - expr_threshold:
 
-  Minimum expression value (in `cell_expr_profile` units) a ligand or
-  receptor must reach in its sending/receiving cell type for that
-  ligand-receptor-celltype triple to be kept in `CC_table`.
+  Minimum expression value, in linear-scale TPM (in `cell_expr_profile`
+  units), a ligand or receptor must reach in its sending/receiving cell
+  type for that ligand-receptor-celltype triple to be kept in
+  `CC_table`.
 
 ## Value
 

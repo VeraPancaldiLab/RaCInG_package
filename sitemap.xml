@@ -23,7 +23,10 @@
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.html</loc></url>
+<url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.html</loc></url>
+<url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangleLRContributions.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.html</loc></url>
+<url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeWedgeLRContributions.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.html</loc></url>
@@ -52,6 +55,7 @@
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/index.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.html</loc></url>
+<url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/poiBPFunc.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.html</loc></url>
 <url><loc>https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.html</loc></url>

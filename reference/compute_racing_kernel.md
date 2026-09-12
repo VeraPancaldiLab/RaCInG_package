@@ -24,7 +24,9 @@ compute_racing_kernel(
   norm = FALSE,
   pt_idx = NULL,
   remove_direction = TRUE,
-  input_data = NULL
+  input_data = NULL,
+  zero_threshold = 1,
+  expr_threshold = 10
 )
 ```
 
@@ -61,7 +63,11 @@ compute_racing_kernel(
 
 - fun_LR:
 
-  Function used to combine ligand and receptor expression values.
+  Function combining a ligand's and receptor's expression values (as a
+  length-2 vector) into one interaction strength. Default `min`: the
+  weaker-expressed partner limits the interaction. Any function
+  collapsing 2 values to 1 works, e.g. `prod` for the product of the two
+  instead.
 
 - cell_expr_profile:
 
@@ -132,6 +138,20 @@ compute_racing_kernel(
   `ligands`, and `receptors`. When supplied, the `counts` argument and
   all preprocessing parameters (`deconv`, `cc_network`, etc.) are
   ignored.
+
+- zero_threshold:
+
+  Drop a feature once its fraction of zero-valued patients reaches this
+  threshold. Default `1` only drops features that are zero for every
+  patient (the original behavior); lower it (e.g. `0.9`) to also drop
+  merely zero-inflated features. See
+  [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md).
+
+- expr_threshold:
+
+  Minimum expression (in linear TPM, not log-scale) a ligand or receptor
+  must reach in its sending/receiving cell type to be kept. See
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
 
 ## Value
 
