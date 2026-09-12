@@ -35,9 +35,18 @@ collapses correlated cell-type subgroups) and
 
 \item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
 retrieved via \code{liana::get_curated_omni()} (a curated, OmniPath-backed
-consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).}
+consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB)
+the first time this is called, then cached indefinitely as an RDS file
+under \code{tools::R_user_dir("RaCInG", "cache")} and loaded from there on every
+subsequent call -- avoiding a live network round-trip (and its associated
+transient-failure risk) on every invocation. Delete that cache file to
+force a refresh from OmniPath.}
 
-\item{fun_LR}{Function used to combine ligand and receptor expression values.}
+\item{fun_LR}{Function combining a ligand's and receptor's expression
+values (as a length-2 vector) into one interaction strength. Default
+\code{min}: the weaker-expressed partner limits the interaction. Any function
+collapsing 2 values to 1 works, e.g. \code{prod} for the product of the two
+instead.}
 
 \item{cell_expr_profile}{Optional gene-by-cell-type expression profile
 matrix. If omitted, it is estimated from \code{counts} and \code{deconv} via
@@ -54,17 +63,22 @@ per-gene non-negative least squares (see \code{.estimate_expression_profiles()})
 \item{signed}{Logical; if \code{TRUE}, also try to load a sign matrix from \code{output_folder}.}
 
 \item{already_normalized}{Logical; if \code{TRUE}, \code{counts} is treated as
-already TPM-normalized (linear scale, not logged) and the internal
+already TPM-normalized, \strong{linear scale, not logged}, and the internal
 \code{ADImpute::NormalizeTPM()} gene-length/library-size normalization is
 skipped. Use this for datasets where only pre-normalized expression is
 available (e.g. public cohorts distributed as log2(TPM+1) matrices with
-no raw counts) -- applying \code{NormalizeTPM()} to already-normalized data
-would re-apply its gene-length correction on top of the original
-normalization, distorting relative gene expression levels.}
+no raw counts -- convert those back to linear scale, e.g. \code{2^x - 1},
+before passing them here) -- applying \code{NormalizeTPM()} to already-
+normalized data would re-apply its gene-length correction on top of the
+original normalization, distorting relative gene expression levels.
+Emits a warning, since \code{expr_threshold} below is only meaningful if this
+linear-scale assumption holds -- comparing a log-scale value against it
+would silently apply the wrong cutoff.}
 
-\item{expr_threshold}{Minimum expression value (in \code{cell_expr_profile}
-units) a ligand or receptor must reach in its sending/receiving cell type
-for that ligand-receptor-celltype triple to be kept in \code{CC_table}.}
+\item{expr_threshold}{Minimum expression value, in linear-scale TPM (in
+\code{cell_expr_profile} units), a ligand or receptor must reach in its
+sending/receiving cell type for that ligand-receptor-celltype triple to
+be kept in \code{CC_table}.}
 }
 \value{
 A named list with the processed input matrices and their labels:

@@ -11,7 +11,8 @@ computeTriangles(
   Dcell = NULL,
   unifKernel = NULL,
   norm = FALSE,
-  bundle = TRUE
+  bundle = TRUE,
+  zero_threshold = 1
 )
 }
 \arguments{
@@ -32,6 +33,11 @@ computeTriangles(
 "Tr" triangle score per triple. If \code{FALSE}, two scores are returned per
 triple: "TT" (trust/transitive triangle, \code{i->j->k} and \code{i->k}) and,
 for \verb{i<=j<=k} only, "CT" (cycle triangle, \code{i->j->k->i}).}
+
+\item{zero_threshold}{Drop a triangle once its fraction of zero-valued
+patients reaches this threshold. Default \code{1} only drops triangles that
+are zero for every patient (the original behavior); lower it (e.g.
+\code{0.9}) to also drop merely zero-inflated triangles.}
 }
 \value{
 A patient-by-feature data frame of triangle scores. Triples with

@@ -23,7 +23,9 @@ plot a specific comparison.}
 \item{title}{Plot title.}
 }
 \value{
-A \code{ggplot2} object.
+A \code{ggplot2} object, or, if no feature passes \code{p_threshold},
+\code{invisible(NULL)} after emitting a message stating this (rather than
+silently drawing an empty plot).
 }
 \description{
 Shows the top most upregulated and top most downregulated significant

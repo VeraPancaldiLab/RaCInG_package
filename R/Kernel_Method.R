@@ -117,13 +117,17 @@ compute_kernel <- function(liglist, reclist, Cmatrix, LRmatrix, normalize = FALS
 #'   the patient order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ...
 #'   when omitted, matching [compute_racing_montecarlo()]'s output when it
 #'   is also given real names.
+#' @param zero_threshold Drop a cell-type pair once its fraction of
+#'   zero-valued patients reaches this threshold. Default `1` only drops
+#'   pairs that are zero for every patient (the original behavior); lower it
+#'   (e.g. `0.9`) to also drop merely zero-inflated pairs.
 #'
 #' @return A patient-by-feature data frame of direct communication scores.
 #'   Cell-type pairs with no possible ligand-receptor pathway in any patient
 #'   (zero for every patient) are dropped rather than returned as all-zero
 #'   columns.
 #' @export
-calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE, patient_names = NULL) {
+calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE, patient_names = NULL, zero_threshold = 1) {
   n_celltypes <- length(cells)      # number of cell types
   n_patients <- dim(kernel)[3]      # number of patients
 
@@ -160,11 +164,14 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
   df <- as.data.frame(df_list)
   rownames(df) <- if (!is.null(patient_names)) patient_names else paste0("Patient_", 1:n_patients)
 
-  # Drop cell-type pairs with no possible ligand-receptor pathway in any
-  # patient (zero for every patient -- both branches above fill the
-  # structurally-impossible NaN case with 0, so a plain all-zero check is a
-  # correct and sufficient test here regardless of raw vs normalized).
-  df <- df[, colSums(df != 0) > 0, drop = FALSE]
+  # Drop cell-type pairs whose fraction of zero-valued patients reaches
+  # zero_threshold -- default 1 keeps only the original behavior (drop a pair
+  # only if it's zero for every single patient, a structurally-impossible
+  # pathway; both branches above fill the impossible NaN case with 0, so this
+  # is a correct and sufficient test regardless of raw vs normalized). Lower
+  # zero_threshold (e.g. 0.9) to also drop merely zero-inflated pairs, which
+  # this all-zero check alone does not catch.
+  df <- df[, colMeans(df == 0) < zero_threshold, drop = FALSE]
 
   return(df)
 }
@@ -180,12 +187,16 @@ calculateDirect <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
 #' @param patient_names Optional character vector of patient labels, matching
 #'   the patient order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ...
 #'   when omitted.
+#' @param zero_threshold Drop a wedge once its fraction of zero-valued
+#'   patients reaches this threshold. Default `1` only drops wedges that are
+#'   zero for every patient (the original behavior); lower it (e.g. `0.9`) to
+#'   also drop merely zero-inflated wedges.
 #'
 #' @return A patient-by-feature data frame of wedge scores. Triplets with no
 #'   possible ligand-receptor pathway in any patient (zero for every
 #'   patient) are dropped rather than returned as all-zero columns.
 #' @export
-calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE, patient_names = NULL) {
+calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bundle = TRUE, patient_names = NULL, zero_threshold = 1) {
   n_celltypes <- length(cells)
   n_patients <- dim(kernel)[3]
 
@@ -278,6 +289,15 @@ calculateWedges <- function(kernel, unifKernel = NULL, cells, Dcell = NULL, bund
   colnames(out) <- paste0("W_", cells[i], "_", cells[j], "_", cells[k])
   df <- as.data.frame(out)
   rownames(df) <- if (!is.null(patient_names)) patient_names else paste0("Patient_", 1:n_patients)
+
+  # The structural pre-filter above only removes wedges with zero kernel
+  # product for every patient (checked before abundance-weighting); it does
+  # not catch wedges whose final, abundance-weighted values are merely
+  # zero-inflated (or become all-zero only after weighting, e.g. a cell type
+  # with zero abundance in every patient). This final check catches both,
+  # controlled the same way as calculateDirect()'s zero_threshold: default 1
+  # keeps only the original all-zero-drop behavior.
+  df <- df[, colMeans(df == 0) < zero_threshold, drop = FALSE]
 
   return(df)
 }
@@ -403,13 +423,17 @@ computeGSCC <- function(kernel, Dcell, cell_names, patient_names,
 #'   "Tr" triangle score per triple. If `FALSE`, two scores are returned per
 #'   triple: "TT" (trust/transitive triangle, `i->j->k` and `i->k`) and,
 #'   for `i<=j<=k` only, "CT" (cycle triangle, `i->j->k->i`).
+#' @param zero_threshold Drop a triangle once its fraction of zero-valued
+#'   patients reaches this threshold. Default `1` only drops triangles that
+#'   are zero for every patient (the original behavior); lower it (e.g.
+#'   `0.9`) to also drop merely zero-inflated triangles.
 #'
 #' @return A patient-by-feature data frame of triangle scores. Triples with
 #'   no possible ligand-receptor pathway in any patient (zero for every
 #'   patient) are dropped rather than returned as all-zero columns.
 #' @export
 computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
-                             unifKernel = NULL, norm = FALSE, bundle = TRUE) {
+                             unifKernel = NULL, norm = FALSE, bundle = TRUE, zero_threshold = 1) {
   n_patients <- dim(kernel)[3]   # number of patients
   n_cells <- length(cell_names)   # number of cell types
 
@@ -548,6 +572,16 @@ computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
   df <- as.data.frame(out)
   rownames(df) <- patient_names
 
+  # The structural pre-filters above (`possible`/`possible_tt`/`possible_ct`)
+  # only remove triangles with zero kernel product for every patient, checked
+  # before abundance-weighting; they don't catch triangles whose final,
+  # abundance-weighted values are merely zero-inflated (or become all-zero
+  # only after weighting, e.g. a cell type with zero abundance in every
+  # patient). This final check catches both, controlled the same way as
+  # calculateDirect()/calculateWedges()'s zero_threshold: default 1 keeps
+  # only the original all-zero-drop behavior.
+  df <- df[, colMeans(df == 0) < zero_threshold, drop = FALSE]
+
   return(df)
 }
 
@@ -571,13 +605,18 @@ computeTriangles <- function(kernel, cell_names, patient_names, Dcell = NULL,
 #'   supplied (raw, unnormalized features).
 #' @param norm Logical; if `TRUE`, compute normalized features when a baseline is supplied.
 #' @param patient_idx Optional patient index subset.
+#' @param zero_threshold Drop a feature once its fraction of zero-valued
+#'   patients reaches this threshold. Default `1` only drops features that
+#'   are zero for every patient (the original behavior); lower it (e.g.
+#'   `0.9`) to also drop merely zero-inflated features. Passed through to
+#'   [calculateDirect()]/[calculateWedges()]/[computeTriangles()]; ignored for `"GSCC"`.
 #'
 #' @return A data frame of feature values for the selected patients, or (when
 #'   `communication_type` has more than one entry) a named list of such data
 #'   frames, one per requested type.
 #' @export
 compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, communication_type = "D", bundle = TRUE,
-                                    patient_names = NULL, Dcell = NULL, norm = FALSE, patient_idx = NULL) {
+                                    patient_names = NULL, Dcell = NULL, norm = FALSE, patient_idx = NULL, zero_threshold = 1) {
 
   # Subset patients if requested
   if (!is.null(patient_idx)) {
@@ -595,16 +634,16 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
     }
 
     if (comm == "D") {
-      calculateDirect(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle, patient_names = patient_names)
+      calculateDirect(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle, patient_names = patient_names, zero_threshold = zero_threshold)
 
     } else if (comm == "W") {
-      calculateWedges(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle, patient_names = patient_names)
+      calculateWedges(kernel = kernel, unifKernel = unifKernel, cells = celltypes, Dcell = Dcell, bundle = bundle, patient_names = patient_names, zero_threshold = zero_threshold)
 
     } else if (comm == "TT") {
       # trust/cycle triangles (directed): use bundle = FALSE in computeTriangles
       computeTriangles(kernel = kernel, cell_names = celltypes, Dcell = Dcell,
                        patient_names = if (!is.null(patient_names)) patient_names else paste0("Patient_", seq_len(dim(kernel)[3])),
-                       unifKernel = unifKernel, norm = norm, bundle = FALSE)
+                       unifKernel = unifKernel, norm = norm, bundle = FALSE, zero_threshold = zero_threshold)
 
     } else if (comm == "GSCC") {
       if (is.null(Dcell)) stop("Dcell (cell abundance matrix) is required for GSCC computation.")
@@ -640,10 +679,17 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
 #'   `multideconv::standardize_celltype_colnames()`. See [prepare_input_files()].
 #' @param cc_network Optional ligand-receptor prior network. If omitted, it is
 #'   retrieved via `liana::get_curated_omni()`. See [prepare_input_files()].
-#' @param fun_LR Function used to combine ligand and receptor expression values.
+#' @param fun_LR Function combining a ligand's and receptor's expression
+#'   values (as a length-2 vector) into one interaction strength. Default
+#'   `min`: the weaker-expressed partner limits the interaction. Any function
+#'   collapsing 2 values to 1 works, e.g. `prod` for the product of the two
+#'   instead.
 #' @param cell_expr_profile Optional gene-by-cell-type expression profile
 #'   matrix. If omitted, it is estimated from `counts` and `deconv` via
 #'   per-gene non-negative least squares. See [prepare_input_files()].
+#' @param expr_threshold Minimum expression (in linear TPM, not log-scale)
+#'   a ligand or receptor must reach in its sending/receiving cell type to be
+#'   kept. See [prepare_input_files()].
 #' @param source,target Column names to use as ligand and receptor identifiers in `cc_network`.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix.
 #' @param deconv_method Deconvolution method(s) used when `deconv` is not supplied.
@@ -671,16 +717,21 @@ compute_kernel_features <- function(kernel, unifKernel = NULL, celltypes, commun
 #'   `ligands`, and `receptors`.
 #'   When supplied, the `counts` argument and all preprocessing parameters
 #'   (`deconv`, `cc_network`, etc.) are ignored.
+#' @param zero_threshold Drop a feature once its fraction of zero-valued
+#'   patients reaches this threshold. Default `1` only drops features that
+#'   are zero for every patient (the original behavior); lower it (e.g.
+#'   `0.9`) to also drop merely zero-inflated features. See
+#'   [compute_kernel_features()].
 #'
 #' @return A list with the kernel arrays and the derived feature matrix (or,
 #'   for multiple `communication_type` entries, a named list of feature
 #'   matrices) in `features`.
 #' @export
-compute_racing_kernel = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min, 
+compute_racing_kernel = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                  cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol", signed = FALSE,
-                                 deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, file_name = NULL, nPatients = "all", 
+                                 deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, file_name = NULL, nPatients = "all",
                                  communication_type = "W", norm = FALSE, pt_idx = NULL, remove_direction = TRUE,
-                                 input_data = NULL) {
+                                 input_data = NULL, zero_threshold = 1, expr_threshold = 10) {
 
   if (is.null(file_name)) {
     file_name <- "RaCInG_input"
@@ -693,10 +744,10 @@ compute_racing_kernel = function(counts = NULL, output_folder = "~/Documents/rac
     if (is.null(counts)) {
       stop("Either 'counts' or 'input_data' must be provided.", call. = FALSE)
     }
-    res <- prepare_input_files(counts, output_folder = output_folder, deconv = deconv, cc_network = cc_network, fun_LR = fun_LR, 
+    res <- prepare_input_files(counts, output_folder = output_folder, deconv = deconv, cc_network = cc_network, fun_LR = fun_LR,
                                cell_expr_profile = cell_expr_profile, source = source, target = target,
                                deconv_method = deconv_method, cbsx.name = cbsx.name, cbsx.token = cbsx.token, file_name = file_name,
-                               signed = signed)
+                               signed = signed, expr_threshold = expr_threshold)
   }
 
   Lmatrix   <- res$Lmatrix
@@ -742,7 +793,8 @@ compute_racing_kernel = function(counts = NULL, output_folder = "~/Documents/rac
     patient_names = patient_names,
     Dcell = Cmatrix,
     norm = norm,
-    patient_idx = pt_idx
+    patient_idx = pt_idx,
+    zero_threshold = zero_threshold
   )
 
   return(list(kernel = kernel_raw, kernel_norm = kernel_norm, features = features))

@@ -10,7 +10,8 @@ calculateDirect(
   cells,
   Dcell = NULL,
   bundle = TRUE,
-  patient_names = NULL
+  patient_names = NULL,
+  zero_threshold = 1
 )
 }
 \arguments{
@@ -30,6 +31,11 @@ abundance weights cancel out of the ratio.}
 the patient order in \code{kernel}. Defaults to \code{Patient_1}, \code{Patient_2}, ...
 when omitted, matching \code{\link[=compute_racing_montecarlo]{compute_racing_montecarlo()}}'s output when it
 is also given real names.}
+
+\item{zero_threshold}{Drop a cell-type pair once its fraction of
+zero-valued patients reaches this threshold. Default \code{1} only drops
+pairs that are zero for every patient (the original behavior); lower it
+(e.g. \code{0.9}) to also drop merely zero-inflated pairs.}
 }
 \value{
 A patient-by-feature data frame of direct communication scores.

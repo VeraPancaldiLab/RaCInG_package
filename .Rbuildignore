@@ -10,3 +10,5 @@
 ^_pkgdown\.yml$
 ^Results$
 ^Rplots\.pdf$
+^doc$
+^Meta$

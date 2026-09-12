@@ -23,7 +23,9 @@ compute_racing_kernel(
   norm = FALSE,
   pt_idx = NULL,
   remove_direction = TRUE,
-  input_data = NULL
+  input_data = NULL,
+  zero_threshold = 1,
+  expr_threshold = 10
 )
 }
 \arguments{
@@ -41,7 +43,11 @@ collapses correlated cell-type subgroups) and
 \item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
 retrieved via \code{liana::get_curated_omni()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 
-\item{fun_LR}{Function used to combine ligand and receptor expression values.}
+\item{fun_LR}{Function combining a ligand's and receptor's expression
+values (as a length-2 vector) into one interaction strength. Default
+\code{min}: the weaker-expressed partner limits the interaction. Any function
+collapsing 2 values to 1 works, e.g. \code{prod} for the product of the two
+instead.}
 
 \item{cell_expr_profile}{Optional gene-by-cell-type expression profile
 matrix. If omitted, it is estimated from \code{counts} and \code{deconv} via
@@ -84,6 +90,16 @@ Must contain \code{Lmatrix}, \code{Rmatrix}, \code{Cmatrix}, \code{LRmatrix}, \c
 \code{ligands}, and \code{receptors}.
 When supplied, the \code{counts} argument and all preprocessing parameters
 (\code{deconv}, \code{cc_network}, etc.) are ignored.}
+
+\item{zero_threshold}{Drop a feature once its fraction of zero-valued
+patients reaches this threshold. Default \code{1} only drops features that
+are zero for every patient (the original behavior); lower it (e.g.
+\code{0.9}) to also drop merely zero-inflated features. See
+\code{\link[=compute_kernel_features]{compute_kernel_features()}}.}
+
+\item{expr_threshold}{Minimum expression (in linear TPM, not log-scale)
+a ligand or receptor must reach in its sending/receiving cell type to be
+kept. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 }
 \value{
 A list with the kernel arrays and the derived feature matrix (or,

@@ -405,8 +405,17 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
 #'   `multideconv::standardize_celltype_colnames()`.
 #' @param cc_network Optional ligand-receptor prior network. If omitted, it is
 #'   retrieved via `liana::get_curated_omni()` (a curated, OmniPath-backed
-#'   consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).
-#' @param fun_LR Function used to combine ligand and receptor expression values.
+#'   consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB)
+#'   the first time this is called, then cached indefinitely as an RDS file
+#'   under `tools::R_user_dir("RaCInG", "cache")` and loaded from there on every
+#'   subsequent call -- avoiding a live network round-trip (and its associated
+#'   transient-failure risk) on every invocation. Delete that cache file to
+#'   force a refresh from OmniPath.
+#' @param fun_LR Function combining a ligand's and receptor's expression
+#'   values (as a length-2 vector) into one interaction strength. Default
+#'   `min`: the weaker-expressed partner limits the interaction. Any function
+#'   collapsing 2 values to 1 works, e.g. `prod` for the product of the two
+#'   instead.
 #' @param cell_expr_profile Optional gene-by-cell-type expression profile
 #'   matrix. If omitted, it is estimated from `counts` and `deconv` via
 #'   per-gene non-negative least squares (see `.estimate_expression_profiles()`).
@@ -417,17 +426,22 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix from `output_folder`.
 #'
 #' @param already_normalized Logical; if `TRUE`, `counts` is treated as
-#'   already TPM-normalized (linear scale, not logged) and the internal
+#'   already TPM-normalized, **linear scale, not logged**, and the internal
 #'   `ADImpute::NormalizeTPM()` gene-length/library-size normalization is
 #'   skipped. Use this for datasets where only pre-normalized expression is
 #'   available (e.g. public cohorts distributed as log2(TPM+1) matrices with
-#'   no raw counts) -- applying `NormalizeTPM()` to already-normalized data
-#'   would re-apply its gene-length correction on top of the original
-#'   normalization, distorting relative gene expression levels.
+#'   no raw counts -- convert those back to linear scale, e.g. `2^x - 1`,
+#'   before passing them here) -- applying `NormalizeTPM()` to already-
+#'   normalized data would re-apply its gene-length correction on top of the
+#'   original normalization, distorting relative gene expression levels.
+#'   Emits a warning, since `expr_threshold` below is only meaningful if this
+#'   linear-scale assumption holds -- comparing a log-scale value against it
+#'   would silently apply the wrong cutoff.
 #'
-#' @param expr_threshold Minimum expression value (in `cell_expr_profile`
-#'   units) a ligand or receptor must reach in its sending/receiving cell type
-#'   for that ligand-receptor-celltype triple to be kept in `CC_table`.
+#' @param expr_threshold Minimum expression value, in linear-scale TPM (in
+#'   `cell_expr_profile` units), a ligand or receptor must reach in its
+#'   sending/receiving cell type for that ligand-receptor-celltype triple to
+#'   be kept in `CC_table`.
 #'
 #' @return A named list with the processed input matrices and their labels:
 #'   `Lmatrix`, `Rmatrix`, `Cmatrix` (normalised), `LRmatrix` (3-D tensor),
@@ -444,6 +458,13 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
 
   .check_installed_packages(c("ADImpute", "multideconv"))
   if (already_normalized) {
+    warning(
+      "already_normalized = TRUE: 'counts' is assumed to already be linear-scale TPM. ",
+      "expr_threshold (default ", expr_threshold, ") is compared against this scale -- ",
+      "if 'counts' is actually log-transformed (e.g. log2(TPM+1)), that comparison is ",
+      "wrong; convert back to linear TPM first or set expr_threshold accordingly.",
+      call. = FALSE
+    )
     counts.tpm <- as.matrix(counts)
   } else {
     counts.tpm <- ADImpute::NormalizeTPM(counts)
@@ -489,10 +510,23 @@ prepare_input_files <- function(counts, output_folder = "Results/", deconv = NUL
   cat("Processing cell-cell interaction network...\n")
   if (is.null(cc_network)) {
     .check_installed_packages(c("OmnipathR", "liana"))
-    cc_network <- liana::get_curated_omni() %>%
-      dplyr::filter(category_intercell_source %in% c("cell_surface_ligand", "ligand") & #check why not adhesion also or ecm 
-                    category_intercell_target %in% c("receptor", "adhesion")) %>%
-      liana::decomplexify(columns = c("source_genesymbol", "target_genesymbol"))
+    cache_dir <- tools::R_user_dir("RaCInG", "cache")
+    cache_file <- file.path(cache_dir, "curated_omni_network.rds")
+    if (file.exists(cache_file)) {
+      cc_network <- readRDS(cache_file)
+    } else {
+      # get_curated_omni()'s underlying calls hit OmnipathR's own on-disk cache for
+      # most of the network data, but at least one internal step (parameter
+      # validation against OmnipathR::resources()) always makes a live request
+      # regardless -- so this whole result is still subject to transient network
+      # failures on every fresh R session unless cached at this level too.
+      cc_network <- liana::get_curated_omni() %>%
+        dplyr::filter(category_intercell_source %in% c("cell_surface_ligand", "ligand") & #check why not adhesion also or ecm
+                      category_intercell_target %in% c("receptor", "adhesion")) %>%
+        liana::decomplexify(columns = c("source_genesymbol", "target_genesymbol"))
+      dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+      saveRDS(cc_network, cache_file)
+    }
   } else {
     cc_network <- cc_network %>%
       dplyr::mutate(source_genesymbol = .data[[source]], target_genesymbol = .data[[target]])

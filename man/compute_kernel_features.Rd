@@ -13,7 +13,8 @@ compute_kernel_features(
   patient_names = NULL,
   Dcell = NULL,
   norm = FALSE,
-  patient_idx = NULL
+  patient_idx = NULL,
+  zero_threshold = 1
 )
 }
 \arguments{
@@ -43,6 +44,12 @@ supplied (raw, unnormalized features).}
 \item{norm}{Logical; if \code{TRUE}, compute normalized features when a baseline is supplied.}
 
 \item{patient_idx}{Optional patient index subset.}
+
+\item{zero_threshold}{Drop a feature once its fraction of zero-valued
+patients reaches this threshold. Default \code{1} only drops features that
+are zero for every patient (the original behavior); lower it (e.g.
+\code{0.9}) to also drop merely zero-inflated features. Passed through to
+\code{\link[=calculateDirect]{calculateDirect()}}/\code{\link[=calculateWedges]{calculateWedges()}}/\code{\link[=computeTriangles]{computeTriangles()}}; ignored for \code{"GSCC"}.}
 }
 \value{
 A data frame of feature values for the selected patients, or (when

@@ -67,6 +67,7 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 | Build input matrices from raw counts | `prepare_input_files()` | Named list with `L`, `R`, `C`, `LR` matrices and labels |
 | Compute deterministic features | `compute_racing_kernel()` | Kernel arrays + feature matrix |
 | Compute simulation summaries | `compute_racing_montecarlo()` | Processed Monte Carlo results |
+| Decompose a score into ligand-receptor pairs | `computeLRContributions()` / `computeWedgeLRContributions()` / `computeTriangleLRContributions()` + `plotLRContributions()` | Ranked contributions and a LIANA-style dot plot |
 | Compare clinical groups | `wilcox_group_test()` + `top_features_plot()` | Statistics table and ranked bar plot |
 | Relate features to a continuous score | `correlate_features_with_score()` + `correlation_plot()` | Correlation table and rainfall plot |
 
@@ -376,6 +377,32 @@ kernel_res <- compute_racing_kernel(
 
 head(kernel_res$features[, 1:5])
 ```
+
+### Decomposing a score into ligand-receptor pairs
+
+`compute_kernel()` sums over every ligand-receptor pair to produce one score per
+cell-type pair, so that score alone can't tell you which ligand-receptor pairs drove
+it. `computeLRContributions()` recovers that breakdown for one sender-receiver pair
+(exploiting that the kernel formula is linear in `LRmatrix`, so each pair's
+contribution can be computed directly and sums back exactly to the original score),
+and `plotLRContributions()` shows the top contributors as a LIANA-style dot plot (dot
+size = share of that pair's total score, color = raw contribution).
+
+```{r}
+lr_contrib <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+)
+head(lr_contrib)
+plotLRContributions(lr_contrib, top_n = 10)
+```
+
+The same decomposition extends to Wedges (`computeWedgeLRContributions()`) and
+Triangles (`computeTriangleLRContributions()`): since those motifs multiply their
+edges together rather than sum them, each function instead decomposes every
+individual edge of the motif separately (`PctOfTotal` is then relative to that edge's
+own score, not the whole motif), which `plotLRContributions()` shows faceted by edge.
 
 ### Statistical analysis on the example data
 
