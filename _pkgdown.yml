@@ -42,6 +42,12 @@ reference:
       - model1
       - runSim
       - getGSCCAnalytically
+  - title: Ligand-receptor contribution analysis
+    contents:
+      - computeLRContributions
+      - computeWedgeLRContributions
+      - computeTriangleLRContributions
+      - plotLRContributions
   - title: Input generation
     contents:
       - createCellLigList
