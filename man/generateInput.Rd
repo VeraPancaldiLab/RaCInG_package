@@ -2,7 +2,7 @@
 % Please edit documentation in R/RaCInG_input_generation.R
 \name{generateInput}
 \alias{generateInput}
-\title{Load RaCInG input matrices from disk --> Is there any normalization done here? I dont see it in the function}
+\title{Load RaCInG input matrices from disk}
 \usage{
 generateInput(file_name, output_folder, read_signs = FALSE)
 }
@@ -20,7 +20,10 @@ A named list containing the input matrices and their labels.
 }
 \description{
 Internal helper called by \code{\link[=prepare_input_files]{prepare_input_files()}} to read back the generated
-CSV files and assemble the normalised matrices and 3-D tensor.
+CSV files and assemble the normalised matrices and 3-D tensor. Normalisation
+happens in the readers it calls: \code{\link[=createCellTypeDistr]{createCellTypeDistr()}} rescales each
+patient's cell-type abundances to sum to 1, and \code{\link[=createInteractionDistr]{createInteractionDistr()}}
+rescales each patient's ligand-receptor weights to sum to 1.
 Users should call \code{\link[=prepare_input_files]{prepare_input_files()}} instead.
 }
 \keyword{internal}

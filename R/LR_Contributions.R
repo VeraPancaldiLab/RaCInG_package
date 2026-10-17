@@ -40,6 +40,15 @@
 #'   omitted. `NULL` (with a message) if no ligand-receptor pair has a
 #'   nonzero contribution at all.
 #' @export
+#' @examples
+#' data(skcm_example)
+#' lr <- computeLRContributions(
+#'   Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+#'   Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+#'   celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T",
+#'   patient_names = rownames(skcm_example$Cmatrix), top_n = 5
+#' )
+#' head(lr)
 computeLRContributions <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, celltypes,
                                    sender, receiver, Dcell = Cmatrix, bundle = TRUE,
                                    patient_names = NULL, top_n = NULL) {
@@ -97,107 +106,13 @@ computeLRContributions <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, celltype
   result
 }
 
-#' Decompose a Wedge's two hub paths into per-edge ligand-receptor contributions
-#'
-#' A Wedge (see [calculateWedges()]) sums two directed 2-hop paths through hub
-#' `j`: `i -> j -> k` and `k -> j -> i`. Since Wedges multiply their two edges
-#' together rather than sum them, there is no single well-defined "share of
-#' the Wedge score" attributable to one edge's ligand-receptor pair alone --
-#' instead, this decomposes each of the 4 edges across both paths separately
-#' via [computeLRContributions()] (`bundle = FALSE`, one direction per edge),
-#' so `PctOfTotal` in the result is relative to each edge's own kernel value.
-#'
-#' @inheritParams computeLRContributions
-#' @param i,k Cell-type names for the wedge's two leaves.
-#' @param j Cell-type name for the wedge's hub.
-#'
-#' @return A data frame like [computeLRContributions()]'s (pooled across the
-#'   4 edges), with an added `Path` column (`"i -> j -> k"` or `"k -> j ->
-#'   i"`, using the actual cell-type names).
-#' @export
-computeWedgeLRContributions <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, celltypes,
-                                        i, j, k, Dcell = Cmatrix, patient_names = NULL, top_n = NULL) {
-  path_ijk <- paste0(i, " -> ", j, " -> ", k)
-  path_kji <- paste0(k, " -> ", j, " -> ", i)
-
-  edge_calls <- list(
-    list(path = path_ijk, sender = i, receiver = j),
-    list(path = path_ijk, sender = j, receiver = k),
-    list(path = path_kji, sender = k, receiver = j),
-    list(path = path_kji, sender = j, receiver = i)
-  )
-
-  result <- do.call(rbind, lapply(edge_calls, function(ec) {
-    df <- computeLRContributions(Lmatrix, Rmatrix, Cmatrix, LRmatrix, celltypes,
-                                 sender = ec$sender, receiver = ec$receiver, Dcell = Dcell,
-                                 bundle = FALSE, patient_names = patient_names, top_n = NULL)
-    if (is.null(df)) return(NULL)
-    df$Path <- ec$path
-    df
-  }))
-
-  if (is.null(result)) {
-    message("computeWedgeLRContributions(): no nonzero ligand-receptor contribution found for wedge ", i, "-", j, "-", k, ".")
-    return(invisible(NULL))
-  }
-
-  if (!is.null(top_n)) {
-    result <- result[order(result$Patient, result$Edge, -result$Contribution), ]
-    result <- do.call(rbind, by(result, list(result$Patient, result$Edge), function(d) utils::head(d, top_n), simplify = FALSE))
-  }
-  rownames(result) <- NULL
-  result
-}
-
-#' Decompose a Triangle's edges into per-edge ligand-receptor contributions
-#'
-#' A bundled Triangle (see [computeTriangles()]) combines all 6 directed
-#' edges among 3 cell types (`i`, `j`, `k`) into 8 direction-combination
-#' products. As with Wedges, edges are multiplied together rather than summed,
-#' so there is no single well-defined "share of the Triangle score"
-#' attributable to one edge's ligand-receptor pair alone -- instead, this
-#' decomposes each of the 6 directed edges separately via
-#' [computeLRContributions()] (`bundle = FALSE`), so `PctOfTotal` in the
-#' result is relative to each edge's own kernel value.
-#'
-#' @inheritParams computeLRContributions
-#' @param i,j,k Cell-type names for the triangle's 3 vertices.
-#'
-#' @return A data frame like [computeLRContributions()]'s, pooled across the
-#'   6 directed edges (`Edge` identifies which one, e.g. `"i -> j"`).
-#' @export
-computeTriangleLRContributions <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, celltypes,
-                                           i, j, k, Dcell = Cmatrix, patient_names = NULL, top_n = NULL) {
-  edge_pairs <- list(c(i, j), c(j, i), c(j, k), c(k, j), c(k, i), c(i, k))
-
-  result <- do.call(rbind, lapply(edge_pairs, function(e) {
-    computeLRContributions(Lmatrix, Rmatrix, Cmatrix, LRmatrix, celltypes,
-                           sender = e[1], receiver = e[2], Dcell = Dcell,
-                           bundle = FALSE, patient_names = patient_names, top_n = NULL)
-  }))
-
-  if (is.null(result)) {
-    message("computeTriangleLRContributions(): no nonzero ligand-receptor contribution found for triangle ", i, "-", j, "-", k, ".")
-    return(invisible(NULL))
-  }
-
-  if (!is.null(top_n)) {
-    result <- result[order(result$Patient, result$Edge, -result$Contribution), ]
-    result <- do.call(rbind, by(result, list(result$Patient, result$Edge), function(d) utils::head(d, top_n), simplify = FALSE))
-  }
-  rownames(result) <- NULL
-  result
-}
-
 #' Dot plot of top ligand-receptor pair contributions (LIANA-style)
 #'
 #' Ranks ligand-receptor pairs by mean contribution (within each `Edge`
-#' separately, since different edges of a Wedge/Triangle are typically driven
-#' by different pairs) and plots the top ones as a dot per patient x pair:
+#' separately) and plots the top ones as a dot per patient x pair:
 #' dot size is `PctOfTotal`, dot color is the raw `Contribution`.
 #'
-#' @param lr_contrib Output of [computeLRContributions()],
-#'   [computeWedgeLRContributions()], or [computeTriangleLRContributions()].
+#' @param lr_contrib Output of [computeLRContributions()].
 #' @param top_n Number of top ligand-receptor pairs to show per `Edge`.
 #' @param title Plot title. Defaults to `NULL`, which auto-generates one
 #'   naming the cell type(s) involved (e.g. `"Top ligand-receptor pairs: CLL -
@@ -205,13 +120,23 @@ computeTriangleLRContributions <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, 
 #'
 #' @return A `ggplot2` object.
 #' @export
+#' @examples
+#' data(skcm_example)
+#' lr <- computeLRContributions(
+#'   Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+#'   Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+#'   celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+#' )
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   plotLRContributions(lr, top_n = 10)
+#' }
 plotLRContributions <- function(lr_contrib, top_n = 15, title = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package `ggplot2` is required for `plotLRContributions()`. Please install it first.", call. = FALSE)
   }
   required_cols <- c("Patient", "Edge", "Sender", "Receiver", "Ligand", "Receptor", "Contribution", "PctOfTotal")
   if (!all(required_cols %in% colnames(lr_contrib))) {
-    stop("`lr_contrib` must be the output of computeLRContributions()/computeWedgeLRContributions()/computeTriangleLRContributions().", call. = FALSE)
+    stop("`lr_contrib` must be the output of computeLRContributions().", call. = FALSE)
   }
 
   if (is.null(title)) {

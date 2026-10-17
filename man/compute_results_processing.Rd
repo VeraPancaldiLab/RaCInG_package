@@ -7,9 +7,9 @@
 compute_results_processing(
   celltypes,
   patient_names,
-  triangle_type,
+  communication_type,
   remove_direction = TRUE,
-  normalized = TRUE,
+  normalized = !is.null(sim_norm_file),
   sim_raw_file = NULL,
   sim_norm_file = NULL,
   output_folder = NULL,
@@ -19,13 +19,22 @@ compute_results_processing(
 \arguments{
 \item{celltypes}{Character vector of cell-type names.}
 
-\item{patient_names}{Character vector of patient identifiers.}
+\item{patient_names}{Character vector of patient identifiers: either one per
+row of the simulated \code{Cmatrix} (matched through the patient numbers stored
+in the \code{.out} file, so subset runs get the right names), or exactly one
+per patient in the file, in file order.}
 
-\item{triangle_type}{Communication type (\code{"D"}, \code{"W"}, \code{"TT"}, \code{"CT"}, or \code{"GSCC"}).}
+\item{communication_type}{Communication type of the simulation files
+(\code{"D"} or \code{"GSCC"}).}
 
-\item{remove_direction}{Logical; if \code{TRUE}, merge directionally equivalent features.}
+\item{remove_direction}{Logical; if \code{TRUE}, merge the two directions of each
+cell-type pair (direct communication only).}
 
-\item{normalized}{Logical; if \code{TRUE}, divide raw values by a uniform baseline.}
+\item{normalized}{Logical; if \code{TRUE}, divide raw values by the uniform
+baseline in \code{sim_norm_file}. Defaults to \code{TRUE} exactly when
+\code{sim_norm_file} is supplied.
+A feature that is zero in both simulations (0/0) is reported as \code{0}, as in
+the kernel method's \code{\link[=calculateDirect]{calculateDirect()}}.}
 
 \item{sim_raw_file}{Path to the raw simulation output file.}
 
@@ -33,10 +42,14 @@ compute_results_processing(
 
 \item{output_folder}{Directory where the processed CSV files are written.}
 
-\item{file.name}{Output filename stem.}
+\item{file.name}{Output CSV file name for the means (e.g. \code{"RaCInG_input.csv"});
+the standard deviations go to the same name with an \verb{_sd} suffix
+(\code{"RaCInG_input_sd.csv"}).}
 }
 \value{
-A list with processed mean and standard-deviation data frames.
+A list with two patient-by-feature data frames, \code{mean} and \code{sd}.
+Direct features are named \code{"Dir_A_B"}, GSCC features \code{"GSCC_A"}; rows are
+named by patient. Patients whose simulation produced no edges are dropped.
 }
 \description{
 Convert raw simulation outputs into feature matrices

@@ -35,3 +35,13 @@ name is drawn once as an axis label rather than needing to be
 positioned/repelled on a scatter plot, so labels never get dropped or
 overlap regardless of how many features there are.
 }
+\examples{
+set.seed(1)
+feats <- matrix(rexp(200), nrow = 20,
+                dimnames = list(NULL, paste0("Dir_A_", LETTERS[1:10])))
+feats[1:10, 1:3] <- feats[1:10, 1:3] * 5
+res <- wilcox_group_test(feats, rep(c("High", "Low"), each = 10))
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  top_features_plot(res, top_n = 5)
+}
+}

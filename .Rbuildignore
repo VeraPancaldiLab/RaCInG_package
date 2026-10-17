@@ -12,3 +12,10 @@
 ^Rplots\.pdf$
 ^doc$
 ^Meta$
+^\.claude$
+^data-raw$
+^pkgdown$
+^LICENSE\.md$
+^omnipathr-log$
+^README\.html$
+^pypath_log$

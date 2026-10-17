@@ -12,7 +12,6 @@ compute_kernel_features(
   bundle = TRUE,
   patient_names = NULL,
   Dcell = NULL,
-  norm = FALSE,
   patient_idx = NULL,
   zero_threshold = 1
 )
@@ -20,41 +19,32 @@ compute_kernel_features(
 \arguments{
 \item{kernel}{Kernel array from \code{\link[=compute_kernel]{compute_kernel()}}.}
 
-\item{unifKernel}{Optional normalized baseline kernel.}
+\item{unifKernel}{Optional normalized baseline kernel. When supplied,
+features are the enrichment ratio over it (see \code{\link[=calculateDirect]{calculateDirect()}}).}
 
 \item{celltypes}{Character vector of cell-type labels.}
 
-\item{communication_type}{Feature family to compute (\code{"D"}, \code{"W"}, \code{"TT"},
-or \code{"GSCC"}; \code{"TT"} returns both trust- and cycle-triangle columns
-together, see \code{\link[=computeTriangles]{computeTriangles()}}), or a character vector of several of
-these. Since the kernel itself (\code{kernel}/\code{unifKernel}) is passed in
-already computed, requesting multiple types here costs nothing extra to
-compute per type beyond that one kernel -- no re-derivation happens for
-any of them. With more than one type, the return value is a named list
-(one data frame per type) instead of a single data frame.}
+\item{communication_type}{Feature family to compute. The kernel method only
+computes direct communication (\code{"D"}); GSCC is available with
+\code{\link[=compute_racing_montecarlo]{compute_racing_montecarlo()}}.}
 
-\item{bundle}{Logical; if \code{TRUE}, merge directionally equivalent features where appropriate.}
+\item{bundle}{Logical; if \code{TRUE}, merge the two directions of each cell-type pair.}
 
 \item{patient_names}{Optional patient labels.}
 
-\item{Dcell}{Patient-by-cell-type abundance matrix. Always required for
-\code{"GSCC"}; required for \code{"D"}, \code{"W"}, \code{"TT"} only when \code{unifKernel} is not
-supplied (raw, unnormalized features).}
-
-\item{norm}{Logical; if \code{TRUE}, compute normalized features when a baseline is supplied.}
+\item{Dcell}{Patient-by-cell-type abundance matrix. Required when
+\code{unifKernel} is not supplied (raw, unnormalized features).}
 
 \item{patient_idx}{Optional patient index subset.}
 
 \item{zero_threshold}{Drop a feature once its fraction of zero-valued
 patients reaches this threshold. Default \code{1} only drops features that
-are zero for every patient (the original behavior); lower it (e.g.
-\code{0.9}) to also drop merely zero-inflated features. Passed through to
-\code{\link[=calculateDirect]{calculateDirect()}}/\code{\link[=calculateWedges]{calculateWedges()}}/\code{\link[=computeTriangles]{computeTriangles()}}; ignored for \code{"GSCC"}.}
+are zero for every patient; lower it (e.g. \code{0.9}) to also drop merely
+zero-inflated features. Passed through to \code{\link[=calculateDirect]{calculateDirect()}}.}
 }
 \value{
-A data frame of feature values for the selected patients, or (when
-\code{communication_type} has more than one entry) a named list of such data
-frames, one per requested type.
+A patient-by-feature data frame of direct communication scores for
+the selected patients.
 }
 \description{
 Derive communication features from a kernel

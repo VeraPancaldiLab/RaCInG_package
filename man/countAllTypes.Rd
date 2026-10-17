@@ -13,7 +13,7 @@ countAllTypes(
   N,
   av,
   itNo,
-  types = c("D", "W", "TT", "CT", "GSCC")
+  types = c("D", "GSCC")
 )
 }
 \arguments{
@@ -34,7 +34,7 @@ countAllTypes(
 \item{itNo}{Number of Monte Carlo iterations.}
 
 \item{types}{Character vector of feature families to extract from each
-simulated graph: any combination of \code{"D"}, \code{"W"}, \code{"TT"}, \code{"CT"}, \code{"GSCC"}.}
+simulated graph: \code{"D"}, \code{"GSCC"}, or both.}
 }
 \value{
 A named list, one element per requested entry in \code{types}, each
@@ -44,8 +44,8 @@ function returns (e.g. \code{out$D} matches \code{\link[=countDirect]{countDirec
 \description{
 Generates the requested number of Monte Carlo graph realizations \emph{once}
 per patient and extracts every requested feature family from each
-realization, instead of the alternative of calling \code{countDirect()},
-\code{countWedges()}, etc. separately -- which would independently re-simulate
+realization, instead of the alternative of calling \code{countDirect()} and
+\code{countGSCC()} separately -- which would independently re-simulate
 a brand new set of random graphs per feature type. Graph generation
 (\code{model1()}'s vertex/edge sampling), not feature extraction, is the
 expensive part of a Monte Carlo run, and it does not depend on which

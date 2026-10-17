@@ -1,3 +1,102 @@
+# RaCInG (development version)
+
+## Breaking change: wedges and triangles removed; GSCC is Monte Carlo only
+
+* Removed the wedge and triangle features from both methods:
+  `calculateWedges()`, `computeTriangles()`, `countWedges()`,
+  `countTrustTriangles()`, `countCycleTriangles()`, `Wedges()`,
+  `Trust_Triangles()`, `Cycle_Triangles()`, `Count_Types()`,
+  `computeWedgeLRContributions()` and `computeTriangleLRContributions()`.
+* Removed the kernel's analytic GSCC (`computeGSCC()`, `getGSCCAnalytically()`);
+  GSCC is computed only by the Monte Carlo method. `nleqslv` is no longer a
+  dependency.
+* The kernel method now computes direct communication only:
+  `compute_racing_kernel()` / `compute_kernel_features()` default to and accept
+  only `communication_type = "D"` (`compute_kernel_features()` also loses its
+  `norm` argument, which only affected the removed types).
+  `compute_racing_montecarlo()`, `runSim()` and `countAllTypes()` accept `"D"`,
+  `"GSCC"` or both, defaulting to `"D"`. Requesting a removed type gives an
+  explicit error. `Read_Sim_Output()` errors on `.out` files of a removed type.
+
+## Other changes
+
+* `prepare_input_files()` stops if a user-supplied `deconv` does not have
+  exactly the samples of `colnames(counts)` in the same order (previously one
+  patient's cell fractions could silently be paired with another patient's
+  ligand-receptor weights). Automatically computed deconvolutions are put in
+  counts order.
+* `generateInput()` stops if Lmatrix and Rmatrix list different cell types, and
+  `createCellTypeDistr()` now also catches a same-size but different cell-type
+  set.
+* Normalized Monte Carlo features report 0/0 (zero in both simulations) as `0`,
+  matching the kernel method (previously `1`, as in the original Python).
+* `prepare_input_files()` keeps cell types that only receive signals (express
+  receptors but no ligand above `expr_threshold`); they were dropped, together
+  with every interaction aimed at them.
+* `compute_racing_kernel()` labels feature rows with the patients it actually
+  used, fixing a crash with `counts` + `nPatients` and wrong labels when both
+  `counts` and `input_data` were given.
+* Gene and cell-type names are kept unchanged (`check.names = FALSE`):
+  `HLA-A` and `"CD8+ T"` were turned into `HLA.A` and `"CD8..T"` when reading
+  the input files and in `calculateDirect()`'s column names.
+* `prepare_input_files()` warns when a user-supplied `deconv` has cell-type
+  names outside multideconv's standardized nomenclature
+  (`multideconv::get_cell_type_nomenclature()`).
+* `compute_racing_kernel()`, `compute_racing_montecarlo()` and `runSim()` now
+  default `output_folder` to `"Results/"` (previously a developer-machine path
+  for the two workflows, and `NULL` for `runSim()`, which wrote `.out` files to
+  the filesystem root).
+* `prepare_input_files()` (via `generateInput()`) now builds its read paths with
+  `file.path()`, so an `output_folder` without a trailing slash (e.g.
+  `tempdir()`, as in the vignette and README) works.
+* `compute_racing_kernel()` and `compute_racing_montecarlo()` gain
+  `already_normalized`, and `compute_racing_montecarlo()` gains
+  `expr_threshold`, both passed to `prepare_input_files()`.
+* The saved `LRmatrix_*.csv` keeps sample names unchanged (dots were rewritten
+  to hyphens).
+* `runSim()`'s `.out` header now states the number of patients in the file.
+  `Read_Sim_Output()` stores patients in file order and returns their patient
+  numbers (`patients`); `compute_results_processing()` uses them to name rows.
+  Files written by earlier versions still read correctly.
+* `countAllTypes()` counts Direct edges the same vectorized way as
+  `countDirect()` (identical results, faster).
+* Requires multideconv >= 0.2.0; removed the unused `.clean_celltype_names()`.
+* `compute_results_processing()`'s `triangle_type` argument is renamed
+  `communication_type`, like everywhere else in the package. Its `normalized`
+  argument now defaults to `TRUE` only when `sim_norm_file` is given
+  (previously `TRUE` always, which errored without a baseline file).
+* The standard-deviation CSV written by `compute_results_processing()` (and so
+  by `compute_racing_montecarlo()`) is now `<stem>_sd.csv` instead of
+  `<stem>.csv_sd.csv`.
+* `compute_racing_montecarlo()`'s `$input` elements `cellTypes`, `ligs` and
+  `recs` are renamed `celltypes`, `ligands` and `receptors`, the names
+  `prepare_input_files()` uses, so `$input` can be passed back as `input_data`.
+* `compute_racing_montecarlo()` no longer errors when `Cmatrix` has no row
+  names (as in the bundled `skcm_example`); both workflows then name patients
+  `Patient_<row>`, so subset runs (`nPatients`, `pt_idx`) keep the right labels.
+* `prepare_input_files()` only requires ADImpute when it normalizes counts
+  (`already_normalized = FALSE`).
+* `skcm_example$Cmatrix` columns are now named as in `skcm_example$celltypes`
+  (`"CD8+ T"`, `"M"`); they were stale labels (`"CD8"`, `"M1"`). Values are
+  unchanged.
+
+## Documentation
+
+* Added runnable examples to the main exported functions
+  (`compute_racing_kernel()`, `compute_racing_montecarlo()`, `compute_kernel()`,
+  `computeLRContributions()`, `plotLRContributions()` and the statistics
+  functions), and documented the structure of the workflow return values and
+  the files `compute_racing_montecarlo()` writes.
+* Vignette: explains raw vs normalized (`norm`) features, the `"Dir_A_B"`
+  naming, `zero_threshold`, the input requirements for a user-supplied `deconv`
+  and `already_normalized`, and the Monte Carlo output files; the Monte Carlo
+  example on `skcm_example` is now run when the vignette is built; the group
+  labels in the examples match the number of patients, and the example-data
+  group comparison splits patients by CD8+ T infiltration (the previous random
+  split had no significant feature, so its plot was empty); `Sign_matrix` is
+  described as the unused placeholder it currently is.
+* README: quick start on the bundled example data and a complete workflow table.
+
 # RaCInG 0.3.0
 
 ## Breaking change: `norm` now defaults to `FALSE`

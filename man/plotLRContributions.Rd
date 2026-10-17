@@ -7,8 +7,7 @@
 plotLRContributions(lr_contrib, top_n = 15, title = NULL)
 }
 \arguments{
-\item{lr_contrib}{Output of \code{\link[=computeLRContributions]{computeLRContributions()}},
-\code{\link[=computeWedgeLRContributions]{computeWedgeLRContributions()}}, or \code{\link[=computeTriangleLRContributions]{computeTriangleLRContributions()}}.}
+\item{lr_contrib}{Output of \code{\link[=computeLRContributions]{computeLRContributions()}}.}
 
 \item{top_n}{Number of top ligand-receptor pairs to show per \code{Edge}.}
 
@@ -20,7 +19,17 @@ A \code{ggplot2} object.
 }
 \description{
 Ranks ligand-receptor pairs by mean contribution (within each \code{Edge}
-separately, since different edges of a Wedge/Triangle are typically driven
-by different pairs) and plots the top ones as a dot per patient x pair:
+separately) and plots the top ones as a dot per patient x pair:
 dot size is \code{PctOfTotal}, dot color is the raw \code{Contribution}.
+}
+\examples{
+data(skcm_example)
+lr <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plotLRContributions(lr, top_n = 10)
+}
 }

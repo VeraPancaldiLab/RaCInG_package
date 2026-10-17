@@ -1,29 +1,4 @@
-#' Mean and SD across the last dimension of an array, vectorized
-#'
-#' Equivalent to `apply(arr, seq_len(length(dim(arr)) - 1), mean)` /
-#' `apply(arr, ..., stats::sd)`, but avoids calling `mean()`/`sd()` once per
-#' element of the other dimensions -- for a `[264,264,264,itNo]` tensor that's
-#' ~18.4 million individual R function calls per statistic with `apply()`,
-#' which takes well over a minute regardless of `itNo`. Reshaping to a matrix
-#' and using `rowMeans()`/a vectorized variance formula does the same
-#' computation in a fraction of a second.
-#'
-#' @param arr Array whose last dimension is averaged over.
-#'
-#' @return A list with `mean` and `sd`, each an array with one fewer
-#'   dimension than `arr` (the last dimension collapsed).
-#' @keywords internal
-.mean_sd_last_dim <- function(arr) {
-  d <- dim(arr)
-  itNo <- d[length(d)]
-  out_dim <- d[-length(d)]
-  m <- matrix(arr, ncol = itNo)
-  row_means <- rowMeans(m)
-  row_sd <- if (itNo > 1) sqrt(rowSums((m - row_means)^2) / (itNo - 1)) else rep(NA_real_, nrow(m))
-  list(mean = array(row_means, dim = out_dim), sd = array(row_sd, dim = out_dim))
-}
-
-#' Count wedges across Monte Carlo graph simulations
+#' Count direct edges across Monte Carlo graph simulations
 #'
 #' @param Dcell Cell-type abundance vector for one patient.
 #' @param Dconn Ligand-receptor probability matrix for one patient.
@@ -33,170 +8,6 @@
 #' @param N Number of cells per simulated graph.
 #' @param av Target average degree.
 #' @param itNo Number of Monte Carlo iterations.
-#'
-#' @return A list of average and standard-deviation wedge counts.
-#' @export
-countWedges <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
-  # Number of cell types
-  nCells <- length(cellnames)
-  
-  # Create an array to hold counts of wedges by type for each Monte Carlo iteration
-  triangletensor <- array(0, dim = c(nCells, nCells, nCells, itNo))
-  
-  # Vector to store total number of wedges in each iteration
-  trianglecount <- numeric(itNo)
-  
-  for (i in 1:itNo) {
-    # Generate a random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn)
-    V <- graph$V      # Vector of cell types per vertex
-    E <- graph$E      # Edge list
-    
-    # Build adjacency matrix from edge list, excluding self-loops
-    Adj <- EdgetoAdj_No_loop(E, length(V))
-
-    # --- CALL THE EXISTING WEDGES FUNCTION ---
-    wedge_result <- Wedges(Adj)   # <- this uses already defined function
-
-    # Store total number of wedges
-    trianglecount[i] <- wedge_result$NoWedges
-
-    # Count wedges by cell type combination
-    triangletensor[,,,i] <- Count_Types(wedge_result$Wedge_list, V, maxTypes = nCells)
-  }
-  
-  # Compute averages and standard deviations across Monte Carlo iterations
-  .agg <- .mean_sd_last_dim(triangletensor)
-  av_triag <- .agg$mean
-  std_triag <- .agg$sd
-  av_count <- mean(trianglecount)
-  std_count <- stats::sd(trianglecount)
-  
-  return(list(
-    av_triag = av_triag, 
-    std_triag = std_triag, 
-    av_count = av_count, 
-    std_count = std_count
-  ))
-}
-
-#' Count trust triangles across Monte Carlo graph simulations
-#'
-#' @inheritParams countWedges
-#'
-#' @return A list of average and standard-deviation trust-triangle counts.
-#' @export
-countTrustTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
-  # Number of cell types
-  nCells <- length(cellnames)
-  
-  # Create a 4D array to store counts of trust triangles by type
-  # Dimensions: [type of vertex 1, type of vertex 2, type of vertex 3, Monte Carlo iteration]
-  triangletensor <- array(0, dim = c(nCells, nCells, nCells, itNo))
-  
-  # Vector to store total number of trust triangles in each iteration
-  trianglecount <- numeric(itNo)
-  
-  # Loop over Monte Carlo iterations
-  for (i in 1:itNo) {
-    # Generate a random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn)
-    V <- graph$V  # Vector assigning cell type to each vertex
-    E <- graph$E  # Edge list
-    
-    # Build adjacency matrix from edge list, excluding self-loops
-    Adj <- EdgetoAdj_No_loop(E, length(V))
-
-    # --- CALL EXISTING FUNCTION TO FIND TRUST TRIANGLES ---
-    tri_result <- Trust_Triangles(Adj)
-
-    # Store total number of trust triangles in this iteration
-    trianglecount[i] <- tri_result$NoTriangles
-
-    # Count the number of triangles by cell type combination
-    triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
-  }
-  
-  # Compute average and standard deviation of triangle counts per cell-type combination across iterations
-  .agg <- .mean_sd_last_dim(triangletensor)
-  av_triag <- .agg$mean
-  std_triag <- .agg$sd
-
-  # Compute average total number of trust triangles per iteration
-  av_count <- mean(trianglecount)
-  
-  # Compute standard deviation of total triangles across iterations
-  std_count <- stats::sd(trianglecount)
-  
-  # Return all results as a list
-  return(list(
-    av_triag = av_triag,      # Average triangle counts by type combination
-    std_triag = std_triag,    # Standard deviation by type combination
-    av_count = av_count,      # Average total trust triangles
-    std_count = std_count     # Std of total trust triangles
-  ))
-}
-
-#' Count cycle triangles across Monte Carlo graph simulations
-#'
-#' @inheritParams countWedges
-#'
-#' @return A list of average and standard-deviation cycle-triangle counts.
-#' @export
-countCycleTriangles <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
-  # Number of different cell types
-  nCells <- length(cellnames)
-  
-  # 4D array to store counts of cycle triangles by type for each iteration
-  # Dimensions: [vertex1 type, vertex2 type, vertex3 type, Monte Carlo iteration]
-  triangletensor <- array(0, dim = c(nCells, nCells, nCells, itNo))
-  
-  # Vector to store total number of cycle triangles in each iteration
-  trianglecount <- numeric(itNo)
-  
-  # Loop over Monte Carlo iterations
-  for (i in 1:itNo) {
-    # Generate random graph for this iteration
-    graph <- model1(N, av, lig, rec, Dcell, Dconn)
-    V <- graph$V  # Vector: cell type for each vertex
-    E <- graph$E  # Edge list of the graph
-    
-    # Convert edge list to adjacency matrix, excluding self-loops
-    Adj <- EdgetoAdj_No_loop(E, length(V))
-
-    # --- CALL EXISTING FUNCTION TO FIND CYCLE TRIANGLES ---
-    tri_result <- Cycle_Triangles(Adj)
-
-    # Store total number of cycle triangles in this iteration
-    trianglecount[i] <- tri_result$NoTriangles
-
-    # Count the number of triangles by cell-type combination
-    triangletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
-  }
-  
-  # Compute average and standard deviation of triangle counts per cell-type combination across iterations
-  .agg <- .mean_sd_last_dim(triangletensor)
-  av_triag <- .agg$mean
-  std_triag <- .agg$sd
-
-  # Compute average total number of cycle triangles per iteration
-  av_count <- mean(trianglecount)
-  
-  # Compute standard deviation of total cycle triangles across iterations
-  std_count <- stats::sd(trianglecount)
-  
-  # Return all results as a list
-  return(list(
-    av_triag = av_triag,      # Average counts by cell-type combination
-    std_triag = std_triag,    # Std by cell-type combination
-    av_count = av_count,      # Average total cycle triangles
-    std_count = std_count     # Std of total cycle triangles
-  ))
-}
-
-#' Count direct edges across Monte Carlo graph simulations
-#'
-#' @inheritParams countWedges
 #'
 #' @return A list of average and standard-deviation direct edge counts.
 #' @export
@@ -262,7 +73,7 @@ countDirect <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
 
 #' Count GSCC contributions across Monte Carlo graph simulations
 #'
-#' @inheritParams countWedges
+#' @inheritParams countDirect
 #'
 #' @return A list of average and standard-deviation GSCC contributions.
 #' @export
@@ -325,37 +136,32 @@ countGSCC <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo) {
 #'
 #' Generates the requested number of Monte Carlo graph realizations *once*
 #' per patient and extracts every requested feature family from each
-#' realization, instead of the alternative of calling `countDirect()`,
-#' `countWedges()`, etc. separately -- which would independently re-simulate
+#' realization, instead of the alternative of calling `countDirect()` and
+#' `countGSCC()` separately -- which would independently re-simulate
 #' a brand new set of random graphs per feature type. Graph generation
 #' (`model1()`'s vertex/edge sampling), not feature extraction, is the
 #' expensive part of a Monte Carlo run, and it does not depend on which
 #' feature you eventually want -- so sharing one set of realizations across
 #' every requested type avoids paying that cost once per type.
 #'
-#' @inheritParams countWedges
+#' @inheritParams countDirect
 #' @param types Character vector of feature families to extract from each
-#'   simulated graph: any combination of `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`.
+#'   simulated graph: `"D"`, `"GSCC"`, or both.
 #'
 #' @return A named list, one element per requested entry in `types`, each
 #'   with the same structure the corresponding single-type `count*()`
 #'   function returns (e.g. `out$D` matches [countDirect()]'s return value).
 #' @export
 countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
-                          types = c("D", "W", "TT", "CT", "GSCC")) {
+                          types = c("D", "GSCC")) {
+  .check_montecarlo_communication_type(types)
   nCells <- length(cellnames)
   want <- function(t) t %in% types
 
   if (want("D"))    directtensor <- array(0, dim = c(nCells, nCells, itNo))
-  if (want("W"))    wedgetensor  <- array(0, dim = c(nCells, nCells, nCells, itNo))
-  if (want("TT"))   trusttensor  <- array(0, dim = c(nCells, nCells, nCells, itNo))
-  if (want("CT"))   cycletensor  <- array(0, dim = c(nCells, nCells, nCells, itNo))
   if (want("GSCC")) gscctensor   <- array(0, dim = c(nCells, itNo))
 
   directCount <- if (want("D")) numeric(itNo) else NULL
-  wedgeCount  <- if (want("W")) numeric(itNo) else NULL
-  trustCount  <- if (want("TT")) numeric(itNo) else NULL
-  cycleCount  <- if (want("CT")) numeric(itNo) else NULL
   gsccCount   <- if (want("GSCC")) numeric(itNo) else NULL
 
   for (i in 1:itNo) {
@@ -368,27 +174,9 @@ countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
 
     if (want("D")) {
       directCount[i] <- nrow(E)
-      for (t in 1:nCells) {
-        temp <- Adj[V == t, , drop = FALSE]
-        for (s in 1:nCells) {
-          directtensor[t, s, i] <- sum(temp[, V == s, drop = FALSE])
-        }
-      }
-    }
-    if (want("W")) {
-      wedge_result <- Wedges(Adj)
-      wedgeCount[i] <- wedge_result$NoWedges
-      wedgetensor[,,,i] <- Count_Types(wedge_result$Wedge_list, V, maxTypes = nCells)
-    }
-    if (want("TT")) {
-      tri_result <- Trust_Triangles(Adj)
-      trustCount[i] <- tri_result$NoTriangles
-      trusttensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
-    }
-    if (want("CT")) {
-      tri_result <- Cycle_Triangles(Adj)
-      cycleCount[i] <- tri_result$NoTriangles
-      cycletensor[,,,i] <- Count_Types(tri_result$Triangle_list, V, maxTypes = nCells)
+      # One-hot cell-type indicator, as in countDirect()
+      type_indicator <- Matrix::sparseMatrix(i = seq_along(V), j = V, x = 1, dims = c(length(V), nCells))
+      directtensor[,,i] <- as.matrix(Matrix::t(type_indicator) %*% Adj %*% type_indicator)
     }
     if (want("GSCC")) {
       gscc <- GSCC(Adj)
@@ -406,18 +194,6 @@ countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
       std_dir = apply(directtensor, c(1, 2), stats::sd),
       av_count = mean(directCount), std_count = stats::sd(directCount)
     )
-  }
-  if (want("W")) {
-    agg <- .mean_sd_last_dim(wedgetensor)
-    out$W <- list(av_triag = agg$mean, std_triag = agg$sd, av_count = mean(wedgeCount), std_count = stats::sd(wedgeCount))
-  }
-  if (want("TT")) {
-    agg <- .mean_sd_last_dim(trusttensor)
-    out$TT <- list(av_triag = agg$mean, std_triag = agg$sd, av_count = mean(trustCount), std_count = stats::sd(trustCount))
-  }
-  if (want("CT")) {
-    agg <- .mean_sd_last_dim(cycletensor)
-    out$CT <- list(av_triag = agg$mean, std_triag = agg$sd, av_count = mean(cycleCount), std_count = stats::sd(cycleCount))
   }
   if (want("GSCC")) {
     out$GSCC <- list(
@@ -452,8 +228,8 @@ countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
 #' @param Cmatrix Patient-by-cell-type abundance matrix.
 #' @param LRmatrix Ligand-receptor-by-patient tensor.
 #' @param cells Character vector of cell-type names.
-#' @param communication_type Feature family to simulate (`"D"`, `"W"`, `"TT"`,
-#'   `"CT"`, or `"GSCC"`), or a character vector of several of these. When more
+#' @param communication_type Feature family to simulate: `"D"` (direct
+#'   communication), `"GSCC"`, or both (`c("D", "GSCC")`). When more
 #'   than one is given, every requested type is extracted from the *same*
 #'   simulated graphs (via [countAllTypes()]) instead of re-simulating a fresh
 #'   set of graphs per type, and one `.out` file per type is written (file
@@ -464,7 +240,7 @@ countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
 #' @param N Number of cells per graph.
 #' @param itNo Number of Monte Carlo iterations.
 #' @param av Target average degree.
-#' @param output_folder Directory used to write the `.out` files.
+#' @param output_folder Directory used to write the `.out` files (created if missing).
 #' @param file.name Output filename stem.
 #' @param norm Logical; if `TRUE`, use a uniformized LR baseline.
 #' @param patient_idx Optional single patient index to simulate.
@@ -485,10 +261,12 @@ countAllTypes <- function(Dcell, Dconn, lig, rec, cellnames, N, av, itNo,
 #' @return Invisibly writes the simulation outputs to disk.
 #' @export
 runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_type, pats = "all",
-                   N = 10000, itNo = 100, av = 20, output_folder = NULL, file.name = NULL, norm = FALSE,
+                   N = 10000, itNo = 100, av = 20, output_folder = "Results/", file.name = "RaCInG_input", norm = FALSE,
                    patient_idx = NULL, ncores = 1) {
 
-  if (!is.null(output_folder) && !dir.exists(output_folder)) {
+  .check_montecarlo_communication_type(communication_type)
+
+  if (!dir.exists(output_folder)) {
     dir.create(output_folder, recursive = TRUE)
   }
 
@@ -507,7 +285,7 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
   # the same file.
   filename_for_type <- function(type) {
     suffix <- if (length(communication_type) > 1) paste0("_", type) else ""
-    paste0(output_folder, "/", file.name, suffix, if (norm) "_norm" else "", ".out")
+    file.path(output_folder, paste0(file.name, suffix, if (norm) "_norm" else "", ".out"))
   }
 
   # Determine which patient(s) to process.
@@ -575,9 +353,10 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
   for (type in communication_type) {
     con <- file(filename_for_type(type), open = "w")
 
-    # Header
+    # Header: type, then number of patients in this file (not nrow(Cmatrix),
+    # which differs when only some patients are simulated), N, itNo, av
     writeLines(type, con)
-    writeLines(paste(nrow(Cmatrix), N, itNo, av, sep=","), con)
+    writeLines(paste(length(pat_seq), N, itNo, av, sep=","), con)
 
     for (idx in seq_along(pat_seq)) {
       pat <- pat_seq[idx]
@@ -589,12 +368,9 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
       if (type == "D") {
         av_mat <- res$av_dir
         std_mat <- res$std_dir
-      } else if (type == "GSCC") {
+      } else {
         av_vec <- res$av_GSCC
         std_vec <- res$std_GSCC
-      } else {
-        av_mat <- res$av_triag
-        std_mat <- res$std_triag
       }
 
       # Write counts
@@ -612,22 +388,13 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
         writeLines("Composition - Std:", con)
         writeLines(paste(grid$i, grid$j, std_mat[cbind(grid$i, grid$j)], sep=","), con)
 
-      } else if (type == "GSCC") {
+      } else {
 
         writeLines("Composition - Average:", con)
         writeLines(paste(seq_along(av_vec), av_vec, sep=","), con)
 
         writeLines("Composition - Std:", con)
         writeLines(paste(seq_along(std_vec), std_vec, sep=","), con)
-
-      } else {
-
-        grid <- expand.grid(k = 1:dim(av_mat)[3], j = 1:dim(av_mat)[2], i = 1:dim(av_mat)[1]) # k fastest, matching the original innermost loop
-        writeLines("Composition - Average:", con)
-        writeLines(paste(grid$i, grid$j, grid$k, av_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
-
-        writeLines("Composition - Std:", con)
-        writeLines(paste(grid$i, grid$j, grid$k, std_mat[cbind(grid$i, grid$j, grid$k)], sep=","), con)
       }
     }
 
@@ -640,11 +407,17 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' @param counts Gene-by-sample count matrix. Required when `input_data` is not
 #'   supplied; ignored otherwise.
 #' @param output_folder Directory used to write intermediate and output files.
+#' @param already_normalized Logical; if `TRUE`, `counts` is taken as linear-scale
+#'   TPM and not renormalized. See [prepare_input_files()].
+#' @param expr_threshold Minimum expression (in linear TPM, not log-scale)
+#'   a ligand or receptor must reach in its sending/receiving cell type to be
+#'   kept. See [prepare_input_files()].
 #' @param deconv Optional patient-by-cell-type abundance matrix. If omitted, it
 #'   is computed via `multideconv::compute.deconvolution()` followed by
 #'   `multideconv::compute.deconvolution.analysis()` (which identifies and
-#'   collapses correlated cell-type subgroups) and
-#'   `multideconv::standardize_celltype_colnames()`. See [prepare_input_files()].
+#'   collapses correlated cell-type subgroups; requires multideconv >= 0.2.0).
+#'   Columns keep multideconv's names: subgroups (`"B.cells_Subgroup.1"`)
+#'   and unclustered features (`"Quantiseq_TIL10_B.cells"`). See [prepare_input_files()].
 #' @param cc_network Optional ligand-receptor prior network. If omitted, it is
 #'   retrieved via `liana::get_curated_omni()`. See [prepare_input_files()].
 #' @param fun_LR Function used to combine ligand and receptor expression values.
@@ -658,9 +431,9 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' @param pt_idx Optional single patient index to simulate.
 #' @param file_name File stem used for intermediate files.
 #' @param nPatients Number of patients to process, or `"all"`.
-#' @param communication_type Feature family to simulate: `"D"`, `"W"`,
-#'   `"TT"`, `"CT"`, `"GSCC"`, or a character vector of several of these
-#'   (e.g. `c("D", "W", "TT", "CT", "GSCC")`). When more than one is given,
+#' @param communication_type Feature family to simulate: `"D"` (direct
+#'   communication, the default), `"GSCC"`, or both (`c("D", "GSCC")`). When
+#'   both are given,
 #'   every requested type is extracted from the same simulated graphs (via
 #'   [countAllTypes()]) in one pass instead of re-simulating a fresh set of
 #'   graphs per type -- graph generation, not feature extraction, is the
@@ -670,7 +443,8 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' @param Ncells Number of cells per simulated graph.
 #' @param Ngraphs Number of Monte Carlo iterations.
 #' @param Ndegree Target average degree.
-#' @param remove_direction Logical; if `TRUE`, merge directionally equivalent features.
+#' @param remove_direction Logical; if `TRUE`, merge the two directions of each
+#'   cell-type pair in the direct communication features.
 #' @param norm Logical; if `TRUE`, also run a uniformized baseline simulation and
 #'   express features as an enrichment ratio over it (isolates specificity from
 #'   abundance/topology, at the cost of a second, noisier simulation pass -- budget
@@ -686,14 +460,41 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' @param ncores Number of cores to compute patients on in parallel. Passed
 #'   through to [runSim()]; see its documentation for details.
 #'
-#' @return A list with the generated inputs and processed feature matrices.
+#' @return A list with two elements:
+#'   \describe{
+#'     \item{`input`}{The input matrices used: `LRmatrix`, `Lmatrix`,
+#'       `Rmatrix`, `Cmatrix`, `celltypes`, `ligands`, `receptors` -- the
+#'       same names as [prepare_input_files()], so it can be passed back as
+#'       `input_data`.}
+#'     \item{`output`}{For a single `communication_type`, a list with the
+#'       patient-by-feature data frames `mean` and `sd` (see
+#'       [compute_results_processing()]); for `c("D", "GSCC")`, a named list
+#'       with one such entry per type.}
+#'   }
+#'   As a side effect, the raw simulations (`<file_name>.out`, plus
+#'   `<file_name>_norm.out` when `norm = TRUE`) and the processed features
+#'   (`<file_name>.csv`, `<file_name>_sd.csv`) are written to `output_folder`;
+#'   with several types, each file name gets a `_<type>` suffix after
+#'   `file_name`.
 #' @export
-compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents/racing/vignettes/", deconv = NULL, cc_network = NULL, fun_LR = min,
+#' @examples
+#' data(skcm_example)
+#' set.seed(1)
+#' mc <- compute_racing_montecarlo(
+#'   input_data = skcm_example, output_folder = tempdir(),
+#'   nPatients = 2, communication_type = c("D", "GSCC"),
+#'   Ncells = 100, Ngraphs = 3, Ndegree = 3
+#' )
+#' head(mc$output$D$mean[, 1:4])
+#' mc$output$GSCC$mean
+compute_racing_montecarlo = function(counts = NULL, output_folder = "Results/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                      cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol", signed = FALSE,
                                      deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, pt_idx = NULL, file_name = NULL,
-                                     nPatients = "all", communication_type = "W", Ncells = 10000, Ngraphs = 100, Ndegree = 20, remove_direction = TRUE, norm = FALSE,
-                                     input_data = NULL, ncores = 1) {
-  
+                                     nPatients = "all", communication_type = "D", Ncells = 10000, Ngraphs = 100, Ndegree = 20, remove_direction = TRUE, norm = FALSE,
+                                     input_data = NULL, ncores = 1, expr_threshold = 10, already_normalized = FALSE) {
+
+  .check_montecarlo_communication_type(communication_type)
+
   if (is.null(file_name)) {
     file_name <- "RaCInG_input"
   }
@@ -708,7 +509,7 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
     res <- prepare_input_files(counts, output_folder = output_folder, deconv = deconv, cc_network = cc_network, fun_LR = fun_LR, 
                                cell_expr_profile = cell_expr_profile, source = source, target = target,
                                deconv_method = deconv_method, cbsx.name = cbsx.name, cbsx.token = cbsx.token, file_name = file_name,
-                               signed = signed)
+                               signed = signed, already_normalized = already_normalized, expr_threshold = expr_threshold)
   }
 
   Lmatrix   <- res$Lmatrix
@@ -718,12 +519,14 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
   cellTypes <- res$celltypes
   ligs      <- res$ligands
   recs      <- res$receptors
+  # Name unnamed patients by their Cmatrix row, as compute_racing_kernel() does
+  if (is.null(rownames(Cmatrix))) rownames(Cmatrix) <- paste0("Patient_", seq_len(nrow(Cmatrix)))
 
   if (!is.null(pt_idx)) {
     cat("Because patient index is provided, nPatients argument will be ignored.\n")
-    cat("Running Monte Carlo simulation for patient index:", pt_idx, "\n")}
-  else{
-    cat("Running Monte Carlo simulation for ", ifelse(nPatients == "all", "all", nPatients), " patients\n")
+    cat("Running Monte Carlo simulation for patient index:", pt_idx, "\n")
+  } else {
+    cat("Running Monte Carlo simulation for", nPatients, "patients\n")
   }
 
 
@@ -778,9 +581,9 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
     compute_results_processing(
       celltypes = cellTypes,
       patient_names = rownames(Cmatrix),
-      triangle_type = type,
-      sim_raw_file = paste0(output_folder, "/", file_name, suffix, ".out"),
-      sim_norm_file = if (norm) paste0(output_folder, "/", file_name, suffix, "_norm.out") else NULL,
+      communication_type = type,
+      sim_raw_file = file.path(output_folder, paste0(file_name, suffix, ".out")),
+      sim_norm_file = if (norm) file.path(output_folder, paste0(file_name, suffix, "_norm.out")) else NULL,
       remove_direction = remove_direction,
       normalized = norm,
       output_folder = output_folder,
@@ -794,6 +597,25 @@ compute_racing_montecarlo = function(counts = NULL, output_folder = "~/Documents
   # all sharing the same underlying simulated graphs.
   res <- if (length(communication_type) == 1) outputs[[1]] else outputs
 
-  return(list(input = list(LRmatrix = LRmatrix, Lmatrix = Lmatrix, Rmatrix = Rmatrix, Cmatrix = Cmatrix, cellTypes = cellTypes, ligs = ligs, recs = recs), output = res))
+  # Same element names as prepare_input_files(), so `input` can be passed back as `input_data`
+  return(list(input = list(LRmatrix = LRmatrix, Lmatrix = Lmatrix, Rmatrix = Rmatrix, Cmatrix = Cmatrix,
+                           celltypes = cellTypes, ligands = ligs, receptors = recs),
+              output = res))
 
+}
+
+#' Check that only Monte Carlo feature families still in RaCInG are requested
+#'
+#' @param communication_type Requested feature family/families.
+#'
+#' @return Invisibly `TRUE`; errors for anything other than `"D"`/`"GSCC"`.
+#' @keywords internal
+.check_montecarlo_communication_type <- function(communication_type) {
+  bad <- setdiff(communication_type, c("D", "GSCC"))
+  if (length(bad) > 0) {
+    stop("Unsupported communication_type: ", paste(bad, collapse = ", "),
+         ". The Monte Carlo method computes \"D\" and/or \"GSCC\"; wedges and triangles were removed from RaCInG.",
+         call. = FALSE)
+  }
+  invisible(TRUE)
 }

@@ -44,8 +44,8 @@
 <span>  bundle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  patient_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  Dcell <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  patient_idx <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  patient_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -58,7 +58,8 @@
 
 
 <dt id="arg-unifkernel">unifKernel<a class="anchor" aria-label="anchor" href="#arg-unifkernel"></a></dt>
-<dd><p>Optional normalized baseline kernel.</p></dd>
+<dd><p>Optional normalized baseline kernel. When supplied,
+features are the enrichment ratio over it (see <code><a href="calculateDirect.html">calculateDirect()</a></code>).</p></dd>
 
 
 <dt id="arg-celltypes">celltypes<a class="anchor" aria-label="anchor" href="#arg-celltypes"></a></dt>
@@ -66,18 +67,13 @@
 
 
 <dt id="arg-communication-type">communication_type<a class="anchor" aria-label="anchor" href="#arg-communication-type"></a></dt>
-<dd><p>Feature family to compute (<code>"D"</code>, <code>"W"</code>, <code>"TT"</code>,
-or <code>"GSCC"</code>; <code>"TT"</code> returns both trust- and cycle-triangle columns
-together, see <code><a href="computeTriangles.html">computeTriangles()</a></code>), or a character vector of several of
-these. Since the kernel itself (<code>kernel</code>/<code>unifKernel</code>) is passed in
-already computed, requesting multiple types here costs nothing extra to
-compute per type beyond that one kernel – no re-derivation happens for
-any of them. With more than one type, the return value is a named list
-(one data frame per type) instead of a single data frame.</p></dd>
+<dd><p>Feature family to compute. The kernel method only
+computes direct communication (<code>"D"</code>); GSCC is available with
+<code><a href="compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code>.</p></dd>
 
 
 <dt id="arg-bundle">bundle<a class="anchor" aria-label="anchor" href="#arg-bundle"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, merge directionally equivalent features where appropriate.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, merge the two directions of each cell-type pair.</p></dd>
 
 
 <dt id="arg-patient-names">patient_names<a class="anchor" aria-label="anchor" href="#arg-patient-names"></a></dt>
@@ -85,24 +81,25 @@ any of them. With more than one type, the return value is a named list
 
 
 <dt id="arg-dcell">Dcell<a class="anchor" aria-label="anchor" href="#arg-dcell"></a></dt>
-<dd><p>Patient-by-cell-type abundance matrix. Always required for
-<code>"GSCC"</code>; required for <code>"D"</code>, <code>"W"</code>, <code>"TT"</code> only when <code>unifKernel</code> is not
-supplied (raw, unnormalized features).</p></dd>
-
-
-<dt id="arg-norm">norm<a class="anchor" aria-label="anchor" href="#arg-norm"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, compute normalized features when a baseline is supplied.</p></dd>
+<dd><p>Patient-by-cell-type abundance matrix. Required when
+<code>unifKernel</code> is not supplied (raw, unnormalized features).</p></dd>
 
 
 <dt id="arg-patient-idx">patient_idx<a class="anchor" aria-label="anchor" href="#arg-patient-idx"></a></dt>
 <dd><p>Optional patient index subset.</p></dd>
 
+
+<dt id="arg-zero-threshold">zero_threshold<a class="anchor" aria-label="anchor" href="#arg-zero-threshold"></a></dt>
+<dd><p>Drop a feature once its fraction of zero-valued
+patients reaches this threshold. Default <code>1</code> only drops features that
+are zero for every patient; lower it (e.g. <code>0.9</code>) to also drop merely
+zero-inflated features. Passed through to <code><a href="calculateDirect.html">calculateDirect()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame of feature values for the selected patients, or (when
-<code>communication_type</code> has more than one entry) a named list of such data
-frames, one per requested type.</p>
+    <p>A patient-by-feature data frame of direct communication scores for
+the selected patients.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

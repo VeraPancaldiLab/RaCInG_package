@@ -53,18 +53,39 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 
 ## Workflow at a glance
 
-| Goal                                 | Function                                                                                                                 | Output                                                  |
-|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| Build input matrices from raw counts | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)             | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Run deterministic features           | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)         | Kernel arrays + feature matrix                          |
-| Run simulation-based features        | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md) | Monte Carlo summaries                                   |
-| Compare patient groups               | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md)                 | Statistics table for downstream plots                   |
+| Goal                                                   | Function                                                                                                                                                                                                                                  | Output                                                  |
+|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| Build input matrices from raw counts                   | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)                                                                                                                              | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Compute direct communication (deterministic)           | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)                                                                                                                          | Kernel arrays + feature matrix                          |
+| Compute direct communication and/or GSCC by simulation | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)                                                                                                                  | Per-patient mean and sd across simulated graphs         |
+| Decompose a direct score into ligand-receptor pairs    | [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md) + [`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)         | Ranked contributions and a dot plot                     |
+| Compare patient groups                                 | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)                       | Statistics table and ranked bar plot                    |
+| Relate features to a continuous score                  | [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md) | Correlation table and rainfall plot                     |
 
 ## Quick start
 
+Try the workflow on the bundled, pre-processed melanoma example (no
+optional dependencies needed):
+
 ``` r
 library(RaCInG)
+data(skcm_example)
 
+kernel_res <- compute_racing_kernel(input_data = skcm_example)
+head(kernel_res$features)
+
+# Which ligand-receptor pairs drive Tumor <-> CD8+ T communication?
+lr <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+)
+plotLRContributions(lr, top_n = 10)
+```
+
+Or start from your own raw counts:
+
+``` r
 # Build input matrices from a real bulk RNA-seq counts matrix
 # (bundled with the optional `multideconv` dependency)
 data(raw_counts, package = "multideconv")
@@ -81,13 +102,13 @@ kernel_res <- compute_racing_kernel(
   counts = counts_matrix,
   file_name = "example",
   output_folder = tempdir(),
-  communication_type = "W"
+  communication_type = "D"
 )
 
 # Or pass pre-computed inputs to skip preprocessing
 kernel_res <- compute_racing_kernel(
   input_data = input,
-  communication_type = "W"
+  communication_type = "D"
 )
 
 # Monte Carlo method
@@ -95,26 +116,22 @@ mc_res <- compute_racing_montecarlo(
   input_data = input,
   file_name = "example",
   output_folder = tempdir(),
-  communication_type = "W",
+  communication_type = c("D", "GSCC"),
   Ncells = 100,
   Ngraphs = 10,
   Ndegree = 3
 )
 
-# Compare clinical groups or correlate features with a continuous score
-grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
+# Compare clinical groups: one label per patient (replace with your own annotation)
+grouping <- rep(c("Responder", "Non-responder"), length.out = nrow(kernel_res$features))
 wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 top_features_plot(wilcox_results)
 ```
 
-Both
-[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
-and
-[`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
-also accept `communication_type` as a vector
-(e.g. `c("D", "W", "TT", "GSCC")`), extracting every requested feature
-family from the same computed kernel / same simulated graphs in one
-call, instead of repeating the expensive step per type.
+The kernel method computes direct communication (`"D"`). The Monte Carlo
+method computes direct communication and/or the giant strongly connected
+component (`"GSCC"`); requesting both (`c("D", "GSCC")`) extracts them
+from the same simulated graphs in one call.
 [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
 additionally takes `ncores` to parallelize independent patients across
 cores.

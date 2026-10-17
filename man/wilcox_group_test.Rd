@@ -24,3 +24,10 @@ Runs a Wilcoxon rank-sum test per feature (column) between every pair of
 groups. Also reports the fold change (ratio of group means) so results can
 be plotted with \code{\link[=top_features_plot]{top_features_plot()}}.
 }
+\examples{
+data(skcm_example)
+feats <- compute_racing_kernel(input_data = skcm_example)$features
+groups <- rep(c("A", "B"), length.out = nrow(feats))
+res <- wilcox_group_test(feats, groups)
+head(res)
+}

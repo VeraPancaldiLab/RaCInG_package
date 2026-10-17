@@ -13,8 +13,8 @@ compute_kernel_features(
   bundle = TRUE,
   patient_names = NULL,
   Dcell = NULL,
-  norm = FALSE,
-  patient_idx = NULL
+  patient_idx = NULL,
+  zero_threshold = 1
 )
 ```
 
@@ -27,7 +27,9 @@ compute_kernel_features(
 
 - unifKernel:
 
-  Optional normalized baseline kernel.
+  Optional normalized baseline kernel. When supplied, features are the
+  enrichment ratio over it (see
+  [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)).
 
 - celltypes:
 
@@ -35,20 +37,13 @@ compute_kernel_features(
 
 - communication_type:
 
-  Feature family to compute (`"D"`, `"W"`, `"TT"`, or `"GSCC"`; `"TT"`
-  returns both trust- and cycle-triangle columns together, see
-  [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)),
-  or a character vector of several of these. Since the kernel itself
-  (`kernel`/`unifKernel`) is passed in already computed, requesting
-  multiple types here costs nothing extra to compute per type beyond
-  that one kernel – no re-derivation happens for any of them. With more
-  than one type, the return value is a named list (one data frame per
-  type) instead of a single data frame.
+  Feature family to compute. The kernel method only computes direct
+  communication (`"D"`); GSCC is available with
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md).
 
 - bundle:
 
-  Logical; if `TRUE`, merge directionally equivalent features where
-  appropriate.
+  Logical; if `TRUE`, merge the two directions of each cell-type pair.
 
 - patient_names:
 
@@ -56,21 +51,22 @@ compute_kernel_features(
 
 - Dcell:
 
-  Patient-by-cell-type abundance matrix. Always required for `"GSCC"`;
-  required for `"D"`, `"W"`, `"TT"` only when `unifKernel` is not
-  supplied (raw, unnormalized features).
-
-- norm:
-
-  Logical; if `TRUE`, compute normalized features when a baseline is
-  supplied.
+  Patient-by-cell-type abundance matrix. Required when `unifKernel` is
+  not supplied (raw, unnormalized features).
 
 - patient_idx:
 
   Optional patient index subset.
 
+- zero_threshold:
+
+  Drop a feature once its fraction of zero-valued patients reaches this
+  threshold. Default `1` only drops features that are zero for every
+  patient; lower it (e.g. `0.9`) to also drop merely zero-inflated
+  features. Passed through to
+  [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md).
+
 ## Value
 
-A data frame of feature values for the selected patients, or (when
-`communication_type` has more than one entry) a named list of such data
-frames, one per requested type.
+A patient-by-feature data frame of direct communication scores for the
+selected patients.

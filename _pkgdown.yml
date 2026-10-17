@@ -4,7 +4,7 @@ template:
 
 home:
   title: RaCInG
-  description: R Analysis of Cell Interactions and Graphs
+  description: Random Cell-cell Interaction Generator -- patient-specific cell-cell communication networks from bulk RNA-seq
 
 navbar:
   structure:
@@ -30,23 +30,14 @@ reference:
       - compute_kernel
       - compute_kernel_features
       - calculateDirect
-      - calculateWedges
-      - computeTriangles
-      - computeGSCC
-      - countWedges
-      - countTrustTriangles
-      - countCycleTriangles
       - countDirect
       - countGSCC
       - countAllTypes
       - model1
       - runSim
-      - getGSCCAnalytically
   - title: Ligand-receptor contribution analysis
     contents:
       - computeLRContributions
-      - computeWedgeLRContributions
-      - computeTriangleLRContributions
       - plotLRContributions
   - title: Input generation
     contents:
@@ -60,10 +51,6 @@ reference:
     contents:
       - EdgetoAdj
       - EdgetoAdj_No_loop
-      - Count_Types
-      - Trust_Triangles
-      - Cycle_Triangles
-      - Wedges
       - GSCC
   - title: Example data
     contents:

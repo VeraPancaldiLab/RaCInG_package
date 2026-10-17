@@ -24,8 +24,7 @@ therefore reflects only network topology and cell-type abundance --
 "how much communication would you expect between these two cell types if
 every possible ligand-receptor pair were equally active" -- with no
 information about which pairs are actually more or less expressed.
-Downstream functions (\code{calculateDirect()}, \code{calculateWedges()}, etc.) use
-this as a baseline to compute a composition-independent enrichment score
+\code{\link[=calculateDirect]{calculateDirect()}} uses this as a baseline to compute a composition-independent enrichment score
 (\code{kernel / kernel_norm}) instead of the raw, abundance-weighted score --
 the abundance weighting cancels out of that ratio algebraically, since
 both \code{kernel} and \code{kernel_norm} are built from the same per-patient
@@ -42,8 +41,16 @@ Either a 3D kernel array \verb{[sender x receiver x patient]}, or (when
 }
 \description{
 The kernel is the \emph{unweighted} structural kernel: cell-type abundances are
-not baked into it. \code{calculateDirect()}, \code{calculateWedges()},
-\code{computeTriangles()}, and \code{computeGSCC()} each multiply in the abundance of
-every node they use, exactly once per node, when computing raw
-(unnormalized) features from this kernel.
+not baked into it. \code{\link[=calculateDirect]{calculateDirect()}} multiplies in the abundance of both
+cell types of a pair when computing raw (unnormalized) features from it.
+}
+\examples{
+data(skcm_example)
+k <- compute_kernel(skcm_example$Lmatrix, skcm_example$Rmatrix,
+                    skcm_example$Cmatrix, skcm_example$LRmatrix)
+dim(k)
+feats <- compute_kernel_features(k, celltypes = skcm_example$celltypes,
+                                 Dcell = skcm_example$Cmatrix,
+                                 patient_names = rownames(skcm_example$Cmatrix))
+head(feats[, 1:4])
 }

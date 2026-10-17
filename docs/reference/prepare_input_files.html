@@ -78,26 +78,43 @@ by the kernel and Monte Carlo workflows.</p>
 
 <dt id="arg-deconv">deconv<a class="anchor" aria-label="anchor" href="#arg-deconv"></a></dt>
 <dd><p>Optional patient-by-cell-type abundance matrix. If omitted, it
-is computed via <code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> followed by
-<code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html" class="external-link">multideconv::compute.deconvolution.analysis()</a></code> (which identifies and
-collapses correlated cell-type subgroups) and
-<code><a href="https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html" class="external-link">multideconv::standardize_celltype_colnames()</a></code>.</p></dd>
+is computed via <code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> followed by
+<code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html" class="external-link">multideconv::compute.deconvolution.analysis()</a></code> (which identifies and
+collapses correlated cell-type subgroups; requires multideconv &gt;= 0.2.0).
+Columns keep multideconv's names: subgroups (<code>"B.cells_Subgroup.1"</code>)
+and unclustered features (<code>"Quantiseq_TIL10_B.cells"</code>). When you supply
+<code>deconv</code> yourself, its rows must be exactly <code>colnames(counts)</code>, in the same
+order, and its columns should be named with multideconv's standardized
+cell-type nomenclature (<code><a href="https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html" class="external-link">multideconv::get_cell_type_nomenclature()</a></code>); a
+warning lists any that aren't.</p></dd>
 
 
 <dt id="arg-cc-network">cc_network<a class="anchor" aria-label="anchor" href="#arg-cc-network"></a></dt>
 <dd><p>Optional ligand-receptor prior network. If omitted, it is
 retrieved via <code><a href="https://saezlab.github.io/liana/reference/get_curated_omni.html" class="external-link">liana::get_curated_omni()</a></code> (a curated, OmniPath-backed
-consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB).</p></dd>
+consensus of CellPhoneDB/CellChatDB/ICELLNET/connectomeDB2020/CellTalkDB)
+the first time this is called, then cached indefinitely as an RDS file
+under <code>tools::R_user_dir("RaCInG", "cache")</code> and loaded from there on every
+subsequent call – avoiding a live network round-trip (and its associated
+transient-failure risk) on every invocation. Delete that cache file to
+force a refresh from OmniPath.</p></dd>
 
 
 <dt id="arg-fun-lr">fun_LR<a class="anchor" aria-label="anchor" href="#arg-fun-lr"></a></dt>
-<dd><p>Function used to combine ligand and receptor expression values.</p></dd>
+<dd><p>Function combining a ligand's and receptor's expression
+values (as a length-2 vector) into one interaction strength. Default
+<code>min</code>: the weaker-expressed partner limits the interaction. Any function
+collapsing 2 values to 1 works, e.g. <code>prod</code> for the product of the two
+instead.</p></dd>
 
 
 <dt id="arg-cell-expr-profile">cell_expr_profile<a class="anchor" aria-label="anchor" href="#arg-cell-expr-profile"></a></dt>
 <dd><p>Optional gene-by-cell-type expression profile
-matrix. If omitted, it is estimated from <code>counts</code> and <code>deconv</code> via
-per-gene non-negative least squares (see <code><a href="dot-estimate_expression_profiles.html">.estimate_expression_profiles()</a></code>).</p></dd>
+matrix. If omitted, it is estimated via per-gene non-negative least
+squares – per method-signature block, then merged according to the
+multideconv subgroup analysis, when <code>deconv</code> is auto-computed (see
+<code><a href="dot-estimate_expression_profiles_subgroups.html">.estimate_expression_profiles_subgroups()</a></code>), or directly from the
+supplied <code>deconv</code> otherwise (see <code><a href="dot-estimate_expression_profiles_samples.html">.estimate_expression_profiles_samples()</a></code>).</p></dd>
 
 
 <dt id="arg-source-target">source, target<a class="anchor" aria-label="anchor" href="#arg-source-target"></a></dt>
@@ -105,7 +122,7 @@ per-gene non-negative least squares (see <code><a href="dot-estimate_expression_
 
 
 <dt id="arg-deconv-method">deconv_method<a class="anchor" aria-label="anchor" href="#arg-deconv-method"></a></dt>
-<dd><p>Deconvolution method(s) passed to <code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code>.</p></dd>
+<dd><p>Deconvolution method(s) passed to <code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code>.</p></dd>
 
 
 <dt id="arg-cbsx-name-cbsx-token">cbsx.name, cbsx.token<a class="anchor" aria-label="anchor" href="#arg-cbsx-name-cbsx-token"></a></dt>
@@ -122,19 +139,24 @@ per-gene non-negative least squares (see <code><a href="dot-estimate_expression_
 
 <dt id="arg-already-normalized">already_normalized<a class="anchor" aria-label="anchor" href="#arg-already-normalized"></a></dt>
 <dd><p>Logical; if <code>TRUE</code>, <code>counts</code> is treated as
-already TPM-normalized (linear scale, not logged) and the internal
+already TPM-normalized, <strong>linear scale, not logged</strong>, and the internal
 <code><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">ADImpute::NormalizeTPM()</a></code> gene-length/library-size normalization is
 skipped. Use this for datasets where only pre-normalized expression is
 available (e.g. public cohorts distributed as log2(TPM+1) matrices with
-no raw counts) – applying <code>NormalizeTPM()</code> to already-normalized data
-would re-apply its gene-length correction on top of the original
-normalization, distorting relative gene expression levels.</p></dd>
+no raw counts – convert those back to linear scale, e.g. <code>2^x - 1</code>,
+before passing them here) – applying <code>NormalizeTPM()</code> to already-
+normalized data would re-apply its gene-length correction on top of the
+original normalization, distorting relative gene expression levels.
+Emits a warning, since <code>expr_threshold</code> below is only meaningful if this
+linear-scale assumption holds – comparing a log-scale value against it
+would silently apply the wrong cutoff.</p></dd>
 
 
 <dt id="arg-expr-threshold">expr_threshold<a class="anchor" aria-label="anchor" href="#arg-expr-threshold"></a></dt>
-<dd><p>Minimum expression value (in <code>cell_expr_profile</code>
-units) a ligand or receptor must reach in its sending/receiving cell type
-for that ligand-receptor-celltype triple to be kept in <code>CC_table</code>.</p></dd>
+<dd><p>Minimum expression value, in linear-scale TPM (in
+<code>cell_expr_profile</code> units), a ligand or receptor must reach in its
+sending/receiving cell type for that ligand-receptor-celltype triple to
+be kept in <code>CC_table</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

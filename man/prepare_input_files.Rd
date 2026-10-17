@@ -30,8 +30,13 @@ prepare_input_files(
 \item{deconv}{Optional patient-by-cell-type abundance matrix. If omitted, it
 is computed via \code{multideconv::compute.deconvolution()} followed by
 \code{multideconv::compute.deconvolution.analysis()} (which identifies and
-collapses correlated cell-type subgroups) and
-\code{multideconv::standardize_celltype_colnames()}.}
+collapses correlated cell-type subgroups; requires multideconv >= 0.2.0).
+Columns keep multideconv's names: subgroups (\code{"B.cells_Subgroup.1"})
+and unclustered features (\code{"Quantiseq_TIL10_B.cells"}). When you supply
+\code{deconv} yourself, its rows must be exactly \code{colnames(counts)}, in the same
+order, and its columns should be named with multideconv's standardized
+cell-type nomenclature (\code{multideconv::get_cell_type_nomenclature()}); a
+warning lists any that aren't.}
 
 \item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
 retrieved via \code{liana::get_curated_omni()} (a curated, OmniPath-backed
@@ -49,8 +54,11 @@ collapsing 2 values to 1 works, e.g. \code{prod} for the product of the two
 instead.}
 
 \item{cell_expr_profile}{Optional gene-by-cell-type expression profile
-matrix. If omitted, it is estimated from \code{counts} and \code{deconv} via
-per-gene non-negative least squares (see \code{.estimate_expression_profiles()}).}
+matrix. If omitted, it is estimated via per-gene non-negative least
+squares -- per method-signature block, then merged according to the
+multideconv subgroup analysis, when \code{deconv} is auto-computed (see
+\code{.estimate_expression_profiles_subgroups()}), or directly from the
+supplied \code{deconv} otherwise (see \code{.estimate_expression_profiles_samples()}).}
 
 \item{source, target}{Column names to use as ligand and receptor identifiers when \code{cc_network} is supplied.}
 

@@ -13,7 +13,9 @@ cell-to-ligand compatibility.}
 cell-to-receptor compatibility.}
 \item{Cmatrix}{Numeric matrix (10 patients x 9 cell types). Row-normalised
 cell-type abundance estimates from deconvolution, with M1 and M2
-macrophages merged into a single M category.}
+macrophages merged into a single M category. Columns are named as in
+\code{celltypes}; rows are unnamed, so the workflows label patients
+\code{Patient_1} ... \code{Patient_10}.}
 \item{LRmatrix}{3-D numeric array (276 ligands x 298 receptors x 10
 patients). Normalised ligand–receptor interaction probability tensor.}
 \item{celltypes}{Character vector of 9 cell-type names (alphabetically

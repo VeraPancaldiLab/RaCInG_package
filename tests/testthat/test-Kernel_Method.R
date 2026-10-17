@@ -14,9 +14,7 @@ make_toy_kernel_inputs <- function() {
 
 test_that("compute_kernel() returns the unweighted structural kernel", {
   # Regression test: compute_kernel() used to bake Cvec into both kernel
-  # indices, which is correct for Direct communication but silently
-  # double-counts shared/middle nodes for Wedges, Triangles, and (since the
-  # branching-process equations are nonlinear) GSCC in both norm modes.
+  # indices; abundances are applied once per node by calculateDirect() instead.
   d <- make_toy_kernel_inputs()
   k <- compute_kernel(d$liglist, d$reclist, d$Cmatrix, d$LRmatrix, normalize = FALSE)
 
@@ -39,25 +37,34 @@ test_that("calculateDirect() weights raw scores by abundance exactly once per no
   expect_equal(df$Dir_B_A[1], 1, tolerance = 1e-8)
 })
 
-test_that("calculateWedges() does not double-weight the shared middle node", {
-  d <- make_toy_kernel_inputs()
-  kernel <- compute_kernel(d$liglist, d$reclist, d$Cmatrix, d$LRmatrix, normalize = FALSE)
-
-  df <- calculateWedges(kernel, cells = c("A", "B"), Dcell = d$Cmatrix, bundle = FALSE)
-  # W_B_A_B: i=B,j=A,k=B -> Dcell[B]*Dcell[A]*Dcell[B] * kernel[B,A]*kernel[A,B]
-  Dcell <- d$Cmatrix[1, ]
-  kAB <- kernel[1, 2, 1]
-  kBA <- kernel[2, 1, 1]
-  expected <- Dcell["B"] * Dcell["A"] * Dcell["B"] * kBA * kAB
-  expect_equal(unname(df$W_B_A_B[1]), unname(expected), tolerance = 1e-8)
+test_that("kernel direct features run raw and normalized without NAs", {
+  data(skcm_example, envir = environment())
+  for (nm in c(TRUE, FALSE)) {
+    res <- compute_racing_kernel(input_data = skcm_example, communication_type = "D", norm = nm)
+    expect_false(any(is.na(res$features)), info = paste("norm =", nm))
+  }
 })
 
-test_that("kernel features run for every communication type without NAs", {
+test_that("kernel method rejects removed or Monte-Carlo-only feature types", {
   data(skcm_example, envir = environment())
-  for (ct in c("D", "W", "TT", "GSCC")) {
-    for (nm in c(TRUE, FALSE)) {
-      res <- compute_racing_kernel(input_data = skcm_example, communication_type = ct, norm = nm)
-      expect_false(any(is.na(res$features)), info = paste(ct, nm))
-    }
+  for (ct in c("W", "TT", "GSCC")) {
+    expect_error(compute_racing_kernel(input_data = skcm_example, communication_type = ct), "only computes direct", info = ct)
+  }
+  expect_error(compute_kernel_features(array(0, c(2, 2, 1)), celltypes = c("A", "B"), communication_type = c("D", "W"),
+                                       Dcell = matrix(0.5, 1, 2)), "only computes direct")
+})
+
+test_that("Monte Carlo computes D and GSCC and rejects removed types", {
+  data(skcm_example, envir = environment())
+  inp <- skcm_example
+  rownames(inp$Cmatrix) <- paste0("P", seq_len(nrow(inp$Cmatrix)))
+  set.seed(1)
+  res <- compute_racing_montecarlo(input_data = inp, output_folder = tempfile(), communication_type = c("D", "GSCC"),
+                                   Ncells = 200, Ngraphs = 2, Ndegree = 3, nPatients = 2)
+  expect_equal(names(res$output), c("D", "GSCC"))
+  expect_equal(rownames(res$output$GSCC$mean), c("P1", "P2"))
+  expect_true(all(startsWith(colnames(res$output$GSCC$mean), "GSCC_")))
+  for (ct in c("W", "TT", "CT")) {
+    expect_error(compute_racing_montecarlo(input_data = inp, output_folder = tempfile(), communication_type = ct), "wedges and triangles were removed", info = ct)
   }
 })

@@ -32,3 +32,10 @@ Computes the Spearman correlation between an external per-patient score
 (e.g. an immune response score) and every feature column, pooled across
 all patients ("All") and, optionally, within each group separately.
 }
+\examples{
+data(skcm_example)
+feats <- compute_racing_kernel(input_data = skcm_example)$features
+set.seed(1)
+score <- setNames(rnorm(nrow(feats)), rownames(feats))
+head(correlate_features_with_score(feats, score))
+}

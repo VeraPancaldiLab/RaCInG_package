@@ -66,3 +66,13 @@ computes every such term for one sender-receiver pair, so the (weighted)
 importance of each ligand-receptor pair to that pair's communication score
 can be ranked.
 }
+\examples{
+data(skcm_example)
+lr <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T",
+  patient_names = rownames(skcm_example$Cmatrix), top_n = 5
+)
+head(lr)
+}

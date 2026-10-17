@@ -6,7 +6,7 @@
 \usage{
 compute_racing_montecarlo(
   counts = NULL,
-  output_folder = "~/Documents/racing/vignettes/",
+  output_folder = "Results/",
   deconv = NULL,
   cc_network = NULL,
   fun_LR = min,
@@ -20,14 +20,16 @@ compute_racing_montecarlo(
   pt_idx = NULL,
   file_name = NULL,
   nPatients = "all",
-  communication_type = "W",
+  communication_type = "D",
   Ncells = 10000,
   Ngraphs = 100,
   Ndegree = 20,
   remove_direction = TRUE,
   norm = FALSE,
   input_data = NULL,
-  ncores = 1
+  ncores = 1,
+  expr_threshold = 10,
+  already_normalized = FALSE
 )
 }
 \arguments{
@@ -39,8 +41,9 @@ supplied; ignored otherwise.}
 \item{deconv}{Optional patient-by-cell-type abundance matrix. If omitted, it
 is computed via \code{multideconv::compute.deconvolution()} followed by
 \code{multideconv::compute.deconvolution.analysis()} (which identifies and
-collapses correlated cell-type subgroups) and
-\code{multideconv::standardize_celltype_colnames()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
+collapses correlated cell-type subgroups; requires multideconv >= 0.2.0).
+Columns keep multideconv's names: subgroups (\code{"B.cells_Subgroup.1"})
+and unclustered features (\code{"Quantiseq_TIL10_B.cells"}). See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 
 \item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
 retrieved via \code{liana::get_curated_omni()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
@@ -65,9 +68,9 @@ per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepa
 
 \item{nPatients}{Number of patients to process, or \code{"all"}.}
 
-\item{communication_type}{Feature family to simulate: \code{"D"}, \code{"W"},
-\code{"TT"}, \code{"CT"}, \code{"GSCC"}, or a character vector of several of these
-(e.g. \code{c("D", "W", "TT", "CT", "GSCC")}). When more than one is given,
+\item{communication_type}{Feature family to simulate: \code{"D"} (direct
+communication, the default), \code{"GSCC"}, or both (\code{c("D", "GSCC")}). When
+both are given,
 every requested type is extracted from the same simulated graphs (via
 \code{\link[=countAllTypes]{countAllTypes()}}) in one pass instead of re-simulating a fresh set of
 graphs per type -- graph generation, not feature extraction, is the
@@ -81,7 +84,8 @@ every type requested. \code{output} in the return value is then a named list
 
 \item{Ndegree}{Target average degree.}
 
-\item{remove_direction}{Logical; if \code{TRUE}, merge directionally equivalent features.}
+\item{remove_direction}{Logical; if \code{TRUE}, merge the two directions of each
+cell-type pair in the direct communication features.}
 
 \item{norm}{Logical; if \code{TRUE}, also run a uniformized baseline simulation and
 express features as an enrichment ratio over it (isolates specificity from
@@ -99,10 +103,43 @@ When supplied, the \code{counts} argument and all preprocessing parameters
 
 \item{ncores}{Number of cores to compute patients on in parallel. Passed
 through to \code{\link[=runSim]{runSim()}}; see its documentation for details.}
+
+\item{expr_threshold}{Minimum expression (in linear TPM, not log-scale)
+a ligand or receptor must reach in its sending/receiving cell type to be
+kept. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
+
+\item{already_normalized}{Logical; if \code{TRUE}, \code{counts} is taken as linear-scale
+TPM and not renormalized. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 }
 \value{
-A list with the generated inputs and processed feature matrices.
+A list with two elements:
+\describe{
+\item{\code{input}}{The input matrices used: \code{LRmatrix}, \code{Lmatrix},
+\code{Rmatrix}, \code{Cmatrix}, \code{celltypes}, \code{ligands}, \code{receptors} -- the
+same names as \code{\link[=prepare_input_files]{prepare_input_files()}}, so it can be passed back as
+\code{input_data}.}
+\item{\code{output}}{For a single \code{communication_type}, a list with the
+patient-by-feature data frames \code{mean} and \code{sd} (see
+\code{\link[=compute_results_processing]{compute_results_processing()}}); for \code{c("D", "GSCC")}, a named list
+with one such entry per type.}
+}
+As a side effect, the raw simulations (\verb{<file_name>.out}, plus
+\verb{<file_name>_norm.out} when \code{norm = TRUE}) and the processed features
+(\verb{<file_name>.csv}, \verb{<file_name>_sd.csv}) are written to \code{output_folder};
+with several types, each file name gets a \verb{_<type>} suffix after
+\code{file_name}.
 }
 \description{
 Run the full Monte Carlo RaCInG workflow
+}
+\examples{
+data(skcm_example)
+set.seed(1)
+mc <- compute_racing_montecarlo(
+  input_data = skcm_example, output_folder = tempdir(),
+  nPatients = 2, communication_type = c("D", "GSCC"),
+  Ncells = 100, Ngraphs = 3, Ndegree = 3
+)
+head(mc$output$D$mean[, 1:4])
+mc$output$GSCC$mean
 }

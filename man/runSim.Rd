@@ -15,8 +15,8 @@ runSim(
   N = 10000,
   itNo = 100,
   av = 20,
-  output_folder = NULL,
-  file.name = NULL,
+  output_folder = "Results/",
+  file.name = "RaCInG_input",
   norm = FALSE,
   patient_idx = NULL,
   ncores = 1
@@ -33,8 +33,8 @@ runSim(
 
 \item{cells}{Character vector of cell-type names.}
 
-\item{communication_type}{Feature family to simulate (\code{"D"}, \code{"W"}, \code{"TT"},
-\code{"CT"}, or \code{"GSCC"}), or a character vector of several of these. When more
+\item{communication_type}{Feature family to simulate: \code{"D"} (direct
+communication), \code{"GSCC"}, or both (\code{c("D", "GSCC")}). When more
 than one is given, every requested type is extracted from the \emph{same}
 simulated graphs (via \code{\link[=countAllTypes]{countAllTypes()}}) instead of re-simulating a fresh
 set of graphs per type, and one \code{.out} file per type is written (file
@@ -50,7 +50,7 @@ type, output naming is unchanged from previous versions
 
 \item{av}{Target average degree.}
 
-\item{output_folder}{Directory used to write the \code{.out} files.}
+\item{output_folder}{Directory used to write the \code{.out} files (created if missing).}
 
 \item{file.name}{Output filename stem.}
 

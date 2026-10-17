@@ -16,8 +16,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="RaCInG">
-<meta name="description" content="R Analysis of Cell Interactions and Graphs">
-<meta property="og:description" content="R Analysis of Cell Interactions and Graphs">
+<meta name="description" content="Random Cell-cell Interaction Generator -- patient-specific cell-cell communication networks from bulk RNA-seq">
+<meta property="og:description" content="Random Cell-cell Interaction Generator -- patient-specific cell-cell communication networks from bulk RNA-seq">
 <meta property="og:image" content="https://VeraPancaldiLab.github.io/RaCInG_package/logo.svg">
 </head>
 <body>
@@ -92,9 +92,9 @@
 </h2>
 <table class="table">
 <colgroup>
-<col width="30%">
-<col width="24%">
-<col width="45%">
+<col width="32%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr class="header">
 <th>Goal</th>
@@ -108,19 +108,35 @@
 <td>Named list with <code>L</code>, <code>R</code>, <code>C</code>, <code>LR</code> matrices and labels</td>
 </tr>
 <tr class="even">
-<td>Run deterministic features</td>
+<td>Compute direct communication (deterministic)</td>
 <td><code><a href="reference/compute_racing_kernel.html">compute_racing_kernel()</a></code></td>
 <td>Kernel arrays + feature matrix</td>
 </tr>
 <tr class="odd">
-<td>Run simulation-based features</td>
+<td>Compute direct communication and/or GSCC by simulation</td>
 <td><code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code></td>
-<td>Monte Carlo summaries</td>
+<td>Per-patient mean and sd across simulated graphs</td>
 </tr>
 <tr class="even">
+<td>Decompose a direct score into ligand-receptor pairs</td>
+<td>
+<code><a href="reference/computeLRContributions.html">computeLRContributions()</a></code> + <code><a href="reference/plotLRContributions.html">plotLRContributions()</a></code>
+</td>
+<td>Ranked contributions and a dot plot</td>
+</tr>
+<tr class="odd">
 <td>Compare patient groups</td>
-<td><code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code></td>
-<td>Statistics table for downstream plots</td>
+<td>
+<code><a href="reference/wilcox_group_test.html">wilcox_group_test()</a></code> + <code><a href="reference/top_features_plot.html">top_features_plot()</a></code>
+</td>
+<td>Statistics table and ranked bar plot</td>
+</tr>
+<tr class="even">
+<td>Relate features to a continuous score</td>
+<td>
+<code><a href="reference/correlate_features_with_score.html">correlate_features_with_score()</a></code> + <code><a href="reference/correlation_plot.html">correlation_plot()</a></code>
+</td>
+<td>Correlation table and rainfall plot</td>
 </tr>
 </tbody>
 </table>
@@ -128,10 +144,24 @@
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
+<p>Try the workflow on the bundled, pre-processed melanoma example (no optional dependencies needed):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/VeraPancaldiLab/RaCInG_package" class="external-link">RaCInG</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Build input matrices from a real bulk RNA-seq counts matrix</span></span>
+<span><span class="va">kernel_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_racing_kernel.html">compute_racing_kernel</a></span><span class="op">(</span>input_data <span class="op">=</span> <span class="va">skcm_example</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Which ligand-receptor pairs drive Tumor &lt;-&gt; CD8+ T communication?</span></span>
+<span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/computeLRContributions.html">computeLRContributions</a></span><span class="op">(</span></span>
+<span>  Lmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">Lmatrix</span>, Rmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">Rmatrix</span>,</span>
+<span>  Cmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">Cmatrix</span>, LRmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">LRmatrix</span>,</span>
+<span>  celltypes <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">celltypes</span>, sender <span class="op">=</span> <span class="st">"Tumor"</span>, receiver <span class="op">=</span> <span class="st">"CD8+ T"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plotLRContributions.html">plotLRContributions</a></span><span class="op">(</span><span class="va">lr</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>Or start from your own raw counts:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Build input matrices from a real bulk RNA-seq counts matrix</span></span>
 <span><span class="co"># (bundled with the optional `multideconv` dependency)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">raw_counts</span>, package <span class="op">=</span> <span class="st">"multideconv"</span><span class="op">)</span></span>
 <span><span class="va">counts_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">raw_counts</span><span class="op">)</span></span>
@@ -147,13 +177,13 @@
 <span>  counts <span class="op">=</span> <span class="va">counts_matrix</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="st">"example"</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  communication_type <span class="op">=</span> <span class="st">"W"</span></span>
+<span>  communication_type <span class="op">=</span> <span class="st">"D"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or pass pre-computed inputs to skip preprocessing</span></span>
 <span><span class="va">kernel_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_racing_kernel.html">compute_racing_kernel</a></span><span class="op">(</span></span>
 <span>  input_data <span class="op">=</span> <span class="va">input</span>,</span>
-<span>  communication_type <span class="op">=</span> <span class="st">"W"</span></span>
+<span>  communication_type <span class="op">=</span> <span class="st">"D"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Monte Carlo method</span></span>
@@ -161,17 +191,17 @@
 <span>  input_data <span class="op">=</span> <span class="va">input</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="st">"example"</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  communication_type <span class="op">=</span> <span class="st">"W"</span>,</span>
+<span>  communication_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="st">"GSCC"</span><span class="op">)</span>,</span>
 <span>  Ncells <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  Ngraphs <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  Ndegree <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compare clinical groups or correlate features with a continuous score</span></span>
-<span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Responder"</span>, <span class="st">"Responder"</span>, <span class="st">"Non-responder"</span>, <span class="st">"Non-responder"</span><span class="op">)</span></span>
+<span><span class="co"># Compare clinical groups: one label per patient (replace with your own annotation)</span></span>
+<span><span class="va">grouping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Responder"</span>, <span class="st">"Non-responder"</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">wilcox_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/wilcox_group_test.html">wilcox_group_test</a></span><span class="op">(</span><span class="va">kernel_res</span><span class="op">$</span><span class="va">features</span>, <span class="va">grouping</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/top_features_plot.html">top_features_plot</a></span><span class="op">(</span><span class="va">wilcox_results</span><span class="op">)</span></span></code></pre></div>
-<p>Both <code><a href="reference/compute_racing_kernel.html">compute_racing_kernel()</a></code> and <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> also accept <code>communication_type</code> as a vector (e.g. <code>c("D", "W", "TT", "GSCC")</code>), extracting every requested feature family from the same computed kernel / same simulated graphs in one call, instead of repeating the expensive step per type. <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> additionally takes <code>ncores</code> to parallelize independent patients across cores.</p>
+<p>The kernel method computes direct communication (<code>"D"</code>). The Monte Carlo method computes direct communication and/or the giant strongly connected component (<code>"GSCC"</code>); requesting both (<code>c("D", "GSCC")</code>) extracts them from the same simulated graphs in one call. <code><a href="reference/compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code> additionally takes <code>ncores</code> to parallelize independent patients across cores.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>

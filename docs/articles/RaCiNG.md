@@ -6,9 +6,11 @@
 from bulk RNA-seq data. The package supports two complementary
 workflows:
 
-- a **kernel-based** approach for fast deterministic feature extraction,
-  and
-- a **Monte Carlo** approach for simulation-based network summaries.
+- a **kernel-based** approach for fast, deterministic
+  direct-communication features (`"D"`), and
+- a **Monte Carlo** approach that simulates networks and reports direct
+  communication (`"D"`) and/or the giant strongly connected component
+  (`"GSCC"`).
 
 This vignette shows the recommended workflow and the most important
 entry points for new users, using both the bundled, ready-made example
@@ -47,13 +49,14 @@ remotes::install_github(c("saezlab/liana", "VeraPancaldiLab/multideconv"))
 
 ## Workflow at a glance
 
-| Goal                                  | Function                                                                                                                                                                                                                                  | Output                                                  |
-|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| Build input matrices from raw counts  | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)                                                                                                                              | Named list with `L`, `R`, `C`, `LR` matrices and labels |
-| Compute deterministic features        | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)                                                                                                                          | Kernel arrays + feature matrix                          |
-| Compute simulation summaries          | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)                                                                                                                  | Processed Monte Carlo results                           |
-| Compare clinical groups               | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)                       | Statistics table and ranked bar plot                    |
-| Relate features to a continuous score | [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md) | Correlation table and rainfall plot                     |
+| Goal                                                   | Function                                                                                                                                                                                                                                  | Output                                                  |
+|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| Build input matrices from raw counts                   | [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)                                                                                                                              | Named list with `L`, `R`, `C`, `LR` matrices and labels |
+| Compute direct communication (deterministic)           | [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)                                                                                                                          | Kernel arrays + feature matrix                          |
+| Compute direct communication and/or GSCC by simulation | [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)                                                                                                                  | Processed Monte Carlo results                           |
+| Decompose a direct score into ligand-receptor pairs    | [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md) + [`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)         | Ranked contributions and a LIANA-style dot plot         |
+| Compare clinical groups                                | [`wilcox_group_test()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/wilcox_group_test.md) + [`top_features_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/top_features_plot.md)                       | Statistics table and ranked bar plot                    |
+| Relate features to a continuous score                  | [`correlate_features_with_score()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlate_features_with_score.md) + [`correlation_plot()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/correlation_plot.md) | Correlation table and rainfall plot                     |
 
 ## How `prepare_input_files()` builds its inputs
 
@@ -64,33 +67,47 @@ chains together several packages so you never have to run them by hand:
 1.  **Normalization**: counts are converted to TPM with
     [`ADImpute::NormalizeTPM()`](https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html).
 2.  **Deconvolution**: cell-type fractions are estimated with
-    [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html)
+    [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html)
     (defaults to the Quantiseq method, but any method(s) supported by
-    multideconv can be passed via `deconv_method`).
+    multideconv can be passed via `deconv_method`), which also
+    standardizes cell-type names to multideconv’s vocabulary
+    ([`multideconv::get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html)).
 3.  **Subgroup analysis**:
-    [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
-    identifies groups of highly correlated deconvolution features
-    (e.g. several methods agreeing on the same cell type) and collapses
-    them into a single column per resolved cell type, discarding
-    low-quality/high-zero features along the way. Column names are then
-    standardized and stripped of any method/signature prefix, giving
-    short, consistent cell-type labels (e.g. `"B.cells"`,
-    `"CD4.regulatory"`).
+    [`multideconv::compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html)
+    (multideconv \>= 0.2.0) clusters highly correlated deconvolution
+    features of the same cell type (e.g. several methods agreeing on it)
+    into subgroups such as `"B.cells_Subgroup.1"`, discarding
+    mostly-zero and low-variance features along the way. Features that
+    join no subgroup keep their full name
+    (e.g. `"Quantiseq_TIL10_B.cells"`); these names are used as the
+    RaCInG cell types.
 4.  **Cell-type expression profiles**: for every gene, a non-negative
     least squares fit of bulk expression against the cell-type fractions
-    gives one expression value per gene per resolved cell type.
+    of each method-signature combination gives one expression value per
+    gene per cell type; each subgroup’s profile is the median of its
+    members’ profiles.
 5.  **Ligand-receptor prior knowledge**: a curated, OmniPath-backed
     consensus network is retrieved with
     [`liana::get_curated_omni()`](https://saezlab.github.io/liana/reference/get_curated_omni.html)
     and restricted to ligand/receptor roles, then decomplexified into
     single-gene subunits.
 6.  **Filtering and assembly**: ligand-receptor pairs are kept only
-    where both genes are expressed above 10 TPM in the relevant cell
-    types, and the `Lmatrix`, `Rmatrix`, `Cmatrix`, and `LRmatrix`
-    inputs (see below) are assembled and written to `output_folder`.
+    where both genes reach `expr_threshold` (default 10 TPM) in the
+    sending and receiving cell types, and the `Lmatrix`, `Rmatrix`,
+    `Cmatrix`, and `LRmatrix` inputs (see below) are assembled and
+    written to `output_folder`. Each ligand-receptor pair’s per-patient
+    strength combines the two genes’ bulk `log2(TPM + 1)` expression
+    with `fun_LR` (default `min`, i.e. the weaker partner limits the
+    interaction).
 
 You can skip any of steps 2-5 by supplying your own `deconv`,
-`cell_expr_profile`, or `cc_network` directly.
+`cell_expr_profile`, or `cc_network` directly. A user-supplied `deconv`
+must have exactly `colnames(counts)` as row names, in the same order,
+and should use multideconv’s cell-type nomenclature (a warning lists any
+names outside it). If your expression data is already linear-scale TPM
+rather than raw counts, pass `already_normalized = TRUE`; log-scale data
+(e.g. `log2(TPM + 1)`) must be converted back first (`2^x - 1`), since
+`expr_threshold` is compared on the linear scale.
 
 ## Recommended workflow with a real bulk RNA-seq dataset
 
@@ -122,10 +139,10 @@ input$celltypes
 
 ### 2. Run the kernel method
 
-The kernel method is the fastest way to derive direct, wedge, triangle,
-or GSCC features across patients. You can pass `counts` to let the
-function compute inputs automatically, or supply previously computed
-matrices via `input_data`.
+The kernel method is the fastest way to derive direct communication
+features (`communication_type = "D"`, the only type it computes) across
+patients. You can pass `counts` to let the function compute inputs
+automatically, or supply previously computed matrices via `input_data`.
 
 ``` r
 # Option A: from raw counts (runs prepare_input_files internally)
@@ -133,45 +150,42 @@ kernel_res <- compute_racing_kernel(
   counts = counts_matrix,
   output_folder = tempdir(),
   file_name = "mariathasan",
-  communication_type = "W",
+  communication_type = "D",
   norm = TRUE
 )
 
 # Option B: from pre-computed input matrices (skips preprocessing)
 kernel_res <- compute_racing_kernel(
   input_data = input,
-  communication_type = "W",
+  communication_type = "D",
   norm = TRUE
 )
 
 head(kernel_res$features[, 1:5])
 ```
 
-Feature columns with no possible ligand-receptor pathway in any patient
-(structurally zero for every patient) are dropped automatically, rather
-than returned as dead all-zero columns – so `ncol(kernel_res$features)`
-is usually well below the full combinatorial count of cell-type
-combinations.
+Features are named `"Dir_A_B"`, with the lower-index (alphabetically
+first) cell type first; with `remove_direction = TRUE` (the default) the
+two directions of each pair are summed into one feature. Feature columns
+with no possible ligand-receptor pathway in any patient (structurally
+zero for every patient) are dropped automatically, rather than returned
+as dead all-zero columns – so `ncol(kernel_res$features)` is usually
+well below the full combinatorial count of cell-type pairs. Lower
+`zero_threshold` (e.g. `0.9`) to also drop features that are zero in
+most patients.
 
-`communication_type` also accepts a vector,
-e.g. `c("D", "W", "TT", "GSCC")`. The kernel itself (the expensive
-analytic step) is only ever computed once regardless of how many types
-you request, so if you want more than one feature family there is no
-need to call
-[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
-again – request them all in one call instead:
+#### Raw or normalized features?
 
-``` r
-kernel_res <- compute_racing_kernel(
-  input_data = input,
-  communication_type = c("D", "W", "TT", "GSCC"),
-  norm = TRUE
-)
-
-# features is now a named list, one data frame per requested type
-names(kernel_res$features)
-head(kernel_res$features$D[, 1:5])
-```
+With `norm = FALSE` (the default) features are the raw communication
+strength, which grows with both the abundance of the two cell types and
+the expression of their ligand-receptor pairs. With `norm = TRUE`,
+RaCInG also builds a baseline in which every possible ligand-receptor
+pair is equally strong and reports the ratio of the two: an enrichment
+score that does not depend on cell-type abundance and isolates which
+pairs communicate more (or less) than the network structure alone
+predicts. In the Monte Carlo method the ratio of two simulated estimates
+is noisier than the raw value, so budget a larger `Ngraphs` when you use
+`norm = TRUE` there.
 
 ### 3. Run the Monte Carlo method
 
@@ -189,7 +203,7 @@ mc_res <- compute_racing_montecarlo(
   deconv_method = "Quantiseq",
   file_name = "mariathasan",
   nPatients = 3,
-  communication_type = "W",
+  communication_type = "D",
   Ncells = 100,
   Ngraphs = 10,
   Ndegree = 3,
@@ -201,7 +215,7 @@ mc_res <- compute_racing_montecarlo(
   input_data = input,
   output_folder = tempdir(),
   file_name = "mariathasan",
-  communication_type = "W",
+  communication_type = "D",
   Ncells = 100,
   Ngraphs = 10,
   Ndegree = 3,
@@ -211,16 +225,26 @@ mc_res <- compute_racing_montecarlo(
 head(mc_res$output$mean[, 1:5])
 ```
 
-As with the kernel method, `communication_type` accepts a vector (any
-combination of `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`). Every requested
-type is extracted from the *same* simulated graphs, instead of
-re-simulating a fresh set of graphs per type – graph generation, not
-feature extraction, is the expensive part of a Monte Carlo run:
+`mc_res$output` holds the per-patient mean (`mean`) and standard
+deviation (`sd`) across the simulated graphs. The raw simulations
+(`<file_name>.out`, and `<file_name>_norm.out` with `norm = TRUE`) and
+the processed features (`<file_name>.csv`, `<file_name>_sd.csv`) are
+also written to `output_folder`; they can be re-read later with
+[`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md)
+and
+[`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md).
+
+`communication_type` can also be `"GSCC"` (the share of cells, per cell
+type, in the giant strongly connected component) or both,
+`c("D", "GSCC")`. Both are then extracted from the *same* simulated
+graphs, instead of re-simulating a fresh set of graphs per type – graph
+generation, not feature extraction, is the expensive part of a Monte
+Carlo run:
 
 ``` r
 mc_res <- compute_racing_montecarlo(
   input_data = input,
-  communication_type = c("D", "W", "TT", "CT", "GSCC"),
+  communication_type = c("D", "GSCC"),
   Ncells = 100,
   Ngraphs = 10,
   Ndegree = 3,
@@ -264,7 +288,9 @@ shows the top up/down features by `log2(fold change)` as a ranked bar
 chart.
 
 ``` r
-grouping <- c("Responder", "Responder", "Non-responder", "Non-responder")
+# One label per patient (row of the feature matrix); replace this placeholder
+# with your own clinical annotation, e.g. response to therapy.
+grouping <- rep(c("Responder", "Non-responder"), length.out = nrow(kernel_res$features))
 wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
 head(wilcox_results)
 top_features_plot(wilcox_results, top_n = 15)
@@ -293,22 +319,6 @@ head(corr_results)
 correlation_plot(corr_results, top_n = 10)
 ```
 
-## Notes
-
-- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
-  and
-  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
-  are the main entry points.
-- Both accept an `input_data` argument with pre-computed matrices (as
-  returned by
-  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)),
-  which skips all preprocessing.
-- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
-  requires the optional packages listed under Installation for
-  deconvolution and prior-network assembly.
-- The original Python implementation is available at
-  <https://github.com/SysBioOncology/RaCInG>.
-
 ## Understanding the input files
 
 RaCInG requires four matrices and associated label vectors that describe
@@ -324,7 +334,7 @@ table below summarises each component:
 | **celltypes**   | character vector               | Alphabetically sorted cell-type names (shared across L, R, and C).                                                                                              |
 | **ligands**     | character vector               | Ligand names matching the columns of `Lmatrix` and the first axis of `LRmatrix`.                                                                                |
 | **receptors**   | character vector               | Receptor names matching the columns of `Rmatrix` and the second axis of `LRmatrix`.                                                                             |
-| **Sign_matrix** | ligands × receptors            | Optional matrix encoding known stimulatory (+1) or inhibitory (−1) interactions. Zeros indicate unknown.                                                        |
+| **Sign_matrix** | ligands × receptors            | Placeholder for stimulatory (+1) / inhibitory (−1) interaction signs; all zeros (unknown) by default. Not used by the current kernel or Monte Carlo features.   |
 
 These inputs are typically generated by
 [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
@@ -383,7 +393,7 @@ skcm_example$Rmatrix[1:4, 1:5]
 dim(skcm_example$Cmatrix)
 #> [1] 10  9
 skcm_example$Cmatrix[1:4, ]
-#>                B         CAF          CD8          DC        Endo         M1
+#>                B         CAF       CD8+ T          DC        Endo          M
 #> [1,] 0.003742534 0.017784413 0.0004763235 0.002384983 0.007165426 0.01515965
 #> [2,] 0.014074525 0.019407444 0.0807858943 0.062715975 0.004718812 0.07897314
 #> [3,] 0.021190628 0.007153891 0.0166497814 0.012495442 0.012443088 0.03645401
@@ -437,12 +447,12 @@ kernel_res <- compute_racing_kernel(
   norm = TRUE
 )
 #> Using pre-computed input matrices; skipping input generation.
-#> Computing kernel for  10  patients
+#> Computing kernel for 10 patients
 #> Calculating kernel...
 #> Calculating features...
 
 head(kernel_res$features[, 1:5])
-#>             Dir_B_B Dir_B_CAF Dir_B_CD8..T   Dir_B_DC Dir_B_Endo
+#>             Dir_B_B Dir_B_CAF Dir_B_CD8+ T   Dir_B_DC Dir_B_Endo
 #> Patient_1 0.3655633 0.6472004    0.2193690 0.33179690  0.6839505
 #> Patient_2 0.7127917 0.5965352    1.0316271 0.84989477  0.6860757
 #> Patient_3 1.1609442 0.7959182    0.8781016 0.92070117  0.8362820
@@ -451,51 +461,113 @@ head(kernel_res$features[, 1:5])
 #> Patient_6 0.4209898 0.5559673    0.7787024 0.51126999  0.6621874
 ```
 
+### Decomposing a score into ligand-receptor pairs
+
+[`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md)
+sums over every ligand-receptor pair to produce one score per cell-type
+pair, so that score alone can’t tell you which ligand-receptor pairs
+drove it.
+[`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md)
+recovers that breakdown for one sender-receiver pair (exploiting that
+the kernel formula is linear in `LRmatrix`, so each pair’s contribution
+can be computed directly and sums back exactly to the original score),
+and
+[`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)
+shows the top contributors as a LIANA-style dot plot (dot size = share
+of that pair’s total score, color = raw contribution).
+
+``` r
+lr_contrib <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+)
+head(lr_contrib)
+#>     Patient             Edge Sender Receiver Ligand Receptor Contribution
+#> 1 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  TGFB1   TGFBR3 0.0010444341
+#> 2 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.E    KLRK1 0.0005353052
+#> 3 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T    ADM    VIPR1 0.0002670687
+#> 4 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.F     CD8A 0.0001695168
+#> 5 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.A     CD8A 0.0001652873
+#> 6 Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.C     CD8A 0.0001652873
+#>   PctOfTotal
+#> 1  21.519765
+#> 2  11.029554
+#> 3   5.502746
+#> 4   3.492763
+#> 5   3.405619
+#> 6   3.405619
+plotLRContributions(lr_contrib, top_n = 10)
+```
+
+![Dot plot of the top ligand-receptor pairs contributing to Tumor and
+CD8+ T communication, per patient; dot size is the share of the total
+score and color the raw
+contribution.](RaCiNG_files/figure-html/unnamed-chunk-19-1.png)
+
 ### Statistical analysis on the example data
+
+The example data has no clinical annotation, so for illustration
+patients are split by their CD8+ T-cell infiltration (above vs below the
+median). In your own data, use a real clinical variable such as response
+to therapy. (With only 10 patients many values are tied, so
+[`wilcox.test()`](https://rdrr.io/r/stats/wilcox.test.html) warns that
+it cannot compute exact p-values; those warnings are hidden here.)
+
+``` r
+cd8 <- skcm_example$Cmatrix[, "CD8+ T"]
+grouping <- ifelse(cd8 > median(cd8), "CD8_high", "CD8_low")
+wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
+head(wilcox_results)
+#>            Comparison           Feature Wilcox_statistic Fold_change    Log2FC
+#> 1 CD8_high_vs_CD8_low      Dir_B_CD8+ T               25    3.644724 1.8658095
+#> 2 CD8_high_vs_CD8_low           Dir_B_M               25    1.624455 0.6999561
+#> 3 CD8_high_vs_CD8_low        Dir_B_Treg               25    1.853754 0.8904495
+#> 4 CD8_high_vs_CD8_low    Dir_CAF_CD8+ T               25    1.998395 0.9988417
+#> 5 CD8_high_vs_CD8_low Dir_CD8+ T_CD8+ T               25    4.820017 2.2690382
+#> 6 CD8_high_vs_CD8_low     Dir_CD8+ T_DC               25    3.317927 1.7302821
+#>       P_value Adjusted_P_value
+#> 1 0.007936508       0.03968254
+#> 2 0.007936508       0.03968254
+#> 3 0.007936508       0.03968254
+#> 4 0.007936508       0.03968254
+#> 5 0.007936508       0.03968254
+#> 6 0.007936508       0.03968254
+top_features_plot(wilcox_results, top_n = 10)
+```
+
+![Ranked bar chart of the direct-communication features most up- and
+down-regulated in CD8-high versus CD8-low
+patients.](RaCiNG_files/figure-html/unnamed-chunk-20-1.png)
+
+For a continuous score, a random placeholder is used below; replace it
+with a per-patient score of your own (e.g. an immune-response
+signature).
 
 ``` r
 set.seed(1)
-grouping <- sample(c("GroupA", "GroupB"), nrow(kernel_res$features), replace = TRUE)
-wilcox_results <- wilcox_group_test(kernel_res$features, grouping)
-head(wilcox_results)
-#>         Comparison      Feature Wilcox_statistic Fold_change      Log2FC
-#> 1 GroupA_vs_GroupB      Dir_B_B               15   1.2465145  0.31789965
-#> 2 GroupA_vs_GroupB    Dir_B_CAF               17   1.2144863  0.28034627
-#> 3 GroupA_vs_GroupB Dir_B_CD8..T               13   1.2607549  0.33428785
-#> 4 GroupA_vs_GroupB     Dir_B_DC               12   0.9837813 -0.02359046
-#> 5 GroupA_vs_GroupB   Dir_B_Endo               17   1.2748348  0.35031028
-#> 6 GroupA_vs_GroupB      Dir_B_M               15   1.0120194  0.01723701
-#>     P_value Adjusted_P_value
-#> 1 0.6095238                1
-#> 2 0.3523810                1
-#> 3 0.9142857                1
-#> 4 1.0000000                1
-#> 5 0.3523810                1
-#> 6 0.6095238                1
-top_features_plot(wilcox_results, top_n = 10)
-#> Warning: No shared levels found between `names(values)` of the manual scale and the
-#> data's fill values.
-```
-
-![](RaCiNG_files/figure-html/unnamed-chunk-20-1.png)
-
-``` r
 response_score <- setNames(rnorm(nrow(kernel_res$features)), rownames(kernel_res$features))
 corr_results <- correlate_features_with_score(kernel_res$features, response_score)
 head(corr_results)
-#>   Group      Feature       Rho   P_value Adjusted_P_value
-#> 1   All    Dir_B_CAF 0.1272727 0.7328868        0.9699973
-#> 2   All Dir_B_CD8..T 0.3333333 0.3488462        0.9699973
-#> 3   All   Dir_B_Endo 0.2363636 0.5138983        0.9699973
-#> 4   All      Dir_B_M 0.1272727 0.7328868        0.9699973
-#> 5   All     Dir_B_NK 0.1393939 0.7072038        0.9699973
-#> 6   All   Dir_B_Treg 0.2484848 0.4915555        0.9699973
+#>   Group      Feature        Rho   P_value Adjusted_P_value
+#> 1   All    Dir_B_CAF -0.3212121 0.3676840        0.8720362
+#> 2   All Dir_B_CD8+ T -0.4424242 0.2042006        0.8720362
+#> 3   All   Dir_B_Endo -0.2969697 0.4069502        0.8720362
+#> 4   All      Dir_B_M -0.4060606 0.2473708        0.8720362
+#> 5   All     Dir_B_NK -0.5151515 0.1328231        0.8720362
+#> 6   All  Dir_B_Tumor -0.3333333 0.3488462        0.8720362
 correlation_plot(corr_results, top_n = 10)
 ```
 
-![](RaCiNG_files/figure-html/unnamed-chunk-21-1.png)
+![Diverging bar chart of the features with the strongest positive and
+negative Spearman correlations with the
+score.](RaCiNG_files/figure-html/unnamed-chunk-21-1.png)
 
 ### Monte Carlo method on the example data
+
+The settings below are deliberately tiny so the example runs in seconds;
+real analyses use thousands of cells (`Ncells`) and around 100 graphs
+(`Ngraphs`) per patient.
 
 ``` r
 set.seed(42)
@@ -504,10 +576,50 @@ mc_res <- compute_racing_montecarlo(
   output_folder = tempdir(),
   file_name     = "skcm_example",
   nPatients     = 2,
-  communication_type = "W",
+  communication_type = c("D", "GSCC"),
   Ncells  = 100,
   Ngraphs = 5,
-  Ndegree = 3,
-  norm    = TRUE
+  Ndegree = 3
 )
+#> Using pre-computed input matrices; skipping input generation.
+#> Running Monte Carlo simulation for 2 patients
+#> Processing interaction distribution and generating CSV output...
+
+# Direct communication: mean and standard deviation across the simulated graphs
+head(mc_res$output$D$mean[, 1:5])
+#>           Dir_B_B Dir_B_CAF Dir_B_CD8+ T Dir_B_DC Dir_B_Endo
+#> Patient_1       0       0.6          0.0      0.0        0.2
+#> Patient_2       0       0.2          1.4      1.2        0.0
+head(mc_res$output$D$sd[, 1:5])
+#>           Dir_B_B Dir_B_CAF Dir_B_CD8+ T Dir_B_DC Dir_B_Endo
+#> Patient_1       0 1.0000000     0.000000 0.000000  0.4472136
+#> Patient_2       0 0.4472136     1.224745 1.224745  0.0000000
+
+# Fraction of all cells that belong to the GSCC, per cell type
+mc_res$output$GSCC$mean
+#>           GSCC_B GSCC_CAF GSCC_CD8+ T GSCC_DC GSCC_Endo GSCC_M GSCC_NK
+#> Patient_1  0.002    0.014       0.000   0.004     0.008  0.010   0.000
+#> Patient_2  0.012    0.014       0.068   0.070     0.002  0.088   0.002
+#>           GSCC_Treg GSCC_Tumor
+#> Patient_1     0.012      0.578
+#> Patient_2     0.014      0.374
 ```
+
+## Notes
+
+- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+  and
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  are the main entry points.
+- The kernel method computes direct communication only; GSCC is
+  available with the Monte Carlo method. Wedges and triangles are no
+  longer part of RaCInG.
+- Both accept an `input_data` argument with pre-computed matrices (as
+  returned by
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)),
+  which skips all preprocessing.
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  requires the optional packages listed under Installation for
+  deconvolution and prior-network assembly.
+- The original Python implementation is available at
+  <https://github.com/SysBioOncology/RaCInG>.

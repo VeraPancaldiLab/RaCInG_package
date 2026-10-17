@@ -6,7 +6,7 @@
 \usage{
 compute_racing_kernel(
   counts = NULL,
-  output_folder = "~/Documents/racing/vignettes/",
+  output_folder = "Results/",
   deconv = NULL,
   cc_network = NULL,
   fun_LR = min,
@@ -19,13 +19,14 @@ compute_racing_kernel(
   cbsx.token = NULL,
   file_name = NULL,
   nPatients = "all",
-  communication_type = "W",
+  communication_type = "D",
   norm = FALSE,
   pt_idx = NULL,
   remove_direction = TRUE,
   input_data = NULL,
   zero_threshold = 1,
-  expr_threshold = 10
+  expr_threshold = 10,
+  already_normalized = FALSE
 )
 }
 \arguments{
@@ -37,8 +38,9 @@ supplied; ignored otherwise.}
 \item{deconv}{Optional patient-by-cell-type abundance matrix. If omitted, it
 is computed via \code{multideconv::compute.deconvolution()} followed by
 \code{multideconv::compute.deconvolution.analysis()} (which identifies and
-collapses correlated cell-type subgroups) and
-\code{multideconv::standardize_celltype_colnames()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
+collapses correlated cell-type subgroups; requires multideconv >= 0.2.0).
+Columns keep multideconv's names: subgroups (\code{"B.cells_Subgroup.1"})
+and unclustered features (\code{"Quantiseq_TIL10_B.cells"}). See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 
 \item{cc_network}{Optional ligand-receptor prior network. If omitted, it is
 retrieved via \code{liana::get_curated_omni()}. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
@@ -65,15 +67,9 @@ per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepa
 
 \item{nPatients}{Number of patients to process, or \code{"all"}.}
 
-\item{communication_type}{Feature family to compute (\code{"D"}, \code{"W"}, \code{"TT"},
-or \code{"GSCC"}), or a character vector of several of these (e.g.
-\code{c("D", "W", "TT", "GSCC")}). The kernel (\code{compute_kernel()}) is always
-computed exactly once regardless of how many types are requested --
-feature extraction from an already-computed kernel is cheap, so there is
-no need to call \code{compute_racing_kernel()} again just to get a different
-\code{communication_type}; request them all in one call instead. With more
-than one type, \code{features} in the return value is a named list (one data
-frame per type) instead of a single data frame.}
+\item{communication_type}{Feature family to compute. The kernel method only
+computes direct communication (\code{"D"}, the default); GSCC is available with
+\code{\link[=compute_racing_montecarlo]{compute_racing_montecarlo()}}.}
 
 \item{norm}{Logical; if \code{TRUE}, also compute a normalized baseline kernel and
 express features as an enrichment ratio over it (isolates specificity from
@@ -100,12 +96,32 @@ are zero for every patient (the original behavior); lower it (e.g.
 \item{expr_threshold}{Minimum expression (in linear TPM, not log-scale)
 a ligand or receptor must reach in its sending/receiving cell type to be
 kept. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
+
+\item{already_normalized}{Logical; if \code{TRUE}, \code{counts} is taken as linear-scale
+TPM and not renormalized. See \code{\link[=prepare_input_files]{prepare_input_files()}}.}
 }
 \value{
-A list with the kernel arrays and the derived feature matrix (or,
-for multiple \code{communication_type} entries, a named list of feature
-matrices) in \code{features}.
+A list with three elements:
+\describe{
+\item{\code{kernel}}{The raw kernel array \verb{[sender x receiver x patient]}
+from \code{\link[=compute_kernel]{compute_kernel()}}.}
+\item{\code{kernel_norm}}{The uniformized baseline kernel when \code{norm = TRUE},
+otherwise \code{NULL}.}
+\item{\code{features}}{A patient-by-feature data frame of direct
+communication scores, with columns named \code{"Dir_A_B"} and rows named
+by patient.}
+}
 }
 \description{
 Run the full kernel-based RaCInG workflow
+}
+\examples{
+data(skcm_example)
+res <- compute_racing_kernel(input_data = skcm_example)
+dim(res$features)
+head(res$features[, 1:4])
+
+# Enrichment ratio over a uniform ligand-receptor baseline
+res_norm <- compute_racing_kernel(input_data = skcm_example, norm = TRUE)
+head(res_norm$features[, 1:4])
 }

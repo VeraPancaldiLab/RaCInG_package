@@ -42,7 +42,8 @@
 <span>  <span class="va">cells</span>,</span>
 <span>  Dcell <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bundle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  patient_names <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  patient_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  zero_threshold <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -75,8 +76,14 @@ abundance weights cancel out of the ratio.</p></dd>
 <dt id="arg-patient-names">patient_names<a class="anchor" aria-label="anchor" href="#arg-patient-names"></a></dt>
 <dd><p>Optional character vector of patient labels, matching
 the patient order in <code>kernel</code>. Defaults to <code>Patient_1</code>, <code>Patient_2</code>, ...
-when omitted, matching <code><a href="compute_racing_montecarlo.html">compute_racing_montecarlo()</a></code>'s output when it
-is also given real names.</p></dd>
+when omitted.</p></dd>
+
+
+<dt id="arg-zero-threshold">zero_threshold<a class="anchor" aria-label="anchor" href="#arg-zero-threshold"></a></dt>
+<dd><p>Drop a cell-type pair once its fraction of
+zero-valued patients reaches this threshold. Default <code>1</code> only drops
+pairs that are zero for every patient (the original behavior); lower it
+(e.g. <code>0.9</code>) to also drop merely zero-inflated pairs.</p></dd>
 
 </dl></div>
     <div class="section level2">

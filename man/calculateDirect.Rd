@@ -29,8 +29,7 @@ abundance weights cancel out of the ratio.}
 
 \item{patient_names}{Optional character vector of patient labels, matching
 the patient order in \code{kernel}. Defaults to \code{Patient_1}, \code{Patient_2}, ...
-when omitted, matching \code{\link[=compute_racing_montecarlo]{compute_racing_montecarlo()}}'s output when it
-is also given real names.}
+when omitted.}
 
 \item{zero_threshold}{Drop a cell-type pair once its fraction of
 zero-valued patients reaches this threshold. Default \code{1} only drops

@@ -27,3 +27,13 @@ A \code{ggplot2} object.
 Shows the top positive and top negative correlations from
 \code{\link[=correlate_features_with_score]{correlate_features_with_score()}} as a diverging bar chart.
 }
+\examples{
+data(skcm_example)
+feats <- compute_racing_kernel(input_data = skcm_example)$features
+set.seed(1)
+score <- setNames(rnorm(nrow(feats)), rownames(feats))
+corr <- correlate_features_with_score(feats, score)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  correlation_plot(corr, top_n = 5)
+}
+}

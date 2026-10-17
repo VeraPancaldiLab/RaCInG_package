@@ -12,10 +12,11 @@
 
 utils::globalVariables(
   c(
-    "Adj_P_value", "Celltype", "Datasets", "Direction", "Effect",
-    "Expr_Ligand", "Expr_Receptor", "Feature", "Ligand", "Receiver",
-    "Receptor", "Rho", "Sender", "Significant", "category_intercell_source",
-    "category_intercell_target"
+    "Celltype", "CellD", "Contribution", "Datasets", "Direction",
+    "Edge", "Expr_Ligand", "Expr_Receptor", "Feature", "IntD", "Ligand",
+    "Log2FC", "LRpair", "Patient", "PctOfTotal", "Receiver", "Receptor", "Rho",
+    "Sender", "category_intercell_source",
+    "category_intercell_target", "mean_contrib"
   )
 )
 

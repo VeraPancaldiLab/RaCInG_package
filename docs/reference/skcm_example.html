@@ -61,7 +61,9 @@ cell-to-receptor compatibility.</p></dd>
 <dt>Cmatrix</dt>
 <dd><p>Numeric matrix (10 patients x 9 cell types). Row-normalised
 cell-type abundance estimates from deconvolution, with M1 and M2
-macrophages merged into a single M category.</p></dd>
+macrophages merged into a single M category. Columns are named as in
+<code>celltypes</code>; rows are unnamed, so the workflows label patients
+<code>Patient_1</code> ... <code>Patient_10</code>.</p></dd>
 
 <dt>LRmatrix</dt>
 <dd><p>3-D numeric array (276 ligands x 298 receptors x 10

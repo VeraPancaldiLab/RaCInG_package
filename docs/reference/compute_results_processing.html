@@ -39,9 +39,9 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compute_results_processing</span><span class="op">(</span></span>
 <span>  <span class="va">celltypes</span>,</span>
 <span>  <span class="va">patient_names</span>,</span>
-<span>  <span class="va">triangle_type</span>,</span>
+<span>  <span class="va">communication_type</span>,</span>
 <span>  remove_direction <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  normalized <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  normalized <span class="op">=</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sim_norm_file</span><span class="op">)</span>,</span>
 <span>  sim_raw_file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sim_norm_file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_folder <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -58,19 +58,28 @@
 
 
 <dt id="arg-patient-names">patient_names<a class="anchor" aria-label="anchor" href="#arg-patient-names"></a></dt>
-<dd><p>Character vector of patient identifiers.</p></dd>
+<dd><p>Character vector of patient identifiers: either one per
+row of the simulated <code>Cmatrix</code> (matched through the patient numbers stored
+in the <code>.out</code> file, so subset runs get the right names), or exactly one
+per patient in the file, in file order.</p></dd>
 
 
-<dt id="arg-triangle-type">triangle_type<a class="anchor" aria-label="anchor" href="#arg-triangle-type"></a></dt>
-<dd><p>Communication type (<code>"D"</code>, <code>"W"</code>, <code>"TT"</code>, <code>"CT"</code>, or <code>"GSCC"</code>).</p></dd>
+<dt id="arg-communication-type">communication_type<a class="anchor" aria-label="anchor" href="#arg-communication-type"></a></dt>
+<dd><p>Communication type of the simulation files
+(<code>"D"</code> or <code>"GSCC"</code>).</p></dd>
 
 
 <dt id="arg-remove-direction">remove_direction<a class="anchor" aria-label="anchor" href="#arg-remove-direction"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, merge directionally equivalent features.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, merge the two directions of each
+cell-type pair (direct communication only).</p></dd>
 
 
 <dt id="arg-normalized">normalized<a class="anchor" aria-label="anchor" href="#arg-normalized"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, divide raw values by a uniform baseline.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, divide raw values by the uniform
+baseline in <code>sim_norm_file</code>. Defaults to <code>TRUE</code> exactly when
+<code>sim_norm_file</code> is supplied.
+A feature that is zero in both simulations (0/0) is reported as <code>0</code>, as in
+the kernel method's <code><a href="calculateDirect.html">calculateDirect()</a></code>.</p></dd>
 
 
 <dt id="arg-sim-raw-file">sim_raw_file<a class="anchor" aria-label="anchor" href="#arg-sim-raw-file"></a></dt>
@@ -86,12 +95,16 @@
 
 
 <dt id="arg-file-name">file.name<a class="anchor" aria-label="anchor" href="#arg-file-name"></a></dt>
-<dd><p>Output filename stem.</p></dd>
+<dd><p>Output CSV file name for the means (e.g. <code>"RaCInG_input.csv"</code>);
+the standard deviations go to the same name with an <code>_sd</code> suffix
+(<code>"RaCInG_input_sd.csv"</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with processed mean and standard-deviation data frames.</p>
+    <p>A list with two patient-by-feature data frames, <code>mean</code> and <code>sd</code>.
+Direct features are named <code>"Dir_A_B"</code>, GSCC features <code>"GSCC_A"</code>; rows are
+named by patient. Patients whose simulation produced no edges are dropped.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

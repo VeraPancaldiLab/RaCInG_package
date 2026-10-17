@@ -13,6 +13,12 @@
 #'   `Comparison`, `Wilcox_statistic`, `Fold_change`, `Log2FC`, `P_value`, and
 #'   `Adjusted_P_value` (adjusted jointly across all comparisons).
 #' @export
+#' @examples
+#' data(skcm_example)
+#' feats <- compute_racing_kernel(input_data = skcm_example)$features
+#' groups <- rep(c("A", "B"), length.out = nrow(feats))
+#' res <- wilcox_group_test(feats, groups)
+#' head(res)
 wilcox_group_test <- function(data_matrix, groups, p_adjust_method = "fdr") {
   if (length(groups) != nrow(data_matrix)) {
     stop("Length of groups must match the number of rows in data_matrix")
@@ -85,6 +91,15 @@ wilcox_group_test <- function(data_matrix, groups, p_adjust_method = "fdr") {
 #'   `invisible(NULL)` after emitting a message stating this (rather than
 #'   silently drawing an empty plot).
 #' @export
+#' @examples
+#' set.seed(1)
+#' feats <- matrix(rexp(200), nrow = 20,
+#'                 dimnames = list(NULL, paste0("Dir_A_", LETTERS[1:10])))
+#' feats[1:10, 1:3] <- feats[1:10, 1:3] * 5
+#' res <- wilcox_group_test(feats, rep(c("High", "Low"), each = 10))
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   top_features_plot(res, top_n = 5)
+#' }
 top_features_plot <- function(wilcox_results, top_n = 10, p_threshold = 0.05, title = "Top features") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package `ggplot2` is required for `top_features_plot()`. Please install it first.", call. = FALSE)
@@ -162,6 +177,12 @@ top_features_plot <- function(wilcox_results, top_n = 10, p_threshold = 0.05, ti
 #'
 #' @return A data frame with `Group`, `Feature`, `Rho`, `P_value`, and `Adjusted_P_value`.
 #' @export
+#' @examples
+#' data(skcm_example)
+#' feats <- compute_racing_kernel(input_data = skcm_example)$features
+#' set.seed(1)
+#' score <- setNames(rnorm(nrow(feats)), rownames(feats))
+#' head(correlate_features_with_score(feats, score))
 correlate_features_with_score <- function(feature_matrix, score, group = NULL, p_adjust_method = "fdr") {
   original_rownames <- rownames(feature_matrix)
   patients <- intersect(original_rownames, names(score))
@@ -212,6 +233,15 @@ correlate_features_with_score <- function(feature_matrix, score, group = NULL, p
 #'
 #' @return A `ggplot2` object.
 #' @export
+#' @examples
+#' data(skcm_example)
+#' feats <- compute_racing_kernel(input_data = skcm_example)$features
+#' set.seed(1)
+#' score <- setNames(rnorm(nrow(feats)), rownames(feats))
+#' corr <- correlate_features_with_score(feats, score)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   correlation_plot(corr, top_n = 5)
+#' }
 correlation_plot <- function(correlation_results, group = NULL, top_n = 10, title = "Feature correlation") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package `ggplot2` is required for `correlation_plot()`. Please install it first.", call. = FALSE)
