@@ -42,11 +42,18 @@ prepare_input_files(
 
   Optional patient-by-cell-type abundance matrix. If omitted, it is
   computed via
-  [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html)
+  [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html)
   followed by
-  [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
-  (which identifies and collapses correlated cell-type subgroups) and
-  [`multideconv::standardize_celltype_colnames()`](https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html).
+  [`multideconv::compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html)
+  (which identifies and collapses correlated cell-type subgroups;
+  requires multideconv \>= 0.2.0). Columns keep multideconv's names:
+  subgroups (`"B.cells_Subgroup.1"`) and unclustered features
+  (`"Quantiseq_TIL10_B.cells"`). When you supply `deconv` yourself, its
+  rows must be exactly `colnames(counts)`, in the same order, and its
+  columns should be named with multideconv's standardized cell-type
+  nomenclature
+  ([`multideconv::get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html));
+  a warning lists any that aren't.
 
 - cc_network:
 
@@ -72,9 +79,12 @@ prepare_input_files(
 - cell_expr_profile:
 
   Optional gene-by-cell-type expression profile matrix. If omitted, it
-  is estimated from `counts` and `deconv` via per-gene non-negative
-  least squares (see
-  [`.estimate_expression_profiles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-estimate_expression_profiles.md)).
+  is estimated via per-gene non-negative least squares – per
+  method-signature block, then merged according to the multideconv
+  subgroup analysis, when `deconv` is auto-computed (see
+  [`.estimate_expression_profiles_subgroups()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-estimate_expression_profiles_subgroups.md)),
+  or directly from the supplied `deconv` otherwise (see
+  [`.estimate_expression_profiles_samples()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/dot-estimate_expression_profiles_samples.md)).
 
 - source, target:
 
@@ -84,7 +94,7 @@ prepare_input_files(
 - deconv_method:
 
   Deconvolution method(s) passed to
-  [`multideconv::compute.deconvolution()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html).
+  [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html).
 
 - cbsx.name, cbsx.token:
 

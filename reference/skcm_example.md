@@ -32,7 +32,9 @@ A named list with the following elements:
 
   Numeric matrix (10 patients x 9 cell types). Row-normalised cell-type
   abundance estimates from deconvolution, with M1 and M2 macrophages
-  merged into a single M category.
+  merged into a single M category. Columns are named as in `celltypes`;
+  rows are unnamed, so the workflows label patients `Patient_1` ...
+  `Patient_10`.
 
 - LRmatrix:
 

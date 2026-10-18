@@ -1,9 +1,8 @@
 # Dot plot of top ligand-receptor pair contributions (LIANA-style)
 
 Ranks ligand-receptor pairs by mean contribution (within each `Edge`
-separately, since different edges of a Wedge/Triangle are typically
-driven by different pairs) and plots the top ones as a dot per patient x
-pair: dot size is `PctOfTotal`, dot color is the raw `Contribution`.
+separately) and plots the top ones as a dot per patient x pair: dot size
+is `PctOfTotal`, dot color is the raw `Contribution`.
 
 ## Usage
 
@@ -16,10 +15,7 @@ plotLRContributions(lr_contrib, top_n = 15, title = NULL)
 - lr_contrib:
 
   Output of
-  [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md),
-  [`computeWedgeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeWedgeLRContributions.md),
-  or
-  [`computeTriangleLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangleLRContributions.md).
+  [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md).
 
 - top_n:
 
@@ -35,3 +31,17 @@ plotLRContributions(lr_contrib, top_n = 15, title = NULL)
 ## Value
 
 A `ggplot2` object.
+
+## Examples
+
+``` r
+data(skcm_example)
+lr <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T"
+)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plotLRContributions(lr, top_n = 10)
+}
+```

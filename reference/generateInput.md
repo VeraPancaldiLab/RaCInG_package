@@ -1,9 +1,14 @@
-# Load RaCInG input matrices from disk –\> Is there any normalization done here? I dont see it in the function
+# Load RaCInG input matrices from disk
 
 Internal helper called by
 [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 to read back the generated CSV files and assemble the normalised
-matrices and 3-D tensor. Users should call
+matrices and 3-D tensor. Normalisation happens in the readers it calls:
+[`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md)
+rescales each patient's cell-type abundances to sum to 1, and
+[`createInteractionDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createInteractionDistr.md)
+rescales each patient's ligand-receptor weights to sum to 1. Users
+should call
 [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
 instead.
 

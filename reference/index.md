@@ -17,18 +17,6 @@
   : Derive communication features from a kernel
 - [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)
   : Calculate direct communication features from a kernel
-- [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)
-  : Calculate wedge features from a kernel
-- [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
-  : Compute triangle features from kernel matrices
-- [`computeGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeGSCC.md)
-  : Compute GSCC features from kernel matrices
-- [`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md)
-  : Count wedges across Monte Carlo graph simulations
-- [`countTrustTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countTrustTriangles.md)
-  : Count trust triangles across Monte Carlo graph simulations
-- [`countCycleTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countCycleTriangles.md)
-  : Count cycle triangles across Monte Carlo graph simulations
 - [`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md)
   : Count direct edges across Monte Carlo graph simulations
 - [`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)
@@ -40,19 +28,11 @@
   : Generate a single RaCInG graph realization
 - [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
   : Run Monte Carlo simulations for one or more patients
-- [`getGSCCAnalytically()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/getGSCCAnalytically.md)
-  : Legacy GSCC helper
 
 ## Ligand-receptor contribution analysis
 
 - [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md)
   : Decompose a Direct communication score into per-ligand-receptor-pair
-  contributions
-- [`computeWedgeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeWedgeLRContributions.md)
-  : Decompose a Wedge's two hub paths into per-edge ligand-receptor
-  contributions
-- [`computeTriangleLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangleLRContributions.md)
-  : Decompose a Triangle's edges into per-edge ligand-receptor
   contributions
 - [`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)
   : Dot plot of top ligand-receptor pair contributions (LIANA-style)
@@ -78,14 +58,6 @@
   : Convert an edge list to a sparse adjacency matrix
 - [`EdgetoAdj_No_loop()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj_No_loop.md)
   : Convert an edge list to a sparse adjacency matrix without self-loops
-- [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md)
-  : Count graph motifs by cell-type combination
-- [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md)
-  : Enumerate outward trust triangles
-- [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)
-  : Enumerate directed cycle triangles
-- [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md)
-  : Enumerate wedges in a directed graph
 - [`GSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/GSCC.md)
   : Extract the giant strongly connected component
 

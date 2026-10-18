@@ -3,10 +3,11 @@
 Generates the requested number of Monte Carlo graph realizations *once*
 per patient and extracts every requested feature family from each
 realization, instead of the alternative of calling
-[`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md),
-[`countWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countWedges.md),
-etc. separately – which would independently re-simulate a brand new set
-of random graphs per feature type. Graph generation
+[`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md)
+and
+[`countGSCC()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countGSCC.md)
+separately – which would independently re-simulate a brand new set of
+random graphs per feature type. Graph generation
 ([`model1()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/model1.md)'s
 vertex/edge sampling), not feature extraction, is the expensive part of
 a Monte Carlo run, and it does not depend on which feature you
@@ -25,7 +26,7 @@ countAllTypes(
   N,
   av,
   itNo,
-  types = c("D", "W", "TT", "CT", "GSCC")
+  types = c("D", "GSCC")
 )
 ```
 
@@ -66,7 +67,7 @@ countAllTypes(
 - types:
 
   Character vector of feature families to extract from each simulated
-  graph: any combination of `"D"`, `"W"`, `"TT"`, `"CT"`, `"GSCC"`.
+  graph: `"D"`, `"GSCC"`, or both.
 
 ## Value
 

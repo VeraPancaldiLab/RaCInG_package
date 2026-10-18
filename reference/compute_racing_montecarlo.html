@@ -38,7 +38,7 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compute_racing_montecarlo</span><span class="op">(</span></span>
 <span>  counts <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  output_folder <span class="op">=</span> <span class="st">"~/Documents/racing/vignettes/"</span>,</span>
+<span>  output_folder <span class="op">=</span> <span class="st">"Results/"</span>,</span>
 <span>  deconv <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cc_network <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fun_LR <span class="op">=</span> <span class="va">min</span>,</span>
@@ -52,14 +52,16 @@
 <span>  pt_idx <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nPatients <span class="op">=</span> <span class="st">"all"</span>,</span>
-<span>  communication_type <span class="op">=</span> <span class="st">"W"</span>,</span>
+<span>  communication_type <span class="op">=</span> <span class="st">"D"</span>,</span>
 <span>  Ncells <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  Ngraphs <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  Ndegree <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  remove_direction <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  input_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ncores <span class="op">=</span> <span class="fl">1</span></span>
+<span>  ncores <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  expr_threshold <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  already_normalized <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -78,10 +80,11 @@ supplied; ignored otherwise.</p></dd>
 
 <dt id="arg-deconv">deconv<a class="anchor" aria-label="anchor" href="#arg-deconv"></a></dt>
 <dd><p>Optional patient-by-cell-type abundance matrix. If omitted, it
-is computed via <code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> followed by
-<code><a href="https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html" class="external-link">multideconv::compute.deconvolution.analysis()</a></code> (which identifies and
-collapses correlated cell-type subgroups) and
-<code><a href="https://rdrr.io/pkg/multideconv/man/standardize_celltype_colnames.html" class="external-link">multideconv::standardize_celltype_colnames()</a></code>. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
+is computed via <code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> followed by
+<code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html" class="external-link">multideconv::compute.deconvolution.analysis()</a></code> (which identifies and
+collapses correlated cell-type subgroups; requires multideconv &gt;= 0.2.0).
+Columns keep multideconv's names: subgroups (<code>"B.cells_Subgroup.1"</code>)
+and unclustered features (<code>"Quantiseq_TIL10_B.cells"</code>). See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
 
 
 <dt id="arg-cc-network">cc_network<a class="anchor" aria-label="anchor" href="#arg-cc-network"></a></dt>
@@ -128,9 +131,9 @@ per-gene non-negative least squares. See <code><a href="prepare_input_files.html
 
 
 <dt id="arg-communication-type">communication_type<a class="anchor" aria-label="anchor" href="#arg-communication-type"></a></dt>
-<dd><p>Feature family to simulate: <code>"D"</code>, <code>"W"</code>,
-<code>"TT"</code>, <code>"CT"</code>, <code>"GSCC"</code>, or a character vector of several of these
-(e.g. <code>c("D", "W", "TT", "CT", "GSCC")</code>). When more than one is given,
+<dd><p>Feature family to simulate: <code>"D"</code> (direct
+communication, the default), <code>"GSCC"</code>, or both (<code>c("D", "GSCC")</code>). When
+both are given,
 every requested type is extracted from the same simulated graphs (via
 <code><a href="countAllTypes.html">countAllTypes()</a></code>) in one pass instead of re-simulating a fresh set of
 graphs per type – graph generation, not feature extraction, is the
@@ -152,7 +155,8 @@ every type requested. <code>output</code> in the return value is then a named li
 
 
 <dt id="arg-remove-direction">remove_direction<a class="anchor" aria-label="anchor" href="#arg-remove-direction"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, merge directionally equivalent features.</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, merge the two directions of each
+cell-type pair in the direct communication features.</p></dd>
 
 
 <dt id="arg-norm">norm<a class="anchor" aria-label="anchor" href="#arg-norm"></a></dt>
@@ -177,12 +181,65 @@ When supplied, the <code>counts</code> argument and all preprocessing parameters
 <dd><p>Number of cores to compute patients on in parallel. Passed
 through to <code><a href="runSim.html">runSim()</a></code>; see its documentation for details.</p></dd>
 
+
+<dt id="arg-expr-threshold">expr_threshold<a class="anchor" aria-label="anchor" href="#arg-expr-threshold"></a></dt>
+<dd><p>Minimum expression (in linear TPM, not log-scale)
+a ligand or receptor must reach in its sending/receiving cell type to be
+kept. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
+
+
+<dt id="arg-already-normalized">already_normalized<a class="anchor" aria-label="anchor" href="#arg-already-normalized"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, <code>counts</code> is taken as linear-scale
+TPM and not renormalized. See <code><a href="prepare_input_files.html">prepare_input_files()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with the generated inputs and processed feature matrices.</p>
+    <p>A list with two elements:</p><dl><dt><code>input</code></dt>
+<dd><p>The input matrices used: <code>LRmatrix</code>, <code>Lmatrix</code>,
+<code>Rmatrix</code>, <code>Cmatrix</code>, <code>celltypes</code>, <code>ligands</code>, <code>receptors</code> – the
+same names as <code><a href="prepare_input_files.html">prepare_input_files()</a></code>, so it can be passed back as
+<code>input_data</code>.</p></dd>
+
+<dt><code>output</code></dt>
+<dd><p>For a single <code>communication_type</code>, a list with the
+patient-by-feature data frames <code>mean</code> and <code>sd</code> (see
+<code><a href="compute_results_processing.html">compute_results_processing()</a></code>); for <code>c("D", "GSCC")</code>, a named list
+with one such entry per type.</p></dd>
+
+
+</dl><p>As a side effect, the raw simulations (<code>&lt;file_name&gt;.out</code>, plus
+<code>&lt;file_name&gt;_norm.out</code> when <code>norm = TRUE</code>) and the processed features
+(<code>&lt;file_name&gt;.csv</code>, <code>&lt;file_name&gt;_sd.csv</code>) are written to <code>output_folder</code>;
+with several types, each file name gets a <code>_&lt;type&gt;</code> suffix after
+<code>file_name</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mc</span> <span class="op">&lt;-</span> <span class="fu">compute_racing_montecarlo</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  input_data <span class="op">=</span> <span class="va">skcm_example</span>, output_folder <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  nPatients <span class="op">=</span> <span class="fl">2</span>, communication_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="st">"GSCC"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  Ncells <span class="op">=</span> <span class="fl">100</span>, Ngraphs <span class="op">=</span> <span class="fl">3</span>, Ndegree <span class="op">=</span> <span class="fl">3</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Using pre-computed input matrices; skipping input generation.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Running Monte Carlo simulation for 2 patients</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Processing interaction distribution and generating CSV output...</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mc</span><span class="op">$</span><span class="va">output</span><span class="op">$</span><span class="va">D</span><span class="op">$</span><span class="va">mean</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             Dir_B_B Dir_B_CAF Dir_B_CD8+ T Dir_B_DC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Patient_1 0.0000000 2.0000000            0        0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Patient_2 0.3333333 0.6666667            4        1</span>
+<span class="r-in"><span><span class="va">mc</span><span class="op">$</span><span class="va">output</span><span class="op">$</span><span class="va">GSCC</span><span class="op">$</span><span class="va">mean</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                GSCC_B   GSCC_CAF GSCC_CD8+ T GSCC_DC GSCC_Endo     GSCC_M</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Patient_1 0.003333333 0.01333333        0.00    0.00      0.01 0.02333333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Patient_2 0.013333333 0.01666667        0.08    0.07      0.00 0.07666667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           GSCC_NK   GSCC_Treg GSCC_Tumor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Patient_1       0 0.006666667  0.5233333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Patient_2       0 0.016666667  0.2833333</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

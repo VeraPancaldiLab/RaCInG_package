@@ -45,3 +45,16 @@ top_features_plot(
 A `ggplot2` object, or, if no feature passes `p_threshold`,
 `invisible(NULL)` after emitting a message stating this (rather than
 silently drawing an empty plot).
+
+## Examples
+
+``` r
+set.seed(1)
+feats <- matrix(rexp(200), nrow = 20,
+                dimnames = list(NULL, paste0("Dir_A_", LETTERS[1:10])))
+feats[1:10, 1:3] <- feats[1:10, 1:3] * 5
+res <- wilcox_group_test(feats, rep(c("High", "Low"), each = 10))
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  top_features_plot(res, top_n = 5)
+}
+```

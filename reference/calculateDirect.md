@@ -45,9 +45,7 @@ calculateDirect(
 
   Optional character vector of patient labels, matching the patient
   order in `kernel`. Defaults to `Patient_1`, `Patient_2`, ... when
-  omitted, matching
-  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)'s
-  output when it is also given real names.
+  omitted.
 
 - zero_threshold:
 

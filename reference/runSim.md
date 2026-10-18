@@ -16,8 +16,8 @@ runSim(
   N = 10000,
   itNo = 100,
   av = 20,
-  output_folder = NULL,
-  file.name = NULL,
+  output_folder = "Results/",
+  file.name = "RaCInG_input",
   norm = FALSE,
   patient_idx = NULL,
   ncores = 1
@@ -48,10 +48,9 @@ runSim(
 
 - communication_type:
 
-  Feature family to simulate (`"D"`, `"W"`, `"TT"`, `"CT"`, or
-  `"GSCC"`), or a character vector of several of these. When more than
-  one is given, every requested type is extracted from the *same*
-  simulated graphs (via
+  Feature family to simulate: `"D"` (direct communication), `"GSCC"`, or
+  both (`c("D", "GSCC")`). When more than one is given, every requested
+  type is extracted from the *same* simulated graphs (via
   [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md))
   instead of re-simulating a fresh set of graphs per type, and one
   `.out` file per type is written (file names suffixed with the type,
@@ -76,7 +75,7 @@ runSim(
 
 - output_folder:
 
-  Directory used to write the `.out` files.
+  Directory used to write the `.out` files (created if missing).
 
 - file.name:
 

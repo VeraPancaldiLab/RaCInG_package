@@ -88,3 +88,30 @@ raw score), and `PctOfTotal` (share of `Contribution` within that
 patient and `Edge`). Contributions that are exactly zero (no possible
 pathway) are omitted. `NULL` (with a message) if no ligand-receptor pair
 has a nonzero contribution at all.
+
+## Examples
+
+``` r
+data(skcm_example)
+lr <- computeLRContributions(
+  Lmatrix = skcm_example$Lmatrix, Rmatrix = skcm_example$Rmatrix,
+  Cmatrix = skcm_example$Cmatrix, LRmatrix = skcm_example$LRmatrix,
+  celltypes = skcm_example$celltypes, sender = "Tumor", receiver = "CD8+ T",
+  patient_names = rownames(skcm_example$Cmatrix), top_n = 5
+)
+head(lr)
+#>      Patient             Edge Sender Receiver Ligand Receptor Contribution
+#> 1  Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  TGFB1   TGFBR3 0.0010444341
+#> 2  Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.E    KLRK1 0.0005353052
+#> 3  Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T    ADM    VIPR1 0.0002670687
+#> 4  Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.F     CD8A 0.0001695168
+#> 5  Patient_1 Tumor <-> CD8+ T  Tumor   CD8+ T  HLA.A     CD8A 0.0001652873
+#> 6 Patient_10 Tumor <-> CD8+ T  Tumor   CD8+ T  TGFB1   TGFBR3 0.0010800198
+#>   PctOfTotal
+#> 1  21.519765
+#> 2  11.029554
+#> 3   5.502746
+#> 4   3.492763
+#> 5   3.405619
+#> 6  12.391528
+```

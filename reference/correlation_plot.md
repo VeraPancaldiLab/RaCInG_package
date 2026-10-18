@@ -37,3 +37,44 @@ correlation_plot(
 ## Value
 
 A `ggplot2` object.
+
+## Examples
+
+``` r
+data(skcm_example)
+feats <- compute_racing_kernel(input_data = skcm_example)$features
+#> Using pre-computed input matrices; skipping input generation.
+#> Computing kernel for 10 patients
+#> Calculating kernel...
+#> Calculating features...
+set.seed(1)
+score <- setNames(rnorm(nrow(feats)), rownames(feats))
+corr <- correlate_features_with_score(feats, score)
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+#> Warning: cannot compute exact p-value with ties
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  correlation_plot(corr, top_n = 5)
+}
+```

@@ -18,4 +18,6 @@ Read_Sim_Output(filename)
 ## Value
 
 A list containing the average values, standard deviations, and raw
-counts.
+counts (one slice/row per patient, in file order), and `patients`, the
+patient numbers (row indices of the simulated `Cmatrix`) of those
+slices.

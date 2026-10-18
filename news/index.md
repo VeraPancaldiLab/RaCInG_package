@@ -1,5 +1,156 @@
 # Changelog
 
+## RaCInG (development version)
+
+### Breaking change: wedges and triangles removed; GSCC is Monte Carlo only
+
+- Removed the wedge and triangle features from both methods:
+  `calculateWedges()`, `computeTriangles()`, `countWedges()`,
+  `countTrustTriangles()`, `countCycleTriangles()`, `Wedges()`,
+  `Trust_Triangles()`, `Cycle_Triangles()`, `Count_Types()`,
+  `computeWedgeLRContributions()` and
+  `computeTriangleLRContributions()`.
+- Removed the kernel’s analytic GSCC (`computeGSCC()`,
+  `getGSCCAnalytically()`); GSCC is computed only by the Monte Carlo
+  method. `nleqslv` is no longer a dependency.
+- The kernel method now computes direct communication only:
+  [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+  /
+  [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md)
+  default to and accept only `communication_type = "D"`
+  ([`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md)
+  also loses its `norm` argument, which only affected the removed
+  types).
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md),
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
+  and
+  [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md)
+  accept `"D"`, `"GSCC"` or both, defaulting to `"D"`. Requesting a
+  removed type gives an explicit error.
+  [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md)
+  errors on `.out` files of a removed type.
+
+### Other changes
+
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  stops if a user-supplied `deconv` does not have exactly the samples of
+  `colnames(counts)` in the same order (previously one patient’s cell
+  fractions could silently be paired with another patient’s
+  ligand-receptor weights). Automatically computed deconvolutions are
+  put in counts order.
+- [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md)
+  stops if Lmatrix and Rmatrix list different cell types, and
+  [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md)
+  now also catches a same-size but different cell-type set.
+- Normalized Monte Carlo features report 0/0 (zero in both simulations)
+  as `0`, matching the kernel method (previously `1`, as in the original
+  Python).
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  keeps cell types that only receive signals (express receptors but no
+  ligand above `expr_threshold`); they were dropped, together with every
+  interaction aimed at them.
+- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+  labels feature rows with the patients it actually used, fixing a crash
+  with `counts` + `nPatients` and wrong labels when both `counts` and
+  `input_data` were given.
+- Gene and cell-type names are kept unchanged (`check.names = FALSE`):
+  `HLA-A` and `"CD8+ T"` were turned into `HLA.A` and `"CD8..T"` when
+  reading the input files and in
+  [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)’s
+  column names.
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  warns when a user-supplied `deconv` has cell-type names outside
+  multideconv’s standardized nomenclature
+  ([`multideconv::get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html)).
+- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md),
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  and
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)
+  now default `output_folder` to `"Results/"` (previously a
+  developer-machine path for the two workflows, and `NULL` for
+  [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md),
+  which wrote `.out` files to the filesystem root).
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  (via
+  [`generateInput()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/generateInput.md))
+  now builds its read paths with
+  [`file.path()`](https://rdrr.io/r/base/file.path.html), so an
+  `output_folder` without a trailing slash (e.g.
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html), as in the
+  vignette and README) works.
+- [`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
+  and
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  gain `already_normalized`, and
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  gains `expr_threshold`, both passed to
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md).
+- The saved `LRmatrix_*.csv` keeps sample names unchanged (dots were
+  rewritten to hyphens).
+- [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)’s
+  `.out` header now states the number of patients in the file.
+  [`Read_Sim_Output()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Read_Sim_Output.md)
+  stores patients in file order and returns their patient numbers
+  (`patients`);
+  [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md)
+  uses them to name rows. Files written by earlier versions still read
+  correctly.
+- [`countAllTypes()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countAllTypes.md)
+  counts Direct edges the same vectorized way as
+  [`countDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/countDirect.md)
+  (identical results, faster).
+- Requires multideconv \>= 0.2.0; removed the unused
+  `.clean_celltype_names()`.
+- [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md)’s
+  `triangle_type` argument is renamed `communication_type`, like
+  everywhere else in the package. Its `normalized` argument now defaults
+  to `TRUE` only when `sim_norm_file` is given (previously `TRUE`
+  always, which errored without a baseline file).
+- The standard-deviation CSV written by
+  [`compute_results_processing()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_results_processing.md)
+  (and so by
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md))
+  is now `<stem>_sd.csv` instead of `<stem>.csv_sd.csv`.
+- [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)’s
+  `$input` elements `cellTypes`, `ligs` and `recs` are renamed
+  `celltypes`, `ligands` and `receptors`, the names
+  [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  uses, so `$input` can be passed back as `input_data`.
+- [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  no longer errors when `Cmatrix` has no row names (as in the bundled
+  `skcm_example`); both workflows then name patients `Patient_<row>`, so
+  subset runs (`nPatients`, `pt_idx`) keep the right labels.
+- [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
+  only requires ADImpute when it normalizes counts
+  (`already_normalized = FALSE`).
+- `skcm_example$Cmatrix` columns are now named as in
+  `skcm_example$celltypes` (`"CD8+ T"`, `"M"`); they were stale labels
+  (`"CD8"`, `"M1"`). Values are unchanged.
+
+### Documentation
+
+- Added runnable examples to the main exported functions
+  ([`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md),
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md),
+  [`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md),
+  [`computeLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeLRContributions.md),
+  [`plotLRContributions()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/plotLRContributions.md)
+  and the statistics functions), and documented the structure of the
+  workflow return values and the files
+  [`compute_racing_montecarlo()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_montecarlo.md)
+  writes.
+- Vignette: explains raw vs normalized (`norm`) features, the
+  `"Dir_A_B"` naming, `zero_threshold`, the input requirements for a
+  user-supplied `deconv` and `already_normalized`, and the Monte Carlo
+  output files; the Monte Carlo example on `skcm_example` is now run
+  when the vignette is built; the group labels in the examples match the
+  number of patients, and the example-data group comparison splits
+  patients by CD8+ T infiltration (the previous random split had no
+  significant feature, so its plot was empty); `Sign_matrix` is
+  described as the unused placeholder it currently is.
+- README: quick start on the bundled example data and a complete
+  workflow table.
+
 ## RaCInG 0.3.0
 
 ### Breaking change: `norm` now defaults to `FALSE`
@@ -73,10 +224,9 @@
   `Find_Number_Triangles()`, `Find_Number_Triangles_Unique()`,
   `Find_Number_2Loops()`, `Find_Number_2Loops_Unique()`,
   `Find_Number_Wedges()`, `Find_Number_Wedges_Unique()` (superseded by
-  [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md)/
-  [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)/[`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md),
-  which already return the count plus the full motif list); the bow-tie
-  decomposition `IN()`/`OUT()` and their sole dependency `BFS()`;
+  `Trust_Triangles()`/ `Cycle_Triangles()`/`Wedges()`, which already
+  return the count plus the full motif list); the bow-tie decomposition
+  `IN()`/`OUT()` and their sole dependency `BFS()`;
   `generateUniformLRGraph()` (superseded by the `norm`/ `normalize`
   logic built directly into
   [`runSim()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/runSim.md)/[`compute_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel.md));
@@ -120,27 +270,22 @@
 
 ### Fixed a catastrophic O(n^3) crash/hang in kernel Wedge/Triangle features
 
-- [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)
-  and
-  [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
-  built one named-list entry per cell-type combination inside a
-  triple-nested loop, then converted the whole list to a data frame –
-  for realistic cell-type counts (e.g. 100+) this reaches 10⁵⁻¹⁰6+
-  individual list insertions and made `"W"`/`"TT"` effectively unusable
-  via the kernel method, unlike `"D"`. Rewritten as vectorized array
-  operations (index grid + flattened-matrix lookups, mirroring the
-  equivalent Monte Carlo fix below); verified numerically identical to
-  the original loop-based output across bundled/unbundled and
-  raw/normalized cases. At 106 real cell types, `"TT"` (previously
-  unusable) now completes in a few seconds.
+- `calculateWedges()` and `computeTriangles()` built one named-list
+  entry per cell-type combination inside a triple-nested loop, then
+  converted the whole list to a data frame – for realistic cell-type
+  counts (e.g. 100+) this reaches 10⁵⁻¹⁰6+ individual list insertions
+  and made `"W"`/`"TT"` effectively unusable via the kernel method,
+  unlike `"D"`. Rewritten as vectorized array operations (index grid +
+  flattened-matrix lookups, mirroring the equivalent Monte Carlo fix
+  below); verified numerically identical to the original loop-based
+  output across bundled/unbundled and raw/normalized cases. At 106 real
+  cell types, `"TT"` (previously unusable) now completes in a few
+  seconds.
 - [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md),
-  [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md),
-  and
-  [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
-  now drop cell-type combinations with no possible ligand-receptor
-  pathway in any patient (structurally zero for every patient) instead
-  of returning them as dead all-zero columns – for
-  [`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)/[`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
+  `calculateWedges()`, and `computeTriangles()` now drop cell-type
+  combinations with no possible ligand-receptor pathway in any patient
+  (structurally zero for every patient) instead of returning them as
+  dead all-zero columns – for `calculateWedges()`/`computeTriangles()`
   this filtering happens *before* the abundance-weighting/ratio
   computation, so it also reduces the actual memory/compute cost, not
   just the output size.
@@ -172,7 +317,7 @@
   pair from underscores inside one cell type’s own name. Fixed by
   grouping on the underlying integer index grid instead of re-parsing
   labels; added a regression test.
-- [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)
+- [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/`calculateWedges()`
   silently dropped real patient names (always fell back to
   `"Patient_1"`, `"Patient_2"`, …) even when
   [`compute_kernel_features()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_kernel_features.md)/[`compute_racing_kernel()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/compute_racing_kernel.md)
@@ -199,7 +344,7 @@
 - [`createCellTypeDistr()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/createCellTypeDistr.md)
   now drops `Cmatrix` columns not present in `Lmatrix`/`Rmatrix` and
   renormalizes, instead of leaving mismatched columns in place.
-- [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/[`calculateWedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateWedges.md)
+- [`calculateDirect()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/calculateDirect.md)/`calculateWedges()`
   fill structurally-impossible (0/0) normalized ratios with `0`.
 - Expanded the `testthat` regression suite to cover all of the above.
 
@@ -243,10 +388,9 @@
 - **Triangle features were mislabeled.** The unbundled “trust triangle”
   (TT) computation actually computed the cycle-triangle (CT) formula,
   and the true trust-triangle metric was missing entirely; the bundled
-  8-term formula dropped 6 of its 8 terms.
-  [`computeTriangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/computeTriangles.md)
-  now returns both `TT_*` and `CT_*` columns when unbundled, and the
-  correct 8-term sum when bundled.
+  8-term formula dropped 6 of its 8 terms. `computeTriangles()` now
+  returns both `TT_*` and `CT_*` columns when unbundled, and the correct
+  8-term sum when bundled.
 - Self-loops were not excluded before Monte Carlo motif counting
   ([`EdgetoAdj()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/EdgetoAdj.md)
   was used where
@@ -263,20 +407,17 @@
   inferred the number of cell types via
   [`ncol()`](https://rdrr.io/r/base/nrow.html) on a ragged, NA-padded
   data frame, which broke for datasets with fewer than 4 cell types.
-- Empty motif lists
-  ([`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md)/[`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md)/[`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)
-  returning zero rows) crashed
-  [`Count_Types()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Count_Types.md).
-- [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)/`IN()`
-  called bare `t(Adj)`, which only dispatches to `Matrix::t()` correctly
-  if the `Matrix` package happens to be attached; fixed to call
-  `Matrix::t()` explicitly.
+- Empty motif lists (`Wedges()`/`Trust_Triangles()`/`Cycle_Triangles()`
+  returning zero rows) crashed `Count_Types()`.
+- `Cycle_Triangles()`/`IN()` called bare `t(Adj)`, which only dispatches
+  to `Matrix::t()` correctly if the `Matrix` package happens to be
+  attached; fixed to call `Matrix::t()` explicitly.
 
 ### multideconv / OmnipathR / liana integration
 
 - [`prepare_input_files()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/prepare_input_files.md)
   now calls
-  [`multideconv::compute.deconvolution.analysis()`](https://rdrr.io/pkg/multideconv/man/compute.deconvolution.analysis.html)
+  [`multideconv::compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html)
   to identify and collapse correlated cell-type subgroups (the actual
   “subgroups” feature of multideconv), rather than using raw,
   unclustered per-method deconvolution columns directly.
@@ -307,12 +448,8 @@
   pairwise comparison automatically for more than two groups;
   `volcano_plot()` plots `log2(fold change)` instead of the raw Wilcoxon
   statistic.
-- Rewrote
-  [`Wedges()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Wedges.md),
-  [`Trust_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Trust_Triangles.md),
-  and
-  [`Cycle_Triangles()`](https://VeraPancaldiLab.github.io/RaCInG_package/reference/Cycle_Triangles.md)
-  to cache neighbor lookups and vectorize row construction instead of
+- Rewrote `Wedges()`, `Trust_Triangles()`, and `Cycle_Triangles()` to
+  cache neighbor lookups and vectorize row construction instead of
   repeated sparse-matrix row slicing and O(n^2) list growth;
   cross-validated as exactly equivalent to the previous implementation
   on 900 random-graph trials, roughly 100-1000x faster on realistic

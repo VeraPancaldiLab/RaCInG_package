@@ -135,6 +135,32 @@ omitted. <code>NULL</code> (with a message) if no ligand-receptor pair has a
 nonzero contribution at all.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">lr</span> <span class="op">&lt;-</span> <span class="fu">computeLRContributions</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  Lmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">Lmatrix</span>, Rmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">Rmatrix</span>,</span></span>
+<span class="r-in"><span>  Cmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">Cmatrix</span>, LRmatrix <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">LRmatrix</span>,</span></span>
+<span class="r-in"><span>  celltypes <span class="op">=</span> <span class="va">skcm_example</span><span class="op">$</span><span class="va">celltypes</span>, sender <span class="op">=</span> <span class="st">"Tumor"</span>, receiver <span class="op">=</span> <span class="st">"CD8+ T"</span>,</span></span>
+<span class="r-in"><span>  patient_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">skcm_example</span><span class="op">$</span><span class="va">Cmatrix</span><span class="op">)</span>, top_n <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lr</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Patient             Edge Sender Receiver Ligand Receptor Contribution</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Patient_1 Tumor &lt;-&gt; CD8+ T  Tumor   CD8+ T  TGFB1   TGFBR3 0.0010444341</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Patient_1 Tumor &lt;-&gt; CD8+ T  Tumor   CD8+ T  HLA.E    KLRK1 0.0005353052</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Patient_1 Tumor &lt;-&gt; CD8+ T  Tumor   CD8+ T    ADM    VIPR1 0.0002670687</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Patient_1 Tumor &lt;-&gt; CD8+ T  Tumor   CD8+ T  HLA.F     CD8A 0.0001695168</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Patient_1 Tumor &lt;-&gt; CD8+ T  Tumor   CD8+ T  HLA.A     CD8A 0.0001652873</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Patient_10 Tumor &lt;-&gt; CD8+ T  Tumor   CD8+ T  TGFB1   TGFBR3 0.0010800198</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PctOfTotal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  21.519765</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  11.029554</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   5.502746</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   3.492763</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   3.405619</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  12.391528</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
