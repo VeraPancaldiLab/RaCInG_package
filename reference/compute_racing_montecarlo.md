@@ -15,7 +15,7 @@ compute_racing_montecarlo(
   source = "source_genesymbol",
   target = "target_genesymbol",
   signed = FALSE,
-  deconv_method = "Quantiseq",
+  deconv_method = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
   cbsx.name = NULL,
   cbsx.token = NULL,
   pt_idx = NULL,
@@ -88,7 +88,18 @@ compute_racing_montecarlo(
 
 - deconv_method:
 
-  Deconvolution method(s) used when `deconv` is not supplied.
+  Deconvolution method(s) used when `deconv` is not supplied. Default:
+  the default set of
+  [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html)
+  – Quantiseq, CIBERSORTx (CBSX), EpiDISH, DeconRNASeq and DWLS, each
+  with all its signatures – whose estimates are combined into cell
+  subgroups by
+  [`multideconv::compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html).
+  CBSX needs `cbsx.name` and `cbsx.token`; without them multideconv
+  skips it with a warning. With several methods each harmonized feature
+  is one cell type of the networks (often more than a hundred), so
+  wedges, triangles and the Monte Carlo method need much more memory and
+  time than with a single method (e.g. `deconv_method = "Quantiseq"`).
 
 - cbsx.name, cbsx.token:
 

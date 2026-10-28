@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RaCInG</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -177,10 +177,11 @@ you never have to run them by hand:</p>
 <code><a href="https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html" class="external-link">ADImpute::NormalizeTPM()</a></code>.</li>
 <li>
 <strong>Deconvolution</strong>: cell-type fractions are estimated
-with <code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> (defaults to the
-Quantiseq method, but any method(s) supported by multideconv can be
-passed via <code>deconv_method</code>), which also standardizes
-cell-type names to multideconv’s vocabulary
+with <code><a href="https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html" class="external-link">multideconv::compute.deconvolution()</a></code> (by default the
+multideconv set of methods – Quantiseq, CIBERSORTx, EpiDISH, DeconRNASeq
+and DWLS – or any method(s) passed via <code>deconv_method</code>; the
+examples below use Quantiseq only, to run quickly), which also
+standardizes cell-type names to multideconv’s vocabulary
 (<code><a href="https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html" class="external-link">multideconv::get_cell_type_nomenclature()</a></code>).</li>
 <li>
 <strong>Subgroup analysis</strong>:

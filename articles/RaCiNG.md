@@ -71,9 +71,11 @@ chains together several packages so you never have to run them by hand:
     [`ADImpute::NormalizeTPM()`](https://rdrr.io/pkg/ADImpute/man/NormalizeTPM.html).
 2.  **Deconvolution**: cell-type fractions are estimated with
     [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html)
-    (defaults to the Quantiseq method, but any method(s) supported by
-    multideconv can be passed via `deconv_method`), which also
-    standardizes cell-type names to multideconv’s vocabulary
+    (by default the multideconv set of methods – Quantiseq, CIBERSORTx,
+    EpiDISH, DeconRNASeq and DWLS – or any method(s) passed via
+    `deconv_method`; the examples below use Quantiseq only, to run
+    quickly), which also standardizes cell-type names to multideconv’s
+    vocabulary
     ([`multideconv::get_cell_type_nomenclature()`](https://verapancaldilab.github.io/multideconv/reference/get_cell_type_nomenclature.html)).
 3.  **Subgroup analysis**:
     [`multideconv::compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html)

@@ -17,7 +17,7 @@ prepare_input_files(
   cell_expr_profile = NULL,
   source = "source_genesymbol",
   target = "target_genesymbol",
-  deconv_method = "Quantiseq",
+  deconv_method = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
   cbsx.name = NULL,
   cbsx.token = NULL,
   file_name = NULL,
@@ -95,6 +95,17 @@ prepare_input_files(
 
   Deconvolution method(s) passed to
   [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html).
+  Default: the default set of
+  [`multideconv::compute.deconvolution()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.html)
+  – Quantiseq, CIBERSORTx (CBSX), EpiDISH, DeconRNASeq and DWLS, each
+  with all its signatures – whose estimates are combined into cell
+  subgroups by
+  [`multideconv::compute.deconvolution.analysis()`](https://verapancaldilab.github.io/multideconv/reference/compute.deconvolution.analysis.html).
+  CBSX needs `cbsx.name` and `cbsx.token`; without them multideconv
+  skips it with a warning. With several methods each harmonized feature
+  is one cell type of the networks (often more than a hundred), so
+  wedges, triangles and the Monte Carlo method need much more memory and
+  time than with a single method (e.g. `deconv_method = "Quantiseq"`).
 
 - cbsx.name, cbsx.token:
 
