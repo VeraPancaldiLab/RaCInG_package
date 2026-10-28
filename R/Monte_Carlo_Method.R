@@ -427,6 +427,14 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' @param source,target Column names to use as ligand and receptor identifiers in `cc_network`.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix.
 #' @param deconv_method Deconvolution method(s) used when `deconv` is not supplied.
+#'   Default: the default set of `multideconv::compute.deconvolution()` -- Quantiseq,
+#'   CIBERSORTx (CBSX), EpiDISH, DeconRNASeq and DWLS, each with all its signatures --
+#'   whose estimates are combined into cell subgroups by
+#'   `multideconv::compute.deconvolution.analysis()`. CBSX needs `cbsx.name` and
+#'   `cbsx.token`; without them multideconv skips it with a warning. With several
+#'   methods each harmonized feature is one cell type of the networks (often more than
+#'   a hundred), so wedges, triangles and the Monte Carlo method need much more memory
+#'   and time than with a single method (e.g. `deconv_method = "Quantiseq"`).
 #' @param cbsx.name,cbsx.token Optional credentials for the deconvolution workflow.
 #' @param pt_idx Optional single patient index to simulate.
 #' @param file_name File stem used for intermediate files.
@@ -489,7 +497,7 @@ runSim <- function(Lmatrix, Rmatrix, Cmatrix, LRmatrix, cells, communication_typ
 #' mc$output$GSCC$mean
 compute_racing_montecarlo = function(counts = NULL, output_folder = "Results/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                      cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol", signed = FALSE,
-                                     deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, pt_idx = NULL, file_name = NULL,
+                                     deconv_method = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"), cbsx.name = NULL, cbsx.token = NULL, pt_idx = NULL, file_name = NULL,
                                      nPatients = "all", communication_type = "D", Ncells = 10000, Ngraphs = 100, Ndegree = 20, remove_direction = TRUE, norm = FALSE,
                                      input_data = NULL, ncores = 1, expr_threshold = 10, already_normalized = FALSE) {
 

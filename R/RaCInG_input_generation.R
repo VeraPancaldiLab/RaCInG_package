@@ -504,6 +504,14 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
 #'   supplied `deconv` otherwise (see `.estimate_expression_profiles_samples()`).
 #' @param source,target Column names to use as ligand and receptor identifiers when `cc_network` is supplied.
 #' @param deconv_method Deconvolution method(s) passed to `multideconv::compute.deconvolution()`.
+#'   Default: the default set of `multideconv::compute.deconvolution()` -- Quantiseq,
+#'   CIBERSORTx (CBSX), EpiDISH, DeconRNASeq and DWLS, each with all its signatures --
+#'   whose estimates are combined into cell subgroups by
+#'   `multideconv::compute.deconvolution.analysis()`. CBSX needs `cbsx.name` and
+#'   `cbsx.token`; without them multideconv skips it with a warning. With several
+#'   methods each harmonized feature is one cell type of the networks (often more than
+#'   a hundred), so wedges, triangles and the Monte Carlo method need much more memory
+#'   and time than with a single method (e.g. `deconv_method = "Quantiseq"`).
 #' @param cbsx.name,cbsx.token Optional credentials forwarded to the deconvolution workflow.
 #' @param file_name File stem used when exporting the generated CSV files.
 #' @param signed Logical; if `TRUE`, also try to load a sign matrix from `output_folder`.
@@ -532,7 +540,7 @@ generateInput <- function(file_name, output_folder, read_signs = FALSE) {
 #' @export
 prepare_input_files <- function(counts, output_folder = "Results/", deconv = NULL, cc_network = NULL, fun_LR = min,
                                 cell_expr_profile = NULL, source = "source_genesymbol", target = "target_genesymbol",
-                                deconv_method = "Quantiseq", cbsx.name = NULL, cbsx.token = NULL, file_name = NULL,
+                                deconv_method = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"), cbsx.name = NULL, cbsx.token = NULL, file_name = NULL,
                                 signed = FALSE, already_normalized = FALSE, expr_threshold = 10){
 
   if (is.null(file_name)) {

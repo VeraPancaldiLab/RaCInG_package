@@ -13,7 +13,7 @@ prepare_input_files(
   cell_expr_profile = NULL,
   source = "source_genesymbol",
   target = "target_genesymbol",
-  deconv_method = "Quantiseq",
+  deconv_method = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
   cbsx.name = NULL,
   cbsx.token = NULL,
   file_name = NULL,
@@ -62,7 +62,15 @@ supplied \code{deconv} otherwise (see \code{.estimate_expression_profiles_sample
 
 \item{source, target}{Column names to use as ligand and receptor identifiers when \code{cc_network} is supplied.}
 
-\item{deconv_method}{Deconvolution method(s) passed to \code{multideconv::compute.deconvolution()}.}
+\item{deconv_method}{Deconvolution method(s) passed to \code{multideconv::compute.deconvolution()}.
+Default: the default set of \code{multideconv::compute.deconvolution()} -- Quantiseq,
+CIBERSORTx (CBSX), EpiDISH, DeconRNASeq and DWLS, each with all its signatures --
+whose estimates are combined into cell subgroups by
+\code{multideconv::compute.deconvolution.analysis()}. CBSX needs \code{cbsx.name} and
+\code{cbsx.token}; without them multideconv skips it with a warning. With several
+methods each harmonized feature is one cell type of the networks (often more than
+a hundred), so wedges, triangles and the Monte Carlo method need much more memory
+and time than with a single method (e.g. \code{deconv_method = "Quantiseq"}).}
 
 \item{cbsx.name, cbsx.token}{Optional credentials forwarded to the deconvolution workflow.}
 

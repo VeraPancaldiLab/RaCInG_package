@@ -14,7 +14,7 @@ compute_racing_montecarlo(
   source = "source_genesymbol",
   target = "target_genesymbol",
   signed = FALSE,
-  deconv_method = "Quantiseq",
+  deconv_method = c("Quantiseq", "CBSX", "Epidish", "DeconRNASeq", "DWLS"),
   cbsx.name = NULL,
   cbsx.token = NULL,
   pt_idx = NULL,
@@ -58,7 +58,15 @@ per-gene non-negative least squares. See \code{\link[=prepare_input_files]{prepa
 
 \item{signed}{Logical; if \code{TRUE}, also try to load a sign matrix.}
 
-\item{deconv_method}{Deconvolution method(s) used when \code{deconv} is not supplied.}
+\item{deconv_method}{Deconvolution method(s) used when \code{deconv} is not supplied.
+Default: the default set of \code{multideconv::compute.deconvolution()} -- Quantiseq,
+CIBERSORTx (CBSX), EpiDISH, DeconRNASeq and DWLS, each with all its signatures --
+whose estimates are combined into cell subgroups by
+\code{multideconv::compute.deconvolution.analysis()}. CBSX needs \code{cbsx.name} and
+\code{cbsx.token}; without them multideconv skips it with a warning. With several
+methods each harmonized feature is one cell type of the networks (often more than
+a hundred), so wedges, triangles and the Monte Carlo method need much more memory
+and time than with a single method (e.g. \code{deconv_method = "Quantiseq"}).}
 
 \item{cbsx.name, cbsx.token}{Optional credentials for the deconvolution workflow.}
 
